@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Família Cuba — Acesso Restrito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loader" class="loader-screen">
+    <div class="loader-box">
+      <p class="eyebrow">SISTEMA INTERNO</p>
+      <h1>FAMÍLIA CUBA</h1>
+      <p id="loaderText">Inicializando sistema...</p>
+      <div class="progress"><span id="progressBar"></span></div>
+    </div>
+  </div>
+
+  <main id="site" class="hidden">
+    <section class="hero">
+      <div class="overlay"></div>
+      <div class="hero-content reveal">
+        <img src="images/logo.jpg" alt="Logo da Família Cuba" class="logo">
+        <p class="eyebrow">ACESSO AUTORIZADO</p>
+        <h1>FAMÍLIA CUBA</h1>
+        <p class="motto">Silêncio também mata.</p>
+        <button id="enterButton" class="gold-button">ENTRAR</button>
+        <small>Ative o som para uma experiência completa.</small>
+      </div>
+    </section>
+
+    <section id="intro" class="section dark">
+      <div class="wrap narrow reveal">
+        <p class="eyebrow">ARQUIVO CONFIDENCIAL</p>
+        <div id="typewriter" class="typewriter"></div>
+        <button id="continueButton" class="outline-button hidden">CONTINUAR</button>
+      </div>
+    </section>
+
+    <section id="quem-somos" class="section">
+      <div class="wrap split">
+        <div class="photo-frame reveal">
+          <img src="images/familia.png" alt="Foto da Família Cuba">
+        </div>
+        <div class="reveal">
+          <p class="eyebrow">QUEM SOMOS</p>
+          <h2>Mais do que uma organização.</h2>
+          <p>A Família Cuba é construída por pessoas que entendem o valor da palavra, da presença e da confiança. Aqui, ninguém caminha sozinho.</p>
+          <p>Cada integrante carrega uma responsabilidade: proteger a família, respeitar a hierarquia e honrar quem esteve presente desde o início.</p>
+          <blockquote>“Família não é sobrenome. É escolha.”</blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark">
+      <div class="wrap">
+        <div class="heading reveal">
+          <p class="eyebrow">NOSSOS PILARES</p>
+          <h2>O que sustenta a Cuba</h2>
+        </div>
+        <div class="pillars">
+          <article class="card reveal"><span>01</span><h3>Lealdade</h3><p>Nunca abandonar quem escolheu caminhar ao nosso lado.</p></article>
+          <article class="card reveal"><span>02</span><h3>Respeito</h3><p>Respeito não se exige. Ele é conquistado todos os dias.</p></article>
+          <article class="card reveal"><span>03</span><h3>Discrição</h3><p>O silêncio protege, preserva e revela quem sabe permanecer.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="heading reveal">
+          <p class="eyebrow">HIERARQUIA</p>
+          <h2>Conheça a Família</h2>
+          <p>Clique em um integrante para abrir o dossiê.</p>
+        </div>
+        <div id="membersGrid" class="members"></div>
+      </div>
+    </section>
+
+    <section class="section essence">
+      <div class="wrap narrow center">
+        <p class="eyebrow reveal">NOSSA ESSÊNCIA</p>
+        <p class="essence-line reveal">Lealdade vale mais que promessa.</p>
+        <p class="essence-line reveal">Respeito vale mais que medo.</p>
+        <p class="essence-line reveal">Quem fala demais esquece que...</p>
+        <h2 class="reveal">Silêncio também mata.</h2>
+      </div>
+    </section>
+
+    <section class="section final">
+      <div class="wrap narrow center reveal">
+        <img src="images/logo.jpg" alt="Logo da Família Cuba" class="logo small-logo">
+        <p class="final-message">Se você chegou até aqui, significa que passou pelo primeiro teste.<strong>Sua verdadeira história começa agora.</strong></p>
+        <p class="signature">FAMÍLIA CUBA</p>
+        <small>LEALDADE • RESPEITO • SILÊNCIO</small>
+      </div>
+    </section>
+  </main>
+
+  <div id="memberModal" class="modal hidden">
+    <div class="modal-bg" data-close></div>
+    <div class="modal-card">
+      <button class="close" data-close>×</button>
+      <img id="modalImage" src="" alt="">
+      <div class="modal-text">
+        <p id="modalRole" class="eyebrow"></p>
+        <h2 id="modalName"></h2>
+        <p id="modalDescription"></p>
+        <blockquote id="modalQuote"></blockquote>
+      </div>
+    </div>
+  </div>
+
+  <audio id="themeMusic" loop preload="auto">
+    <source src="music/tema.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="script.js"></script>
+</body>
+</html>

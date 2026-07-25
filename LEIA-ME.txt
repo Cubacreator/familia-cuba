@@ -1,0 +1,22 @@
+FAMÍLIA CUBA — COMO USAR
+
+1. Copie suas imagens para a pasta images.
+2. Use estes nomes exatos:
+   logo.jpg
+   familia.png
+   baby.png
+   caio.png
+   caroll.png
+   duflair.png
+   nickolay.png
+   raissa.png
+   renan.png
+   xaulin.png
+
+3. Coloque sua música na pasta music e renomeie para tema.mp3.
+4. Dê dois cliques em index.html.
+5. Para editar cargos, descrições e frases, abra script.js no Bloco de Notas.
+6. Para editar os textos principais, abra index.html no Bloco de Notas.
+7. Salve sempre com Ctrl + S.
+
+Não apague aspas, vírgulas, colchetes ou chaves do script.js.
