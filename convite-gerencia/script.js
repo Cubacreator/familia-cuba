@@ -13,6 +13,38 @@ const accessPanel = document.getElementById("accessPanel");
 const confirmPanel = document.getElementById("confirmPanel");
 const invitePanel = document.getElementById("invitePanel");
 const finalPanel = document.getElementById("finalPanel");
+const themeMusic = document.getElementById("themeMusic");
+const soundToggle = document.getElementById("soundToggle");
+
+themeMusic.volume = 0.25;
+let musicaIniciada = false;
+
+async function iniciarMusica() {
+  if (musicaIniciada) return;
+
+  try {
+    await themeMusic.play();
+    musicaIniciada = true;
+    soundToggle.textContent = "🔊";
+  } catch (erro) {
+    soundToggle.textContent = "🔇";
+  }
+}
+
+soundToggle.addEventListener("click", async () => {
+  if (!musicaIniciada) {
+    await iniciarMusica();
+    return;
+  }
+
+  if (themeMusic.paused) {
+    await themeMusic.play();
+    soundToggle.textContent = "🔊";
+  } else {
+    themeMusic.pause();
+    soundToggle.textContent = "🔇";
+  }
+});
 
 const passportForm = document.getElementById("passportForm");
 const passportInput = document.getElementById("passport");
@@ -48,8 +80,9 @@ passportInput.addEventListener("input", () => {
   passportInput.value = passportInput.value.replace(/\D/g, "");
 });
 
-passportForm.addEventListener("submit", (event) => {
+passportForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  await iniciarMusica();
 
   const passaporte = passportInput.value.trim();
   const registro = autorizados[passaporte];

@@ -494,3 +494,26 @@ blockquote {
     scroll-behavior: auto !important;
   }
 }
+
+
+.sound-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(120, 165, 205, 0.35);
+  border-radius: 50%;
+  background: rgba(4, 9, 19, 0.86);
+  color: white;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(8px);
+}
+
+.sound-toggle:hover {
+  transform: translateY(-2px);
+  border-color: rgba(120, 165, 205, 0.7);
+}
