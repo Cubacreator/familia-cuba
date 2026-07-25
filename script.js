@@ -7,7 +7,7 @@ const membros=[
 {nome:'Nickolay',cargo:'Membro da Família Cuba',imagem:'images/nickolay.png',descricao:'Descrição provisória. Troque este texto pela função e pela história deste integrante.',frase:'A palavra tem peso.'},
 {nome:'Raissa',cargo:'Membro da Família Cuba',imagem:'images/raissa.png',descricao:'Descrição provisória. Troque este texto pela função e pela história deste integrante.',frase:'Silêncio também mata.'},
 {nome:'Renan',cargo:'Membro da Família Cuba',imagem:'images/renan.png',descricao:'Descrição provisória. Troque este texto pela função e pela história deste integrante.',frase:'Lealdade acima de tudo.'},
-{nome:'Xaulin',cargo:'Membro da Família Cuba',imagem:'images/xaulin.png',descricao:'Descrição provisória. Troque este texto pela função e pela história deste integrante.',frase:'Respeito abre portas.'}
+{nome:'Xaulim',cargo:'Membro da Família Cuba',imagem:'images/xaulin.png',descricao:'Descrição provisória. Troque este texto pela função e pela história deste integrante.',frase:'Respeito abre portas.'}
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
 const intro=['Se você está lendo isso...','significa que alguém acreditou no seu potencial.','Durante esta missão, você foi observado.','Cada decisão foi analisada.','Cada palavra teve importância.','Agora é hora de conhecer quem realmente somos.'];
