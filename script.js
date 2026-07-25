@@ -4,7 +4,7 @@ const membros = [
     nome: "Caroll",
     cargo: "01",
     imagem: "images/caroll.png",
-    descricao: "Caroll é a 01 da Família Cuba. Dona de um coração enorme, protege os seus com lealdade e não mede esforços para ajudar quem caminha ao lado dela. É brava quando necessário e, quando a bagunça passa do limite, sabe exatamente como colocar ordem na casa. Melhor não mexer com sua família: seja para assumir a linha de frente, trocar tiro ou ser P1, podem contar com ela para qualquer situação,
+    descricao: "Caroll é a 01 da Família Cuba. Dona de um coração enorme, protege os seus com lealdade e não mede esforços para ajudar quem caminha ao lado dela. É brava quando necessário e, quando a bagunça passa do limite, sabe exatamente como colocar ordem na casa. Melhor não mexer com sua família: seja para assumir a linha de frente, trocar tiro ou ser P1, podem contar com ela para qualquer situação.",
     frase: "Com a minha família ninguém mexe."
   },
   {
@@ -69,7 +69,7 @@ const membros = [
     imagem: "images/logo.png",
     descricao: "Roman Pearce, conhecido por todos simplesmente como Zé, é membro da Família Cuba. Está quase sempre farmando, mas basta chamar para fazer bebidas que ele larga tudo e vai na mesma hora. Quando o assunto é abastecer a resenha, pode contar com ele. Atualmente atua como P1",
     frase: "Chamou para as bebidas, o farm espera."
-  }
+  },
 {
     nome: "Bruno",
     cargo: "Membro da Família Cuba",
