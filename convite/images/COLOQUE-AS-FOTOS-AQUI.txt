@@ -1,0 +1,7 @@
+COLOQUE NESTA PASTA AS DUAS FOTOS:
+
+darling.png
+nickolay.png
+
+As fotos ficam somente dentro deste novo convite.
+Não é necessário alterar a pasta images do site principal.

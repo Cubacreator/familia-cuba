@@ -1,0 +1,11 @@
+Coloque o arquivo de música nesta pasta com o nome exato:
+
+musica.mp3
+
+Estrutura:
+convite-gerencia/
+  music/
+    musica.mp3
+
+A música começará quando a pessoa clicar em VALIDAR PASSAPORTE.
+Isso é necessário porque os navegadores bloqueiam música automática antes de qualquer clique.
