@@ -59,112 +59,112 @@ const membros = [
 {
     nome: "Jamal",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Jamal é membro da Família Cuba. Ficou conhecido por brincar com a polícia nas fugas, mas, segundo ele, está aposentado da carreira de P1. Atualmente, vive entre o farm e as trocas contra policiais. Costuma ser bravo boa parte do tempo, mas quando entra na resenha, ninguém aguenta.",
     frase: "Aposentado do P1, nunca da confusão."
   },
 {
     nome: "Roman Pearce (Zé)",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Roman Pearce, conhecido por todos simplesmente como Zé, é membro da Família Cuba. Está quase sempre farmando, mas basta chamar para fazer bebidas que ele larga tudo e vai na mesma hora. Quando o assunto é abastecer a resenha, pode contar com ele. Atualmente atua como P1",
     frase: "Chamou para as bebidas, o farm espera."
   },
 {
     nome: "Bruno",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Bruno é membro da Família Cuba. Está sempre, sempre mesmo, farmando e subindo seu level pessoal. Vive no próprio mundinho e nunca perde a oportunidade de entrar na resenha, mas basta chamar que ele aparece para ajudar.",
     frase: "Chamou, o Bruno sai do mundinho dele."
   },
 {
     nome: "PH",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "PH é membro da Família Cuba e vive farmando pela cidade. Porém, se surgir uma trocação, o trabalho pode esperar — para ele, ajudar a família na ação sempre vem primeiro.",
     frase: "O farm espera, a trocação não."
   },
 {
     nome: "Todynho",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Todynho é membro da Família Cuba. Passa a maior parte do tempo arrumando confusão e faz qualquer coisa, menos trabalhar. Apaixonado por trocação, está sempre disponível quando a família precisa.",
     frase: "Trabalhar talvez. Trocar tiro, sempre."
   },
 {
     nome: "Will",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Will é membro da Família Cuba e provavelmente o cara mais rico da cidade. Se lançou um carro ontem, hoje ele já está guardado na garagem. Também é da trocação e, quando surge uma ação, é só chamar que ele aparece.",
     frase: "Lançou hoje, amanhã já tá na garagem."
   },
 {
     nome: "Arthur",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Arthur é membro da Família Cuba. Se tiver trocação, pode chamar que ele aparece. Também gosta de uma boa resenha e é pau para toda obra, sempre disposto a ajudar no que a família precisar.",
     frase: "Precisou, chamou, ele chegou."
   },
 {
     nome: "Felipe",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Felipe é membro da Família Cuba e parece nunca dormir. Está sempre acordado, seja farmando ou trocando tiro. Só não peça para ele dirigir; de resto, pode chamar que o Felipe está sempre disponível.",
     frase: "Dirigir não. Para o resto, pode chamar."
   },
 {
     nome: "Guizin",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Guizin é membro da Família Cuba. Acorda para fazer ação, entrar na resenha e fortalecer a família no que precisar.",
     frase: "Acordou, é ação e resenha."
   },
 {
     nome: "Darling",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Darling é membro da Família Cuba e gosta de qualquer coisa, menos trabalhar. Seu maior hobby é encher o saco e entrar na resenha. Mas, quando tem time de tiro, ele assume a organização: faz a convocação pelo rádio e manda a lista dos escolhidos no grupo.",
     frase: "Trabalhar não. Convocar para a trocação, sempre."
   },
 {
     nome: "Santana",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Santana é membro da Família Cuba, conhecido pelos gostos peculiares e por desfilar com suas calças femininas. Está sempre disponível quando a família chama e não perde a oportunidade de entrar em uma trocação.",
     frase: "Estilo peculiar, disposição garantida."
   },
 {
     nome: "Daniel",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Daniel é membro da Família Cuba e está sempre disponível, seja para o farm ou para a trocação. Precisou de reforço para trabalhar ou entrar em ação, é só chamar.",
     frase: "Do farm ao tiro, pode contar comigo."
   },
 {
     nome: "Silva",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Silva é membro da Família Cuba e chegou recentemente para fortalecer e somar com todos. Gosta de trocação e não perde a oportunidade de entrar em confronto com a polícia.",
     frase: "Chegou para somar e pronto para a ação."
   },
 {
     nome: "Yeshua",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
     frase: "O nome é de paz, mas a mira é de guerra."
   },
 {
     nome: "Caitovs",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
     frase: "O nome é de paz, mas a mira é de guerra."
   },
 {
     nome: "Snoop",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.png",
+    imagem: "images/logo.jpg",
     descricao: "Snoop é membro da Família Cuba e chegou recentemente para somar. No momento, está focado em subir de nível, mas é só aguardar: quando alcançar o necessário, estará pronto para entrar nas ações e colocar os policiais para dormir.",
     frase: "Ainda está subindo de nível; a polícia que se prepare."
   }
