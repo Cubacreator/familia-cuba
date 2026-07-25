@@ -1,0 +1,46 @@
+COMO PUBLICAR NO GITHUB PAGES
+
+1. No repositório familia-cuba, crie uma pasta chamada:
+   convite-gerencia
+
+2. Envie para dentro dela:
+   - index.html
+   - style.css
+   - script.js
+
+3. Aguarde o GitHub Pages atualizar.
+
+4. O link ficará:
+   https://cubacreator.github.io/familia-cuba/convite-gerencia/
+
+PASSAPORTES CONFIGURADOS
+- Darling Bugatti: 8958
+- Nickolay Meketreff: 2368
+
+OBSERVAÇÃO
+A validação é feita no navegador. Para um convite de GTA RP isso funciona bem,
+mas os IDs podem ser vistos por alguém que abrir o código-fonte do site.
+
+
+FOTOS NA CONFIRMAÇÃO DE IDENTIDADE
+Coloque as fotos na pasta images do site principal com estes nomes:
+- images/darling.png
+- images/nickolay.png
+
+Se alguma foto não existir, a logo da Família Cuba aparecerá automaticamente.
+
+
+IMPORTANTE — LINK SEPARADO
+Este convite funciona em uma pasta nova e não substitui nenhum arquivo do site atual.
+
+Estrutura:
+convite-gerencia/
+  index.html
+  style.css
+  script.js
+  images/
+    darling.png
+    nickolay.png
+
+A logo continua sendo carregada da pasta images já existente do site principal,
+mas nenhum arquivo dessa pasta precisa ser modificado.

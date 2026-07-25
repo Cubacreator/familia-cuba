@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#05070c" />
+  <title>Convocação Restrita | Família Cuba</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="scanlines"></div>
+
+  <main class="shell">
+    <section class="panel" id="accessPanel">
+      <div class="brand">
+        <img src="../images/logo.jpg" alt="Família Cuba" class="logo" onerror="this.style.display='none'">
+        <p class="eyebrow">ARQUIVO CONFIDENCIAL</p>
+        <h1>ACESSO RESTRITO</h1>
+        <p class="subtitle">Família Cuba — Convocação de Gerência</p>
+      </div>
+
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <span></span><span></span><span></span>
+          <small>SISTEMA DE VALIDAÇÃO</small>
+        </div>
+
+        <form id="passportForm" autocomplete="off">
+          <label for="passport">Insira seu passaporte para continuar</label>
+          <div class="input-wrap">
+            <span>&gt;</span>
+            <input
+              id="passport"
+              type="password"
+              inputmode="numeric"
+              maxlength="8"
+              placeholder="DIGITE O ID"
+              aria-describedby="accessMessage"
+              required
+            />
+          </div>
+          <button type="submit" class="btn primary">VALIDAR PASSAPORTE</button>
+          <p id="accessMessage" class="message" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="confirmPanel">
+      <p class="eyebrow success">PASSAPORTE VALIDADO</p>
+      <h2>IDENTIDADE LOCALIZADA</h2>
+
+      <div class="identity-card">
+        <img id="identityPhoto" class="identity-photo" src="" alt="Foto do membro">
+        <div class="identity-data">
+          <span>REGISTRO AUTORIZADO</span>
+          <strong id="identityName"></strong>
+          <small id="identityPassport"></small>
+        </div>
+      </div>
+
+      <div class="warning-text">
+        <p>Por favor, confirme sua identidade.</p>
+        <h3>É VOCÊ?</h3>
+      </div>
+
+      <div class="actions">
+        <button id="confirmIdentity" class="btn primary">SIM, SOU EU</button>
+        <button id="rejectIdentity" class="btn ghost">NÃO SOU EU</button>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="invitePanel">
+      <p class="eyebrow success">IDENTIDADE CONFIRMADA</p>
+      <h2>CONVOCAÇÃO OFICIAL</h2>
+
+      <div class="invite-copy">
+        <p><strong id="inviteName"></strong>, você não recebeu este acesso por acaso.</p>
+
+        <p>
+          Sua postura, disponibilidade e desempenho nas ações foram observados.
+          A Família Cuba reconhece em você a capacidade de organizar, orientar
+          e assumir responsabilidades maiores.
+        </p>
+
+        <div class="role">
+          <span>VOCÊ FOI CONVOCADO PARA O CARGO DE</span>
+          <h3>GERENTE DE AÇÃO</h3>
+        </div>
+
+        <p>
+          Sua função será ajudar na organização das equipes, realizar convocações,
+          definir participantes, orientar os membros e garantir que todos estejam
+          preparados para cada operação.
+        </p>
+
+        <p>
+          A partir de agora, suas decisões nas ações não representarão apenas você.
+          Representarão toda a Família Cuba.
+        </p>
+      </div>
+
+      <div class="actions">
+        <button id="acceptInvite" class="btn primary">ACEITAR A RESPONSABILIDADE</button>
+        <button id="declineInvite" class="btn ghost">RECUSAR O CARGO</button>
+      </div>
+    </section>
+
+    <section class="panel hidden final-panel" id="finalPanel">
+      <p class="eyebrow success" id="finalEyebrow">ACESSO AUTORIZADO</p>
+      <h2 id="finalTitle"></h2>
+      <p id="finalMessage"></p>
+      <blockquote>“Silêncio também mata.”</blockquote>
+      <button id="restart" class="btn ghost">ENCERRAR ACESSO</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
