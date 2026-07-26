@@ -1,6 +1,8 @@
 const autorizados = {
-  "3072": "Raissa Fernandez",
-  "1380": "Xaulim Meketreff",
+  "3072": "Renan Desbrava",
+  "2098": "Caio Silva",
+  "7206": "Raissa Fernandez",
+    "1380": "Xaulim Meketreff",
   "2423": "Caroll Cris",
   "2368": "Nickolay Meketreff",
   "4429": "Roman Pearce (Zé)",
