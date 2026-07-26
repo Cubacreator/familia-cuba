@@ -155,7 +155,7 @@ const membros = [
     frase: "O nome é de paz, mas a mira é de guerra."
   },
 {
-    nome: "Caitovs",
+    nome: "Caitov",
     cargo: "Membro da Família Cuba",
     imagem: "images/logo.jpg",
     descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
