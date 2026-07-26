@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#03060b">
+  <title>Convocação Interna</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="noise"></div>
+  <div id="flash" class="flash"></div>
+
+  <main class="shell">
+    <section id="accessPanel" class="panel">
+      <p class="eyebrow">CANAL INTERNO — FAMÍLIA CUBA</p>
+      <h1>A CUBA PRECISA DE VOCÊ</h1>
+      <p class="subtitle">
+        Insira seu passaporte para validarmos sua identidade e liberarmos as instruções.
+      </p>
+
+      <form id="passportForm" autocomplete="off">
+        <label for="passport">PASSAPORTE</label>
+        <div class="field">
+          <span>&gt;</span>
+          <input id="passport" type="password" inputmode="numeric" maxlength="8" placeholder="DIGITE O ID" required>
+        </div>
+        <button class="btn primary" type="submit">VALIDAR IDENTIDADE</button>
+        <p id="accessMessage" class="message" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="confirmPanel" class="panel hidden">
+      <p class="eyebrow success">IDENTIDADE LOCALIZADA</p>
+      <h2>CONFIRMAÇÃO NECESSÁRIA</h2>
+
+      <div class="identity-card">
+        <div class="avatar">C</div>
+        <div class="identity-data">
+          <span>REGISTRO AUTORIZADO</span>
+          <strong id="identityName"></strong>
+          <small id="identityPassport"></small>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>Por favor, confirme sua identidade.</p>
+        <h3>É VOCÊ?</h3>
+      </div>
+
+      <div class="actions">
+        <button id="confirmIdentity" class="btn primary">SIM, SOU EU</button>
+        <button id="rejectIdentity" class="btn ghost">NÃO SOU EU</button>
+      </div>
+    </section>
+
+    <section id="missionPanel" class="panel hidden">
+      <p class="eyebrow success">IDENTIDADE CONFIRMADA</p>
+      <h2>CONVOCAÇÃO DE APOIO</h2>
+
+      <div class="mission-copy">
+        <p><strong id="missionName"></strong>, a Família Cuba precisa de você neste momento.</p>
+
+        <div class="alert-box">
+          <span>INFORMAÇÃO PRIORITÁRIA</span>
+          <h3>DUAS PESSOAS ESTARÃO NAS LOCALIZAÇÕES INFORMADAS NA RÁDIO DA FAMÍLIA.</h3>
+        </div>
+
+        <p>
+          Elas são possíveis novos membros e estarão passando por uma avaliação.
+          Sua presença será importante para garantir o andamento da missão, observar a postura
+          dos candidatos e ajudar a família no que for necessário.
+        </p>
+
+        <p class="final-call">
+          Permaneça atento à rádio e siga as instruções repassadas pelos responsáveis pela operação.
+        </p>
+      </div>
+
+      <div class="actions single">
+        <button id="confirmPresence" class="btn primary">CONFIRMAR PRESENÇA</button>
+      </div>
+    </section>
+
+    <section id="finalPanel" class="panel hidden final-panel">
+      <p class="eyebrow success">PRESENÇA CONFIRMADA</p>
+      <h2>AGUARDE AS INSTRUÇÕES NA RÁDIO</h2>
+      <p>
+        Sua confirmação foi registrada localmente. Fique disponível para a operação e acompanhe o canal da família.
+      </p>
+      <blockquote>“Silêncio também mata.”</blockquote>
+      <button id="restart" class="btn ghost">ENCERRAR ACESSO</button>
+    </section>
+  </main>
+
+  <button id="soundToggle" class="sound-toggle" type="button" aria-label="Ativar ou desativar o som">🔊</button>
+
+  <audio id="hackAudio" src="audios/interferencia-hack.mp3" preload="auto"></audio>
+  <audio id="suspenseAudio" src="audios/suspense.mp3" preload="auto" loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>

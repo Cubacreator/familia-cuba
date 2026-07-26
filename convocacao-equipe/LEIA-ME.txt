@@ -1,0 +1,34 @@
+NOVO SISTEMA — CONVOCAÇÃO DE APOIO DA FAMÍLIA CUBA
+
+Pasta para enviar ao GitHub:
+convocacao-equipe
+
+Link final sugerido:
+https://cubacreator.github.io/familia-cuba/convocacao-equipe/
+
+O projeto é separado e não altera os outros sites.
+
+PASSAPORTES CONFIGURADOS
+1380 — Xaulim Meketreff
+2423 — Caroll Cris
+2368 — Nickolay Meketreff
+4429 — Roman Pearce (Zé)
+1161 — Jamal Desbrava
+1359 — Antonio Silva
+7286 — Bruno Bravo
+3888 — PH
+4247 — Felipe Azevedo
+8992 — Will
+8958 — Darling Bugatti
+7313 — Lord Santana
+9006 — Arthur Souza
+7664 — Felipe Silva da Silva Silva
+9212 — Guizin Silva
+7334 — SEEYUN (DANIEL)
+9168 — Caitov Gomez
+2528 — Snoop Khalifa
+9445 — Yeshua
+
+Observação:
+Antonio Silva apareceu duas vezes na lista original com o mesmo passaporte 1359,
+então foi configurado uma única vez.
