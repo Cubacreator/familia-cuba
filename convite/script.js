@@ -57,6 +57,45 @@ const inviteName = document.getElementById("inviteName");
 
 let pessoaAtual = null;
 let passaporteAtual = null;
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeeyvegp";
+let respostaEnviada = false;
+
+async function registrarResposta(resposta) {
+  if (respostaEnviada) return true;
+
+  const dados = new FormData();
+  dados.append("nome", pessoaAtual);
+  dados.append("passaporte", passaporteAtual);
+  dados.append("resposta", resposta);
+  dados.append("cargo", "Gerente de Ação");
+  dados.append("data_hora", new Date().toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo"
+  }));
+  dados.append("_subject", `Resposta do convite — ${pessoaAtual}`);
+
+  try {
+    const retorno = await fetch(FORMSPREE_ENDPOINT, {
+      method: "POST",
+      body: dados,
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    const resultado = await retorno.json().catch(() => ({}));
+
+    if (!retorno.ok) {
+      console.error("Erro do Formspree:", resultado);
+      throw new Error(resultado.error || "Falha no envio");
+    }
+
+    respostaEnviada = true;
+    return true;
+  } catch (erro) {
+    console.error("Falha ao registrar resposta:", erro);
+    return false;
+  }
+}
 
 function mostrarPainel(painel) {
   [accessPanel, confirmPanel, invitePanel, finalPanel].forEach((item) => {
@@ -132,13 +171,27 @@ document.getElementById("confirmIdentity").addEventListener("click", () => {
 document.getElementById("rejectIdentity").addEventListener("click", () => {
   pessoaAtual = null;
   passaporteAtual = null;
+  respostaEnviada = false;
   passportInput.value = "";
   accessMessage.textContent = "";
   mostrarPainel(accessPanel);
   passportInput.focus();
 });
 
-document.getElementById("acceptInvite").addEventListener("click", () => {
+document.getElementById("acceptInvite").addEventListener("click", async (event) => {
+  const botao = event.currentTarget;
+  botao.disabled = true;
+  botao.textContent = "REGISTRANDO RESPOSTA...";
+
+  const enviado = await registrarResposta("ACEITOU");
+
+  if (!enviado) {
+    botao.disabled = false;
+    botao.textContent = "ACEITAR A RESPONSABILIDADE";
+    alert("Não foi possível registrar sua resposta. Verifique a conexão e tente novamente.");
+    return;
+  }
+
   document.getElementById("finalEyebrow").textContent = "ACESSO DE GERÊNCIA AUTORIZADO";
   document.getElementById("finalTitle").textContent = `BEM-VINDO À LIDERANÇA, ${pessoaAtual.toUpperCase()}`;
   document.getElementById("finalMessage").textContent =
@@ -151,7 +204,20 @@ document.getElementById("acceptInvite").addEventListener("click", () => {
   }, 900);
 });
 
-document.getElementById("declineInvite").addEventListener("click", () => {
+document.getElementById("declineInvite").addEventListener("click", async (event) => {
+  const botao = event.currentTarget;
+  botao.disabled = true;
+  botao.textContent = "REGISTRANDO RESPOSTA...";
+
+  const enviado = await registrarResposta("RECUSOU");
+
+  if (!enviado) {
+    botao.disabled = false;
+    botao.textContent = "RECUSAR O CARGO";
+    alert("Não foi possível registrar sua resposta. Verifique a conexão e tente novamente.");
+    return;
+  }
+
   document.getElementById("finalEyebrow").textContent = "RESPOSTA REGISTRADA";
   document.getElementById("finalTitle").textContent = "CONVOCAÇÃO RECUSADA";
   document.getElementById("finalMessage").textContent =
@@ -163,6 +229,7 @@ document.getElementById("declineInvite").addEventListener("click", () => {
 document.getElementById("restart").addEventListener("click", () => {
   pessoaAtual = null;
   passaporteAtual = null;
+  respostaEnviada = false;
   passportInput.value = "";
   accessMessage.textContent = "";
   mostrarPainel(accessPanel);
