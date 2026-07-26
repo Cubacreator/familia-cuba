@@ -1,233 +1,178 @@
-const autorizados = {
-  "8958": {
-    nome: "Darling Bugatti",
-    foto: "images/darling.png"
+/* EDITE APENAS ESTA LISTA PARA TROCAR CARGOS, TEXTOS E FOTOS */
+const membros = [
+  {
+    nome: "Caroll",
+    cargo: "01",
+    imagem: "images/caroll.png",
+    descricao: "Caroll é a 01 da Família Cuba. Dona de um coração enorme, protege os seus com lealdade e não mede esforços para ajudar quem caminha ao lado dela. É brava quando necessário e, quando a bagunça passa do limite, sabe exatamente como colocar ordem na casa. Melhor não mexer com sua família: seja para assumir a linha de frente, trocar tiro ou ser P1, podem contar com ela para qualquer situação.",
+    frase: "Com a minha família ninguém mexe."
   },
-  "2368": {
-    nome: "Nickolay Meketreff",
-    foto: "images/nickolay.png"
+  {
+    nome: "Caio",
+    cargo: "02",
+    imagem: "images/caio.png",
+    descricao: "Caio é o 02 da Família Cuba. Sempre na zoeira, tem muitos contatos e gosta de estar na linha de frente. Como P1, é ótimo com uma arma na mão. Precisa comprar ou resolver alguma coisa? Uma ligação para ele provavelmente basta. Tem um coração enorme mas geralmente só cabe a Caroll.",
+    frase: "Se precisar, chama o Caio."
+  },
+  {
+    nome: "Renan",
+    cargo: "Gerente Geral",
+    imagem: "images/renan.png",
+    descricao: "Renan é gerente da Família Cuba e considerado um dos melhores P1 da cidade. Não gosta de bagunça e ficar parado nunca é opção: ou está trabalhando, ou está correndo da polícia. Sempre focado, também manda bem na trocação e, quando a situação aperta, podem chamar por ele.",
+    frase: "Parado eu não fico."
+  },
+  {
+    nome: "Raissa",
+    cargo: "Gerente Geral",
+    imagem: "images/raissa.png",
+    descricao: "Raissa é gerente da Família Cuba. Louca, mimada e sem muita trava na língua, não é do tiro nem do P1, mas está sempre pronta para ajudar no que for preciso. Focada e inquieta, ou está trabalhando ou vivendo alguma aventura pela cidade. Ficar parada definitivamente não é uma opção.",
+    frase: "Parada eu não fico, problema eu arrumo."
+  },
+  {
+    nome: "Baby",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/baby.png",
+    descricao: "Baby é membro da Família Cuba. Solteiro e sempre em busca de uma mulher, mas se surgir uma trocação, é só colocar uma arma no peito dele e garantir a carona — o resto ele resolve.",
+    frase: "Dá a arma e mostra o caminho."
+  },
+  {
+    nome: "DuFlair",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/duflair.png",
+    descricao: "DuFlair é membro da Família Cuba. Geralmente você encontra ele desmaiado por algum canto, mas quando o rádio chama, ele aparece de qualquer jeito, nem que seja de paraquedas. Apaixonado por moto, vive arriscando a própria vida nas mãos dos P1 duvidosos da cidade.",
+    frase: "Chamou no rádio, ele aparece."
+  },
+  {
+    nome: "Nickolay",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/nickolay.png",
+    descricao: "Nickolay é membro da Família Cuba e um dos melhores P1 da cidade. Com ele no volante, a fuga perde até a graça: em poucos segundos, some da polícia e ninguém entende nada. Na trocação, também manda muito bem e sabe assumir a responsabilidade quando a família precisa.",
+    frase: "Piscou, ficou para trás."
+  },
+  {
+    nome: "Xaulim",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/xaulin.png",
+    descricao: "Xaulim é membro da Família Cuba. Até se arrisca como P1, mas sua verdadeira paixão é a trocação. Também é da resenha e parece ter um talento especial para arrumar confusão na praça, principalmente quando o clima está tranquilo demais.",
+    frase: "Se não tem confusão, ele cria."
+  },
+{
+    nome: "Jamal",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/jamal.png",
+    descricao: "Jamal é membro da Família Cuba. Ficou conhecido por brincar com a polícia nas fugas, mas, segundo ele, está aposentado da carreira de P1. Atualmente, vive entre o farm e as trocas contra policiais. Costuma ser bravo boa parte do tempo, mas quando entra na resenha, ninguém aguenta.",
+    frase: "Aposentado do P1, nunca da confusão."
+  },
+{
+    nome: "Roman Pearce (Zé)",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Roman Pearce, conhecido por todos simplesmente como Zé, é membro da Família Cuba. Está quase sempre farmando, mas basta chamar para fazer bebidas que ele larga tudo e vai na mesma hora. Quando o assunto é abastecer a resenha, pode contar com ele. Atualmente atua como P1",
+    frase: "Chamou para as bebidas, o farm espera."
+  },
+{
+    nome: "Bruno",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Bruno é membro da Família Cuba. Está sempre, sempre mesmo, farmando e subindo seu level pessoal. Vive no próprio mundinho e nunca perde a oportunidade de entrar na resenha, mas basta chamar que ele aparece para ajudar.",
+    frase: "Chamou, o Bruno sai do mundinho dele."
+  },
+{
+    nome: "PH",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "PH é membro da Família Cuba e vive farmando pela cidade. Porém, se surgir uma trocação, o trabalho pode esperar — para ele, ajudar a família na ação sempre vem primeiro.",
+    frase: "O farm espera, a trocação não."
+  },
+{
+    nome: "Todynho",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Todynho é membro da Família Cuba. Passa a maior parte do tempo arrumando confusão e faz qualquer coisa, menos trabalhar. Apaixonado por trocação, está sempre disponível quando a família precisa.",
+    frase: "Trabalhar talvez. Trocar tiro, sempre."
+  },
+{
+    nome: "Will",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Will é membro da Família Cuba e provavelmente o cara mais rico da cidade. Se lançou um carro ontem, hoje ele já está guardado na garagem. Também é da trocação e, quando surge uma ação, é só chamar que ele aparece.",
+    frase: "Lançou hoje, amanhã já tá na garagem."
+  },
+{
+    nome: "Arthur",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Arthur é membro da Família Cuba. Se tiver trocação, pode chamar que ele aparece. Também gosta de uma boa resenha e é pau para toda obra, sempre disposto a ajudar no que a família precisar.",
+    frase: "Precisou, chamou, ele chegou."
+  },
+{
+    nome: "Felipe",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Felipe é membro da Família Cuba e parece nunca dormir. Está sempre acordado, seja farmando ou trocando tiro. Só não peça para ele dirigir; de resto, pode chamar que o Felipe está sempre disponível.",
+    frase: "Dirigir não. Para o resto, pode chamar."
+  },
+{
+    nome: "Guizin",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Guizin é membro da Família Cuba. Acorda para fazer ação, entrar na resenha e fortalecer a família no que precisar.",
+    frase: "Acordou, é ação e resenha."
+  },
+{
+    nome: "Darling",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/darling.png",
+    descricao: "Darling é membro da Família Cuba e gosta de qualquer coisa, menos trabalhar. Seu maior hobby é encher o saco e entrar na resenha. Mas, quando tem time de tiro, ele assume a organização: faz a convocação pelo rádio e manda a lista dos escolhidos no grupo.",
+    frase: "Trabalhar não. Convocar para a trocação, sempre."
+  },
+{
+    nome: "Santana",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Santana é membro da Família Cuba, conhecido pelos gostos peculiares e por desfilar com suas calças femininas. Está sempre disponível quando a família chama e não perde a oportunidade de entrar em uma trocação.",
+    frase: "Estilo peculiar, disposição garantida."
+  },
+{
+    nome: "Daniel",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Daniel é membro da Família Cuba e está sempre disponível, seja para o farm ou para a trocação. Precisou de reforço para trabalhar ou entrar em ação, é só chamar.",
+    frase: "Do farm ao tiro, pode contar comigo."
+  },
+{
+    nome: "Silva",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Silva é membro da Família Cuba e chegou recentemente para fortalecer e somar com todos. Gosta de trocação e não perde a oportunidade de entrar em confronto com a polícia.",
+    frase: "Chegou para somar e pronto para a ação."
+  },
+{
+    nome: "Yeshua",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
+    frase: "O nome é de paz, mas a mira é de guerra."
+  },
+{
+    nome: "Caitov",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
+    frase: "O nome é de paz, mas a mira é de guerra."
+  },
+{
+    nome: "Snoop",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Snoop é membro da Família Cuba e chegou recentemente para somar. No momento, está focado em subir de nível, mas é só aguardar: quando alcançar o necessário, estará pronto para entrar nas ações e colocar os policiais para dormir.",
+    frase: "Ainda está subindo de nível; a polícia que se prepare."
   }
-};
-
-const accessPanel = document.getElementById("accessPanel");
-const confirmPanel = document.getElementById("confirmPanel");
-const invitePanel = document.getElementById("invitePanel");
-const finalPanel = document.getElementById("finalPanel");
-const themeMusic = document.getElementById("themeMusic");
-const soundToggle = document.getElementById("soundToggle");
-
-themeMusic.volume = 0.25;
-let musicaIniciada = false;
-
-async function iniciarMusica() {
-  if (musicaIniciada) return;
-
-  try {
-    await themeMusic.play();
-    musicaIniciada = true;
-    soundToggle.textContent = "🔊";
-  } catch (erro) {
-    soundToggle.textContent = "🔇";
-  }
-}
-
-soundToggle.addEventListener("click", async () => {
-  if (!musicaIniciada) {
-    await iniciarMusica();
-    return;
-  }
-
-  if (themeMusic.paused) {
-    await themeMusic.play();
-    soundToggle.textContent = "🔊";
-  } else {
-    themeMusic.pause();
-    soundToggle.textContent = "🔇";
-  }
-});
-
-const passportForm = document.getElementById("passportForm");
-const passportInput = document.getElementById("passport");
-const accessMessage = document.getElementById("accessMessage");
-
-const identityPhoto = document.getElementById("identityPhoto");
-const identityName = document.getElementById("identityName");
-const identityPassport = document.getElementById("identityPassport");
-const inviteName = document.getElementById("inviteName");
-
-let pessoaAtual = null;
-let passaporteAtual = null;
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeeyvegp";
-let respostaEnviada = false;
-
-async function registrarResposta(resposta) {
-  if (respostaEnviada) return true;
-
-  const dados = {
-    nome: pessoaAtual,
-    passaporte: passaporteAtual,
-    resposta,
-    cargo: "Gerente de Ação",
-    data_hora: new Date().toLocaleString("pt-BR", {
-      timeZone: "America/Sao_Paulo"
-    })
-  };
-
-  try {
-    const retorno = await fetch(FORMSPREE_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify(dados)
-    });
-
-    if (!retorno.ok) throw new Error("Falha no envio");
-
-    respostaEnviada = true;
-    return true;
-  } catch (erro) {
-    console.error(erro);
-    return false;
-  }
-}
-
-function mostrarPainel(painel) {
-  [accessPanel, confirmPanel, invitePanel, finalPanel].forEach((item) => {
-    item.classList.add("hidden");
-  });
-
-  painel.classList.remove("hidden");
-}
-
-function ativarEfeitoHacker() {
-  document.body.classList.remove("hacking");
-  void document.body.offsetWidth;
-  document.body.classList.add("hacking");
-
-  setTimeout(() => {
-    document.body.classList.remove("hacking");
-  }, 1500);
-}
-
-passportInput.addEventListener("input", () => {
-  passportInput.value = passportInput.value.replace(/\D/g, "");
-});
-
-passportForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await iniciarMusica();
-
-  const passaporte = passportInput.value.trim();
-  const registro = autorizados[passaporte];
-
-  accessMessage.className = "message";
-
-  if (!registro) {
-    accessMessage.textContent = "ACESSO NEGADO — passaporte sem autorização.";
-    accessMessage.classList.add("error");
-    passportInput.closest(".input-wrap").classList.add("shake");
-
-    setTimeout(() => {
-      passportInput.closest(".input-wrap").classList.remove("shake");
-    }, 700);
-
-    return;
-  }
-
-  pessoaAtual = registro.nome;
-  passaporteAtual = passaporte;
-
-  accessMessage.textContent = "Passaporte localizado. Descriptografando identidade...";
-  accessMessage.classList.add("success");
-  ativarEfeitoHacker();
-
-  setTimeout(() => {
-    identityPhoto.src = registro.foto;
-    identityPhoto.onerror = () => {
-      identityPhoto.onerror = null;
-      identityPhoto.src = "../images/logo.jpg";
-    };
-    identityName.textContent = pessoaAtual;
-    identityPassport.textContent = `PASSAPORTE: ${passaporteAtual}`;
-    mostrarPainel(confirmPanel);
-  }, 1450);
-});
-
-document.getElementById("confirmIdentity").addEventListener("click", () => {
-  ativarEfeitoHacker();
-
-  setTimeout(() => {
-    inviteName.textContent = pessoaAtual;
-    mostrarPainel(invitePanel);
-  }, 1000);
-});
-
-document.getElementById("rejectIdentity").addEventListener("click", () => {
-  pessoaAtual = null;
-  passaporteAtual = null;
-  respostaEnviada = false;
-  passportInput.value = "";
-  accessMessage.textContent = "";
-  mostrarPainel(accessPanel);
-  passportInput.focus();
-});
-
-document.getElementById("acceptInvite").addEventListener("click", async (event) => {
-  const botao = event.currentTarget;
-  botao.disabled = true;
-  botao.textContent = "REGISTRANDO RESPOSTA...";
-
-  const enviado = await registrarResposta("ACEITOU");
-
-  if (!enviado) {
-    botao.disabled = false;
-    botao.textContent = "ACEITAR A RESPONSABILIDADE";
-    alert("Não foi possível registrar sua resposta. Verifique a conexão e tente novamente.");
-    return;
-  }
-
-  document.getElementById("finalEyebrow").textContent = "ACESSO DE GERÊNCIA AUTORIZADO";
-  document.getElementById("finalTitle").textContent = `BEM-VINDO À LIDERANÇA, ${pessoaAtual.toUpperCase()}`;
-  document.getElementById("finalMessage").textContent =
-    "Sua resposta foi registrada. A partir de agora, você assume a responsabilidade de Gerente de Ação da Família Cuba. Organize, comande e proteja os seus.";
-
-  ativarEfeitoHacker();
-
-  setTimeout(() => {
-    mostrarPainel(finalPanel);
-  }, 900);
-});
-
-document.getElementById("declineInvite").addEventListener("click", async (event) => {
-  const botao = event.currentTarget;
-  botao.disabled = true;
-  botao.textContent = "REGISTRANDO RESPOSTA...";
-
-  const enviado = await registrarResposta("RECUSOU");
-
-  if (!enviado) {
-    botao.disabled = false;
-    botao.textContent = "RECUSAR O CARGO";
-    alert("Não foi possível registrar sua resposta. Verifique a conexão e tente novamente.");
-    return;
-  }
-
-  document.getElementById("finalEyebrow").textContent = "RESPOSTA REGISTRADA";
-  document.getElementById("finalTitle").textContent = "CONVOCAÇÃO RECUSADA";
-  document.getElementById("finalMessage").textContent =
-    "A Família Cuba respeita sua decisão. Este acesso será encerrado.";
-
-  mostrarPainel(finalPanel);
-});
-
-document.getElementById("restart").addEventListener("click", () => {
-  pessoaAtual = null;
-  passaporteAtual = null;
-  respostaEnviada = false;
-  passportInput.value = "";
-  accessMessage.textContent = "";
-  mostrarPainel(accessPanel);
-  passportInput.focus();
-});
+];
+const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
+const intro=['Se você está lendo isso...','significa que alguém acreditou no seu potencial.','Durante esta missão, você foi observado.','Cada decisão foi analisada.','Cada palavra teve importância.','Agora é hora de conhecer quem realmente somos.'];
+const loader=document.getElementById('loader'),site=document.getElementById('site'),loaderText=document.getElementById('loaderText'),bar=document.getElementById('progressBar'),enter=document.getElementById('enterButton'),cont=document.getElementById('continueButton'),type=document.getElementById('typewriter'),music=document.getElementById('themeMusic'),grid=document.getElementById('membersGrid'),modal=document.getElementById('memberModal');
+let i=0;const load=setInterval(()=>{loaderText.textContent=mensagens[i];bar.style.width=((i+1)/mensagens.length*100)+'%';i++;if(i===mensagens.length){clearInterval(load);setTimeout(()=>{loader.style.opacity='0';loader.style.transition='.8s';setTimeout(()=>{loader.remove();site.classList.remove('hidden');observe()},800)},700)}},1800);
+function typeIntro(){let l=0,c=0;type.textContent='';function next(){if(l>=intro.length){cont.classList.remove('hidden');return}if(c<intro[l].length){type.textContent+=intro[l][c++];setTimeout(next,38)}else{type.textContent+='\n\n';l++;c=0;setTimeout(next,450)}}next()}
+enter.onclick=async()=>{try{music.volume=.28;await music.play()}catch(e){}document.getElementById('intro').scrollIntoView({behavior:'smooth'});if(!type.dataset.started){type.dataset.started='1';typeIntro()}};cont.onclick=()=>document.getElementById('quem-somos').scrollIntoView({behavior:'smooth'});
+function render(){grid.innerHTML='';membros.forEach((m,idx)=>{const el=document.createElement('article');el.className='member reveal';el.innerHTML=`<img src="${m.imagem}" alt="${m.nome}"><div><span>${m.cargo}</span><h3>${m.nome}</h3></div>`;el.onclick=()=>openMember(idx);grid.appendChild(el)})}function openMember(idx){const m=membros[idx];document.getElementById('modalImage').src=m.imagem;document.getElementById('modalName').textContent=m.nome;document.getElementById('modalRole').textContent=m.cargo;document.getElementById('modalDescription').textContent=m.descricao;document.getElementById('modalQuote').textContent='“'+m.frase+'”';modal.classList.remove('hidden')}document.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>modal.classList.add('hidden'));document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.classList.add('hidden')});function observe(){const o=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target)}}),{threshold:.13});document.querySelectorAll('.reveal').forEach(x=>o.observe(x))}render();
