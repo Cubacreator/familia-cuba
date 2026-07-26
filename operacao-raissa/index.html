@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#03060b">
+  <title>Arquivo Prioritário</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+  <div id="flash" class="flash"></div>
+
+  <main class="layout">
+    <section id="entryPanel" class="panel hero-panel">
+      <div class="hero-left">
+        <p class="eyebrow">PRIORIDADE MÁXIMA</p>
+        <h1>A CUBA PRECISA DE VOCÊ</h1>
+        <p class="lead">
+          Uma operação interna exige a presença do gerente principal da família.
+          Insira seu passaporte para iniciarmos a validação.
+        </p>
+
+        <form id="passportForm" class="access-form" autocomplete="off">
+          <label for="passport">PASSAPORTE</label>
+          <div class="field">
+            <span>&gt;</span>
+            <input id="passport" type="password" inputmode="numeric" maxlength="8" placeholder="DIGITE O ID" required>
+          </div>
+          <button type="submit" class="btn primary">VALIDAR ACESSO</button>
+          <p id="entryMessage" class="message" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="hero-right">
+        <div class="scanner">
+          <div class="scanner-ring ring-a"></div>
+          <div class="scanner-ring ring-b"></div>
+          <div class="scanner-ring ring-c"></div>
+          <div class="scanner-core"></div>
+          <div class="scanner-line"></div>
+        </div>
+        <div class="side-note">
+          <span>CANAL INTERNO</span>
+          <strong>SISTEMA DE AUTORIZAÇÃO ATIVO</strong>
+          <small>Som recomendado para esta operação.</small>
+        </div>
+      </div>
+    </section>
+
+    <section id="identityPanel" class="panel hidden">
+      <div class="header-row">
+        <div>
+          <p class="eyebrow success">IDENTIDADE LOCALIZADA</p>
+          <h2>VERIFICAÇÃO BIOMÉTRICA</h2>
+        </div>
+        <div class="status-box">
+          <span>CANAL</span>
+          <strong>SEGURO</strong>
+        </div>
+      </div>
+
+      <div class="identity-layout">
+        <div class="portrait-frame">
+          <img id="identityPhoto" src="../images/raissa.png" alt="Foto de Raissa Fernandez">
+        </div>
+
+        <div class="identity-info">
+          <div class="data-card">
+            <span>NOME IDENTIFICADO</span>
+            <strong id="identityName">Raissa Fernandez</strong>
+          </div>
+
+          <div class="data-card">
+            <span>PASSAPORTE VALIDADO</span>
+            <strong id="identityPassport">7206</strong>
+          </div>
+
+          <div class="confirm-box">
+            <p>Confirmação aguardando resposta.</p>
+            <div id="identityButtons" class="actions hidden">
+              <button id="confirmIdentity" class="btn primary">SIM, SOU EU</button>
+              <button id="rejectIdentity" class="btn ghost">NÃO SOU EU</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="decisionPanel" class="panel hidden">
+      <div class="header-row">
+        <div>
+          <p class="eyebrow success">AUTORIZAÇÃO LIBERADA</p>
+          <h2>CONVOCAÇÃO INTERNA</h2>
+        </div>
+        <div class="status-box">
+          <span>FUNÇÃO</span>
+          <strong>GERENTE PRINCIPAL</strong>
+        </div>
+      </div>
+
+      <div class="message-card">
+        <p class="intro-name">Raissa,</p>
+        <p>
+          uma missão de recrutamento foi autorizada e a Família Cuba precisa de você para conduzir a operação.
+        </p>
+        <p>
+          Até <strong>três possíveis membros</strong> serão avaliados. Sua função será liderar, observar e decidir se eles estão preparados para caminhar ao nosso lado.
+        </p>
+        <blockquote>
+          A Cuba poderá contar com seu gerente principal para essa missão?
+        </blockquote>
+      </div>
+
+      <div class="actions">
+        <button id="acceptCall" class="btn primary">A CUBA PODE CONTAR COMIGO</button>
+        <button id="declineCall" class="btn ghost">NÃO ESTOU DISPONÍVEL</button>
+      </div>
+    </section>
+
+    <section id="missionPanel" class="panel hidden">
+      <div class="header-row">
+        <div>
+          <p class="eyebrow success">RESPONSABILIDADE CONFIRMADA</p>
+          <h2>OPERAÇÃO: ENTREGA SOB SUSPEITA</h2>
+        </div>
+        <div class="status-box">
+          <span>STATUS</span>
+          <strong>ATIVA</strong>
+        </div>
+      </div>
+
+      <div class="mission-grid">
+        <article class="mission-card">
+          <span>01</span>
+          <h3>SITUAÇÃO</h3>
+          <p>
+            Três encomendas abandonadas precisam ser recuperadas antes que caiam em mãos erradas.
+            Cada possível contratado ficará responsável por uma localização.
+          </p>
+        </article>
+
+        <article class="mission-card">
+          <span>02</span>
+          <h3>OBJETIVO</h3>
+          <p>
+            Observar como os candidatos se comunicam, lidam com pressão e reagem a abordagens externas
+            durante a recuperação e entrega dos pacotes.
+          </p>
+        </article>
+
+        <article class="mission-card">
+          <span>03</span>
+          <h3>INSTRUÇÃO AOS CANDIDATOS</h3>
+          <p>
+            Eles não podem abrir as encomendas. Devem permanecer em contato pelo rádio e informar
+            imediatamente qualquer proposta, pressão ou tentativa de desvio.
+          </p>
+        </article>
+
+        <article class="mission-card">
+          <span>04</span>
+          <h3>PROVA REAL</h3>
+          <p>
+            Um contato suspeito poderá tentar comprar a lealdade deles no caminho.
+            O verdadeiro teste é ver quem avisa, quem esconde e quem mantém o grupo unido.
+          </p>
+        </article>
+
+        <article class="mission-card">
+          <span>05</span>
+          <h3>ENCERRAMENTO</h3>
+          <p>
+            Reúna todos em um ponto final, questione o que aconteceu e observe honestidade, postura
+            e união. Se aprovar, entregue a carta com o link do acesso restrito.
+          </p>
+        </article>
+
+        <article class="mission-card highlight">
+          <span>06</span>
+          <h3>FRASE-CHAVE</h3>
+          <p>
+            A missão nunca foi sobre as encomendas. Foi sobre quem as carregava.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="finalPanel" class="panel hidden final-panel">
+      <p id="finalEyebrow" class="eyebrow"></p>
+      <h2 id="finalTitle"></h2>
+      <p id="finalText"></p>
+      <button id="restart" class="btn ghost">ENCERRAR ACESSO</button>
+    </section>
+  </main>
+
+  <button id="soundToggle" class="sound-toggle" type="button" aria-label="Ativar ou desativar o som">🔊</button>
+
+  <audio id="hackAudio" src="audios/interferencia-hack.mp3" preload="auto"></audio>
+  <audio id="welcomeAudio" src="audios/boas-vindas-raissa.mp3" preload="auto"></audio>
+  <audio id="missionAudio" src="audios/inicio-missao.mp3" preload="auto"></audio>
+  <audio id="suspenseAudio" src="audios/suspense.mp3" preload="auto" loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>

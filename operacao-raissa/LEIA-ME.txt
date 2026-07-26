@@ -1,0 +1,31 @@
+NOVO SITE — CONVOCAÇÃO DO RAISSA
+
+Pasta para enviar ao GitHub:
+operacao-raissa
+
+Link final:
+https://cubacreator.github.io/familia-cuba/operacao-raissa/
+
+PASSAPORTE AUTORIZADO
+7206 — Raissa Fernandez
+
+IMPORTANTE
+- Este projeto é separado e não altera os sites anteriores.
+- A foto do Raissa foi configurada para usar:
+  ../images/raissa.png
+- Se desejar deixar o projeto totalmente independente, copie a foto do Raissa
+  para esta pasta e ajuste o caminho no script.js e no index.html.
+
+ÁUDIOS INCLUÍDOS
+- interferencia-hack.mp3
+- suspense.mp3
+- boas-vindas-raissa.mp3
+- inicio-missao.mp3
+
+
+ALTERAÇÃO CONFIRMADA
+Nome: Raissa Fernandez
+Passaporte validado: 7206
+Foto esperada: ../images/raissa.png
+Link sugerido:
+https://cubacreator.github.io/familia-cuba/operacao-raissa/
