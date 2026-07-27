@@ -108,7 +108,7 @@ const membros = [
 {
     nome: "Felipe",
     cargo: "Membro da Família Cuba",
-    imagem: "images/felipe.png",
+    imagem: "images/felipe silva.png",
     descricao: "Felipe é membro da Família Cuba e parece nunca dormir. Está sempre acordado, seja farmando ou trocando tiro. Só não peça para ele dirigir; de resto, pode chamar que o Felipe está sempre disponível.",
     frase: "Dirigir não. Para o resto, pode chamar."
   },
