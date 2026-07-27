@@ -66,7 +66,7 @@ const membros = [
 {
     nome: "Roman Pearce (Zé)",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/roman pearce.png",
     descricao: "Roman Pearce, conhecido por todos simplesmente como Zé, é membro da Família Cuba. Está quase sempre farmando, mas basta chamar para fazer bebidas que ele larga tudo e vai na mesma hora. Quando o assunto é abastecer a resenha, pode contar com ele. Atualmente atua como P1",
     frase: "Chamou para as bebidas, o farm espera."
   },
@@ -108,7 +108,7 @@ const membros = [
 {
     nome: "Felipe",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/felipe.png",
     descricao: "Felipe é membro da Família Cuba e parece nunca dormir. Está sempre acordado, seja farmando ou trocando tiro. Só não peça para ele dirigir; de resto, pode chamar que o Felipe está sempre disponível.",
     frase: "Dirigir não. Para o resto, pode chamar."
   },
