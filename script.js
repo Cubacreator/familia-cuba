@@ -94,7 +94,7 @@ const membros = [
 {
     nome: "Will",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/will.png",
     descricao: "Will é membro da Família Cuba e provavelmente o cara mais rico da cidade. Se lançou um carro ontem, hoje ele já está guardado na garagem. Também é da trocação e, quando surge uma ação, é só chamar que ele aparece.",
     frase: "Lançou hoje, amanhã já tá na garagem."
   },
@@ -143,28 +143,28 @@ const membros = [
 {
     nome: "Silva",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/silva.png",
     descricao: "Silva é membro da Família Cuba e chegou recentemente para fortalecer e somar com todos. Gosta de trocação e não perde a oportunidade de entrar em confronto com a polícia.",
     frase: "Chegou para somar e pronto para a ação."
   },
 {
     nome: "Yeshua",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/yeshua.png",
     descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
     frase: "O nome é de paz, mas a mira é de guerra."
   },
 {
     nome: "Caitov",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/caitov.png",
     descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
     frase: "O nome é de paz, mas a mira é de guerra."
   },
 {
     nome: "Snoop",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/snoop.png",
     descricao: "Snoop é membro da Família Cuba e chegou recentemente para somar. No momento, está focado em subir de nível, mas é só aguardar: quando alcançar o necessário, estará pronto para entrar nas ações e colocar os policiais para dormir.",
     frase: "Ainda está subindo de nível; a polícia que se prepare."
   },
@@ -181,6 +181,27 @@ const membros = [
     imagem: "images/pablo.jpg",
     descricao: "Pablo chegou recentemente à família ao lado do seu irmão gêmeo e, em pouco tempo, já mostrou que também é do tipo que faz de tudo. Está sempre presente no farm, na trocação e ainda se arrisca no P1 quando precisa. Mesmo sendo um dos mais novos, já demonstra disposição, coragem e vontade de conquistar seu espaço dentro da Cuba.",
     frase: "Chegou com o irmão gêmeo e já virou o famoso faz tudo: farma, troca tiro e ainda se arrisca no P1."
+  },
+      {
+    nome: "Bagual",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Bagual chegou recentemente à família e irá provar seu valor.",
+    frase: 
+  },
+  {
+    nome: "Cardoso",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Cardoso chegou recentemente à família e irá provar seu valor.",
+    frase: 
+  },
+   {
+    nome: "Aurora",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
+    frase: 
   }
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
