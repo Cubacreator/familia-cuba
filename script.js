@@ -187,21 +187,21 @@ const membros = [
     cargo: "Membro da Família Cuba",
     imagem: "images/logo.jpg",
     descricao: "Bagual chegou recentemente à família e irá provar seu valor.",
-    frase: 
+    frase: "Uma nova história começa dentro da Cuba.",
   },
   {
     nome: "Cardoso",
     cargo: "Membro da Família Cuba",
     imagem: "images/logo.jpg",
     descricao: "Cardoso chegou recentemente à família e irá provar seu valor.",
-    frase: 
+    frase: "Uma nova história começa dentro da Cuba.",
   },
    {
     nome: "Aurora",
     cargo: "Membro da Família Cuba",
     imagem: "images/logo.jpg",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
-    frase: 
+    frase: "Uma nova história começa dentro da Cuba.",
   }
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
