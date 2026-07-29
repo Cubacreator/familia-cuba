@@ -136,7 +136,7 @@ const membros = [
 {
     nome: "Daniel",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/daniel.png",
     descricao: "Daniel é membro da Família Cuba e está sempre disponível, seja para o farm ou para a trocação. Precisou de reforço para trabalhar ou entrar em ação, é só chamar.",
     frase: "Do farm ao tiro, pode contar comigo."
   },
@@ -171,14 +171,14 @@ const membros = [
   {
     nome: "Felipe",
     cargo: "Membro da Família Cuba",
-    imagem: "images/felipe.jpg",
+    imagem: "images/felipe.png",
     descricao: "Felipe é o membro mais novo da família e já ficou conhecido como o famoso “faz tudo”. Está sempre disposto a ajudar, seja no farm, na trocação ou até se arriscando no P1. Chegou há pouco, mas já mostra coragem, dedicação e vontade de crescer dentro da Cuba.",
     frase: "O famoso faz tudo: farma, troca tiro e ainda se arrisca no P1."
   },
     {
     nome: "Pablo",
     cargo: "Membro da Família Cuba",
-    imagem: "images/pablo.jpg",
+    imagem: "images/pablo.png",
     descricao: "Pablo chegou recentemente à família ao lado do seu irmão gêmeo e, em pouco tempo, já mostrou que também é do tipo que faz de tudo. Está sempre presente no farm, na trocação e ainda se arrisca no P1 quando precisa. Mesmo sendo um dos mais novos, já demonstra disposição, coragem e vontade de conquistar seu espaço dentro da Cuba.",
     frase: "Chegou com o irmão gêmeo e já virou o famoso faz tudo: farma, troca tiro e ainda se arrisca no P1."
   },
@@ -192,7 +192,7 @@ const membros = [
   {
     nome: "Cardoso",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/cardoso.png",
     descricao: "Cardoso chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   },
