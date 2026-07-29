@@ -73,7 +73,7 @@ const membros = [
 {
     nome: "Bruno",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/bruno.png",
     descricao: "Bruno é membro da Família Cuba. Está sempre, sempre mesmo, farmando e subindo seu level pessoal. Vive no próprio mundinho e nunca perde a oportunidade de entrar na resenha, mas basta chamar que ele aparece para ajudar.",
     frase: "Chamou, o Bruno sai do mundinho dele."
   },
@@ -185,7 +185,7 @@ const membros = [
       {
     nome: "Bagual",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/bagual.png",
     descricao: "Bagual chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   },
@@ -199,7 +199,7 @@ const membros = [
    {
     nome: "Aurora",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/auro.png",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   }
