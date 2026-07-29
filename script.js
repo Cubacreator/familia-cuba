@@ -129,7 +129,7 @@ const membros = [
 {
     nome: "Santana",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/santana.png",
     descricao: "Santana é membro da Família Cuba, conhecido pelos gostos peculiares e por desfilar com suas calças femininas. Está sempre disponível quando a família chama e não perde a oportunidade de entrar em uma trocação.",
     frase: "Estilo peculiar, disposição garantida."
   },
@@ -199,7 +199,7 @@ const membros = [
    {
     nome: "Aurora",
     cargo: "Membro da Família Cuba",
-    imagem: "images/auro.png",
+    imagem: "images/aurora.png",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   }
