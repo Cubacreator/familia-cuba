@@ -10,6 +10,7 @@
     <button class="on" data-p="dashboard">◈ <span>Dashboard</span></button>
     <button data-p="lavagens">◉ <span>Lavagens</span></button>
     <button data-p="gastos">▾ <span>Gastos</span></button>
+    <button data-p="custosfixos">▣ <span>Custos Fixos</span></button>
     <button data-p="metas">◆ <span>Metas & Pagamentos</span></button>
     <button data-p="acoes">⚑ <span>Ações</span></button>
     <button data-p="clientes">◎ <span>Famílias / Clientes</span></button>
@@ -24,7 +25,7 @@
 <section class="page on" id="dashboard">
  <div class="row"><div class="inline"><div class="field"><label>Período</label><select id="period"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">12 meses</option><option value="all">Todo período</option><option value="custom">Personalizável</option></select></div><div class="inline hidden" id="customDates"><div class="field"><label>De</label><input type="date" id="from"></div><div class="field"><label>Até</label><input type="date" id="to"></div></div></div><button class="btn primary" data-open="lavModal">+ Nova lavagem</button></div>
  <div class="mut" id="periodLabel" style="margin-bottom:10px"></div>
- <div class="kpis"><div class="kpi"><span>Valor sujo recebido</span><b id="kSujo">R$ 0,00</b></div><div class="kpi"><span>Valor limpo gerado</span><b id="kLimpo">R$ 0,00</b></div><div class="kpi"><span>Valor dos clientes</span><b id="kCliente">R$ 0,00</b></div><div class="kpi"><span>Valor Cuba</span><b class="green" id="kCuba">R$ 0,00</b></div><div class="kpi"><span>Gastos + custos ações</span><b class="yellow" id="kGastos">R$ 0,00</b></div><div class="kpi"><span>Entrada por ações</span><b id="kAcoes">R$ 0,00</b></div></div>
+ <div class="kpis"><div class="kpi"><span>Valor sujo recebido</span><b id="kSujo">R$ 0,00</b></div><div class="kpi"><span>Valor limpo gerado</span><b id="kLimpo">R$ 0,00</b></div><div class="kpi"><span>Valor dos clientes</span><b id="kCliente">R$ 0,00</b></div><div class="kpi"><span>Valor Cuba</span><b class="green" id="kCuba">R$ 0,00</b></div><div class="kpi"><span>Gastos + custos ações</span><b class="yellow" id="kGastos">R$ 0,00</b></div><div class="kpi"><span>Entrada por ações</span><b id="kAcoes">R$ 0,00</b></div><div class="kpi"><span>Custos fixos pagos (sujo)</span><b class="yellow" id="kFixosSujo">R$ 0,00</b></div></div>
  <div class="grid2"><div class="panel"><h3>Gastos por categoria</h3><p>Dentro do período selecionado.</p><div id="expenseBars" class="bars"></div></div><div class="panel"><h3>Top 5 clientes</h3><p>Maior valor sujo lavado no período.</p><div id="top5"></div></div></div>
  <div class="panel" style="margin-top:12px"><h3>Ranking completo de clientes</h3><p>Recalculado automaticamente conforme o período.</p><div class="table" style="margin-top:12px"><table><thead><tr><th>#</th><th>Cliente</th><th>Lavagens</th><th>Valor sujo</th><th>Valor cliente</th><th>Valor Cuba</th><th>Última</th></tr></thead><tbody id="ranking"></tbody></table></div></div>
 </section>
@@ -32,6 +33,36 @@
 <section class="page" id="lavagens"><div class="row"><input class="field search" id="lavSearch" placeholder="Buscar cliente ou responsável"><button class="btn primary" data-open="lavModal">+ Registrar lavagem</button></div><div class="table"><table><thead><tr><th>Data</th><th>Cliente</th><th>Responsável</th><th>Sujo</th><th>% máquina</th><th>% cliente</th><th>Limpo</th><th>Cliente</th><th>Insumos</th><th>Cuba</th><th></th></tr></thead><tbody id="lavTable"></tbody></table></div></section>
 
 <section class="page" id="gastos"><div class="row"><div><h2>Gastos</h2><div class="mut">Armas, munição, drogas, coletes, cordas e demais saídas.</div></div><button class="btn primary" data-open="gastoModal">+ Registrar gasto</button></div><div class="table"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Responsável</th><th>Valor</th><th></th></tr></thead><tbody id="gastoTable"></tbody></table></div></section>
+
+
+<section class="page" id="custosfixos">
+  <div class="row">
+    <div><h2>Custos Fixos</h2><div class="mut">Despesas recorrentes da família, separando dinheiro sujo e limpo.</div></div>
+    <button class="btn primary" data-open="fixoModal">+ Novo custo fixo</button>
+  </div>
+  <div class="sum">
+    <div><span>Fixos ativos</span><b id="fixAtivos">0</b></div>
+    <div><span>Total mensal — sujo</span><b id="fixMensalSujo">R$ 0,00</b></div>
+    <div><span>Total mensal — limpo</span><b id="fixMensalLimpo">R$ 0,00</b></div>
+    <div><span>Pagamentos no período</span><b id="fixPagoPeriodo">R$ 0,00</b></div>
+  </div>
+  <div class="table">
+    <table>
+      <thead><tr><th>Custo</th><th>Valor</th><th>Tipo</th><th>Recorrência</th><th>Vencimento</th><th>Status</th><th>Último pagamento</th><th></th></tr></thead>
+      <tbody id="fixoTable"></tbody>
+    </table>
+  </div>
+  <div class="panel" style="margin-top:12px">
+    <h3>Histórico de pagamentos</h3>
+    <p>Pagamentos registrados dos custos fixos.</p>
+    <div class="table" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Data</th><th>Custo</th><th>Valor</th><th>Tipo</th><th>Responsável</th><th></th></tr></thead>
+        <tbody id="fixoPagTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
 <section class="page" id="metas"><div class="row"><div><h2>Metas & Pagamentos</h2><div class="mut">01, 02 e todos os cargos gerenciais são isentos.</div></div><button class="btn primary" data-open="metaModal">+ Registrar meta</button></div><div class="table"><table><thead><tr><th>Período</th><th>Membro</th><th>Meta</th><th>Entregue</th><th>Pagamento</th><th>Status</th><th></th></tr></thead><tbody id="metaTable"></tbody></table></div></section>
 
@@ -46,6 +77,32 @@
 <div class="modal" id="lavModal"><div class="box"><div class="mh"><h3>Registrar lavagem</h3><button class="close" data-close>×</button></div><form id="lavForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Data</label><input type="date" name="data" required></div><div class="field"><label>Família / Cliente</label><input name="cliente" list="clientsList" required></div><div class="field"><label>Responsável Cuba</label><input name="responsavel" list="membersList" required></div><div class="field"><label>Valor sujo</label><input class="money" name="valor_sujo" inputmode="decimal" placeholder="1.000.000,00" required></div><div class="field"><label>Porcentagem máquina (%)</label><input type="number" name="pct_maquina" min="0" max="100" step=".01" value="57" required></div><div class="field"><label>Valor limpo gerado</label><input class="money" name="valor_limpo" readonly></div><div class="field"><label>Porcentagem para cliente (%)</label><input type="number" name="pct_cliente" min="0" max="100" step=".01" required></div><div class="field"><label>Valor do cliente</label><input class="money" name="valor_cliente" readonly></div><div class="field"><label>Malas</label><input name="qtd_malas" readonly></div><div class="field"><label>Custo malas</label><input class="money" name="custo_malas" readonly></div><div class="field"><label>Alvejantes</label><input name="qtd_alvejantes" readonly></div><div class="field"><label>Custo alvejantes</label><input class="money" name="custo_alvejantes" readonly></div><div class="field"><label>Custo total insumos</label><input class="money" name="custo_insumos" readonly></div><div class="field"><label>Valor Cuba</label><input class="money" name="valor_cuba" readonly></div><div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar lavagem</button></div></form></div></div>
 
 <div class="modal" id="gastoModal"><div class="box"><div class="mh"><h3>Registrar gasto</h3><button class="close" data-close>×</button></div><form id="gastoForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Data</label><input type="date" name="data" required></div><div class="field"><label>Categoria</label><select name="categoria"><option>Armas</option><option>Munição</option><option>Drogas</option><option>Colete</option><option>Cordas</option><option>Veículos</option><option>Operacional</option><option>Pagamento</option><option>Outros</option></select></div><div class="field"><label>Responsável</label><input name="responsavel" list="membersList"></div><div class="field"><label>Valor</label><input class="money" name="valor" required></div><div class="field full"><label>Descrição</label><input name="descricao" required></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
+
+
+<div class="modal" id="fixoModal"><div class="box"><div class="mh"><h3>Custo fixo</h3><button class="close" data-close>×</button></div>
+<form id="fixoForm" class="formgrid">
+<input type="hidden" name="id">
+<div class="field"><label>Nome do custo</label><input name="nome" required placeholder="Ex.: Aluguel do QG"></div>
+<div class="field"><label>Valor</label><input class="money" name="valor" required placeholder="5.000.000,00"></div>
+<div class="field"><label>Tipo do dinheiro</label><select name="tipo_dinheiro"><option value="sujo">Sujo</option><option value="limpo">Limpo</option></select></div>
+<div class="field"><label>Recorrência</label><select name="recorrencia"><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option><option value="anual">Anual</option></select></div>
+<div class="field"><label>Dia do vencimento</label><input type="number" name="dia_vencimento" min="1" max="31" placeholder="1"></div>
+<div class="field"><label>Status</label><select name="ativo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
+<div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div>
+<div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar custo</button></div>
+</form></div></div>
+
+<div class="modal" id="pagarFixoModal"><div class="box"><div class="mh"><h3>Registrar pagamento</h3><button class="close" data-close>×</button></div>
+<form id="pagarFixoForm" class="formgrid">
+<input type="hidden" name="custo_fixo_id">
+<div class="field"><label>Custo</label><input name="nome" readonly></div>
+<div class="field"><label>Data do pagamento</label><input type="date" name="data" required></div>
+<div class="field"><label>Valor pago</label><input class="money" name="valor" required></div>
+<div class="field"><label>Tipo</label><input name="tipo_dinheiro" readonly></div>
+<div class="field"><label>Responsável</label><input name="responsavel" list="membersList" required></div>
+<div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div>
+<div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Registrar pagamento</button></div>
+</form></div></div>
 
 <div class="modal" id="metaModal"><div class="box"><div class="mh"><h3>Registrar meta</h3><button class="close" data-close>×</button></div><form id="metaForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Período</label><input name="periodo" required></div><div class="field"><label>Membro</label><select name="membro_id" id="metaMember" required></select><small class="mut" id="metaMsg"></small></div><div class="field"><label>Meta</label><input class="money" name="valor_meta" required></div><div class="field"><label>Entregue</label><input class="money" name="valor_entregue" required></div><div class="field"><label>Pagamento</label><input class="money" name="valor_pagamento" required></div><div class="field"><label>Data pagamento</label><input type="date" name="data_pagamento"></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary" id="metaSave">Salvar</button></div></form></div></div>
 
