@@ -93,55 +93,47 @@
 </section>
 
 
+
 <section class="page" id="metas">
   <div class="row">
     <div>
       <h2>Calendário de Metas</h2>
-      <div class="mut">Cada semana pode ser marcada como <b>Pago</b> ou <b>Devendo</b>. O pagamento padrão é R$ 200.000,00 sujo.</div>
+      <div class="mut">A meta corresponde sempre à semana de <b>segunda a domingo</b> e é paga na <b>segunda-feira seguinte</b>.</div>
     </div>
   </div>
 
   <div class="panel" style="margin-top:12px">
-    <div class="row">
+    <div class="row metaToolbar">
       <div class="inline">
-        <div class="field">
-          <label>Membro</label>
-          <select id="metaCalendarMember"></select>
-        </div>
-        <div class="field">
-          <label>Mês</label>
-          <input type="month" id="metaCalendarMonth">
-        </div>
+        <div class="field"><label>Membro</label><select id="metaCalendarMember"></select></div>
+        <div class="field"><label>Mês</label><input type="month" id="metaCalendarMonth"></div>
       </div>
-      <div class="inline metaLegend">
-        <span class="metaDot paid"></span> Pago
-        <span class="metaDot debt"></span> Devendo
-        <span class="metaDot pending"></span> Não marcado
+      <div class="metaLegend">
+        <span><i class="metaDot paid"></i> Pago</span>
+        <span><i class="metaDot debt"></i> Devendo</span>
+        <span><i class="metaDot absent"></i> Ausente</span>
+        <span><i class="metaDot pending"></i> Não marcado</span>
       </div>
     </div>
-    <div id="metaCalendar" class="metaCalendar"></div>
+    <div id="metaCalendar" class="monthCalendar"></div>
   </div>
 
   <div class="panel" style="margin-top:12px">
-    <div class="row">
-      <div>
-        <h3>Resumo do mês</h3>
-        <div class="mut" id="metaSummaryMember">Selecione um membro.</div>
-      </div>
-    </div>
+    <div><h3>Resumo do mês</h3><div class="mut" id="metaSummaryMember">Selecione um membro.</div></div>
     <div class="sum">
       <div><span>Semanas pagas</span><b class="green" id="metaPaidCount">0</b></div>
       <div><span>Semanas devendo</span><b class="red" id="metaDebtCount">0</b></div>
+      <div><span>Semanas ausente</span><b class="yellow" id="metaAbsentCount">0</b></div>
       <div><span>Pago em sujo</span><b id="metaPaidDirty">R$ 0,00</b></div>
       <div><span>Equiv. limpo</span><b class="green" id="metaPaidClean">R$ 0,00</b></div>
     </div>
   </div>
 
   <div class="panel" style="margin-top:12px">
-    <h3>Histórico</h3>
+    <h3>Histórico de marcações</h3>
     <div class="table" style="margin-top:12px">
       <table>
-        <thead><tr><th>Semana</th><th>Membro</th><th>Status</th><th>Pagamento sujo</th><th>Equiv. limpo</th><th>Pago em</th><th></th></tr></thead>
+        <thead><tr><th>Semana</th><th>Membro</th><th>Status</th><th>Pagamento sujo</th><th>Equiv. limpo</th><th>Data do pagamento</th><th></th></tr></thead>
         <tbody id="metaTable"></tbody>
       </table>
     </div>
@@ -251,16 +243,37 @@
 <div class="modal" id="clienteModal"><div class="box"><div class="mh"><h3>Cliente</h3><button class="close" data-close>×</button></div><form id="clienteForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Nome</label><input name="nome" required></div><div class="field"><label>Contato / referência</label><input name="contato"></div><div class="field full"><label>Observações</label><textarea name="observacoes"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
 
 
+
+
+<div class="modal" id="weekStatusModal"><div class="box weekStatusBox">
+  <div class="mh">
+    <div><h3 id="weekStatusTitle">Semana da meta</h3><div class="mut" id="weekStatusPayday"></div></div>
+    <button class="close" data-close>×</button>
+  </div>
+  <div class="weekStatusChoices">
+    <button class="weekChoice paid" id="weekMarkPaid"><b>✓ Pago</b><small>Registra R$ 200.000,00 sujo</small></button>
+    <button class="weekChoice debt" id="weekMarkDebt"><b>✕ Devendo</b><small>Meta não foi paga</small></button>
+    <button class="weekChoice absent" id="weekMarkAbsent"><b>— Ausente</b><small>Semana isenta por ausência</small></button>
+    <button class="weekChoice pending" id="weekClearStatus"><b>○ Não marcado</b><small>Remove a marcação desta semana</small></button>
+  </div>
+</div></div>
+
 <div class="modal" id="memberCalendarModal"><div class="box memberCalBox">
   <div class="mh"><div><h3 id="memberCalTitle">Calendário do membro</h3><div class="mut" id="memberCalSubtitle"></div></div><button class="close" data-close>×</button></div>
-  <div class="row" style="margin-bottom:12px">
+  <div class="row metaToolbar" style="margin-bottom:12px">
     <div class="field"><label>Mês</label><input type="month" id="memberCalMonth"></div>
-    <div class="inline metaLegend"><span class="metaDot paid"></span> Pago <span class="metaDot debt"></span> Devendo <span class="metaDot pending"></span> Não marcado</div>
+    <div class="metaLegend">
+      <span><i class="metaDot paid"></i> Pago</span>
+      <span><i class="metaDot debt"></i> Devendo</span>
+      <span><i class="metaDot absent"></i> Ausente</span>
+      <span><i class="metaDot pending"></i> Não marcado</span>
+    </div>
   </div>
-  <div id="memberCalendar" class="metaCalendar"></div>
+  <div id="memberCalendar" class="monthCalendar compact"></div>
   <div class="sum" style="margin-top:12px">
     <div><span>Pagas</span><b class="green" id="memberCalPaid">0</b></div>
     <div><span>Devendo</span><b class="red" id="memberCalDebt">0</b></div>
+    <div><span>Ausente</span><b class="yellow" id="memberCalAbsent">0</b></div>
     <div><span>Total pago (sujo)</span><b id="memberCalDirty">R$ 0,00</b></div>
     <div><span>Equiv. limpo</span><b class="green" id="memberCalClean">R$ 0,00</b></div>
   </div>

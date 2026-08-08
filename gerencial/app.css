@@ -18,3 +18,33 @@ body.collapsed .brand-wordmark-wrap{display:none}
 @media(max-width:800px){
   .cuba-wordmark-side{width:116px}
 }
+
+
+
+/* V18 — Calendário visual de metas */
+.metaToolbar{gap:14px;align-items:flex-end}
+.metaLegend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.metaLegend span{display:flex;align-items:center;gap:6px}
+.metaDot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.metaDot.paid{background:#36d48b}.metaDot.debt{background:#ff5d68}.metaDot.absent{background:#f3c34d}.metaDot.pending{background:#607286}
+.monthCalendar{margin-top:16px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:rgba(5,18,32,.5)}
+.calHeader{display:grid;grid-template-columns:repeat(7,1fr);background:rgba(20,45,73,.5);border-bottom:1px solid var(--line)}
+.calHeader div{padding:10px 8px;text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.calWeek{display:grid;grid-template-columns:repeat(7,1fr);position:relative;border-bottom:1px solid var(--line);cursor:pointer;transition:.16s ease}
+.calWeek:last-child{border-bottom:0}.calWeek:hover{filter:brightness(1.08)}
+.calDay{min-height:88px;padding:10px;border-right:1px solid var(--line);position:relative;background:rgba(8,26,45,.64)}
+.calDay:last-child{border-right:0}.calDay.otherMonth{opacity:.42}.calDay .dayNum{font-size:13px;font-weight:800}
+.calDay .payFlag{position:absolute;right:7px;top:7px;font-size:10px;padding:3px 6px;border-radius:999px;background:rgba(51,130,246,.16);color:#8bb9ff;border:1px solid rgba(51,130,246,.28)}
+.calWeek .weekRibbon{grid-column:1/-1;min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;font-size:11px;font-weight:700;border-top:1px solid rgba(255,255,255,.04)}
+.weekRibbon .weekInfo{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.weekRibbon .weekStatusPill{padding:4px 8px;border-radius:999px;text-transform:uppercase;font-size:10px;letter-spacing:.04em}.weekRibbon .payDate{color:var(--muted);font-weight:500}
+.calWeek.paid .calDay,.calWeek.paid .weekRibbon{background:rgba(54,212,139,.10)}.calWeek.paid{box-shadow:inset 4px 0 0 #36d48b}.calWeek.paid .weekStatusPill{background:rgba(54,212,139,.16);color:#69e7aa}
+.calWeek.debt .calDay,.calWeek.debt .weekRibbon{background:rgba(255,93,104,.10)}.calWeek.debt{box-shadow:inset 4px 0 0 #ff5d68}.calWeek.debt .weekStatusPill{background:rgba(255,93,104,.16);color:#ff8790}
+.calWeek.absent .calDay,.calWeek.absent .weekRibbon{background:rgba(243,195,77,.11)}.calWeek.absent{box-shadow:inset 4px 0 0 #f3c34d}.calWeek.absent .weekStatusPill{background:rgba(243,195,77,.17);color:#f9d978}
+.calWeek.pending .weekStatusPill{background:rgba(96,114,134,.17);color:#a7b3c0}
+.monthCalendar.compact .calDay{min-height:72px}
+.weekStatusBox{max-width:620px!important}.weekStatusChoices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.weekChoice{border:1px solid var(--line);background:rgba(9,26,45,.8);color:var(--text);border-radius:14px;padding:16px;text-align:left;cursor:pointer;transition:.15s}
+.weekChoice:hover{transform:translateY(-1px);filter:brightness(1.08)}.weekChoice b{display:block;font-size:15px;margin-bottom:4px}.weekChoice small{color:var(--muted)}
+.weekChoice.paid{border-color:rgba(54,212,139,.36)}.weekChoice.debt{border-color:rgba(255,93,104,.36)}.weekChoice.absent{border-color:rgba(243,195,77,.36)}.weekChoice.pending{border-color:rgba(96,114,134,.36)}
+.memberCalBox{max-width:1100px!important}
+@media(max-width:800px){.calDay{min-height:68px;padding:7px}.calHeader div{font-size:9px}.calDay .dayNum{font-size:11px}.calDay .payFlag{display:none}.weekStatusChoices{grid-template-columns:1fr}}

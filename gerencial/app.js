@@ -89,7 +89,7 @@ $$(".money").forEach(el=>{el.addEventListener("blur",()=>{if(el.value!=="")el.va
 async function saveRecord(table,payload,id){
  let q=id?sb.from(table).update(payload).eq("id",id):sb.from(table).insert(payload);const {error}=await q;if(error)throw error
 }
-async function removeRecord(table,id){if(!confirm("Excluir este registro?"))return;const {error}=await sb.from(table).delete().eq("id",id);if(error)return alert(error.message);await loadAll();toast("Registro excluído.")}
+async function removeRecord(table,id,silent=false){if(!silent&&!confirm("Excluir este registro?"))return;const {error}=await sb.from(table).delete().eq("id",id);if(error)return alert(error.message);await loadAll();toast("Registro excluído.")}
 window.removeRecord=removeRecord;
 function editRecord(type,id){const map={lavagens:["lavModal","lavagens"],lavagens_dol:["dolModal","lavagens_dol"],gastos:["gastoModal","gastos"],custos_fixos:["fixoModal","custos_fixos"],acoes:["acaoModal","acoes"],clientes:["clienteModal","clientes"],membros:["membroModal","membros"]};const [modal,t]=map[type],r=DATA[t].find(x=>x.id===id);openModal(modal,r)}window.editRecord=editRecord;
 
@@ -268,6 +268,7 @@ function renderCustosFixos(){
   </tr>`).join(""):`<tr><td colspan="6" class="empty">Nenhum pagamento registrado.</td></tr>`;
 }
 
+
 function weekMonday(value){
   const d=value?new Date(value+"T12:00:00"):new Date();
   const day=d.getDay(),diff=day===0?-6:1-day;
@@ -278,95 +279,121 @@ function weekMonday(value){
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
 function isoDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function monthValue(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`}
-function weeksForMonth(ym){
+function monthName(ym){
+  if(!ym)return"";
+  const [y,m]=ym.split("-").map(Number);
+  return new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"}).format(new Date(y,m-1,1,12));
+}
+function calendarWeeks(ym){
   if(!ym)return[];
   const [y,m]=ym.split("-").map(Number);
   const first=new Date(y,m-1,1,12),last=new Date(y,m,0,12);
   let cur=weekMonday(isoDate(first));
-  const out=[];
-  while(cur<=last){
-    const end=addDays(cur,6);
-    if(end>=first&&cur<=last)out.push(new Date(cur));
-    cur=addDays(cur,7);
-  }
-  return out;
+  const rows=[];
+  while(cur<=last){rows.push(new Date(cur));cur=addDays(cur,7)}
+  return rows;
 }
 function metaRec(memberId,monday){
   const key=isoDate(monday);
-  return DATA.metas.find(x=>x.membro_id===memberId && x.semana_inicio===key) ||
-    DATA.metas.find(x=>x.membro_id===memberId && String(x.periodo||"").startsWith(dateBR(key)));
+  return DATA.metas.find(x=>x.membro_id===memberId&&x.semana_inicio===key)||
+         DATA.metas.find(x=>x.membro_id===memberId&&String(x.periodo||"").startsWith(dateBR(key)));
 }
 function metaWeekLabel(mon){
   const sun=addDays(mon,6);
   return `${dateBR(isoDate(mon))} a ${dateBR(isoDate(sun))}`;
 }
-function metaCleanValue(){
-  return 200000*n(DATA.config.pct_maquina||57)/100;
+function metaCleanValue(){return 200000*n(DATA.config.pct_maquina||57)/100}
+function metaStatusOf(r){
+  if(!r)return"pendente";
+  if(r.status_meta)return r.status_meta;
+  return n(r.valor_pagamento)>0?"paga":"devendo";
 }
-async function markMeta(memberId,monday,status){
+function statusMetaLabel(status){return status==="paga"?"Pago":status==="devendo"?"Devendo":status==="ausente"?"Ausente":"Não marcado"}
+function statusMetaClass(status){return status==="paga"?"paid":status==="devendo"?"debt":status==="ausente"?"absent":"pending"}
+
+let weekEditMemberId=null,weekEditMonday=null;
+function openWeekStatus(memberId,monday){
   const member=DATA.membros.find(x=>x.id===memberId);
   if(!member)return;
   if(isManagerRole(member.cargo))return alert("Este cargo é isento de meta.");
-  const existing=metaRec(memberId,monday);
-  const paid=status==="paga";
-  const payload={
-    semana_inicio:isoDate(monday),
-    periodo:metaWeekLabel(monday),
-    membro_id:memberId,
-    status_meta:status,
-    valor_meta:0,
-    valor_entregue:0,
-    valor_pagamento:paid?200000:0,
-    valor_pagamento_limpo:paid?metaCleanValue():0,
-    data_pagamento:paid?isoDate(addDays(monday,7)):null
-  };
+  weekEditMemberId=memberId;
+  weekEditMonday=new Date(monday);
+  $("#weekStatusTitle").textContent=`${member.nome} • ${metaWeekLabel(weekEditMonday)}`;
+  $("#weekStatusPayday").textContent=`Pagamento desta meta: ${dateBR(isoDate(addDays(weekEditMonday,7)))} • R$ 200.000,00 sujo`;
+  $("#weekStatusModal").classList.add("on");
+}
+window.openWeekStatus=openWeekStatus;
+
+async function setWeekStatus(status){
+  if(!weekEditMemberId||!weekEditMonday)return;
+  const existing=metaRec(weekEditMemberId,weekEditMonday);
   try{
+    if(status==="pendente"){
+      if(existing)await removeRecord("metas",existing.id,true);
+      closeModal("weekStatusModal");await loadAll();toast("Marcação removida.");return;
+    }
+    const paid=status==="paga";
+    const payload={
+      semana_inicio:isoDate(weekEditMonday),
+      periodo:metaWeekLabel(weekEditMonday),
+      membro_id:weekEditMemberId,
+      status_meta:status,
+      valor_meta:0,
+      valor_entregue:0,
+      valor_pagamento:paid?200000:0,
+      valor_pagamento_limpo:paid?metaCleanValue():0,
+      data_pagamento:paid?isoDate(addDays(weekEditMonday,7)):null
+    };
     await saveRecord("metas",payload,existing?.id);
-    await loadAll();
-    toast(paid?"Semana marcada como paga.":"Semana marcada como devendo.");
+    closeModal("weekStatusModal");await loadAll();
+    toast(status==="paga"?"Semana marcada como paga.":status==="devendo"?"Semana marcada como devendo.":"Semana marcada como ausente.");
   }catch(ex){alert(ex.message)}
 }
-window.markMeta=markMeta;
+$("#weekMarkPaid").onclick=()=>setWeekStatus("paga");
+$("#weekMarkDebt").onclick=()=>setWeekStatus("devendo");
+$("#weekMarkAbsent").onclick=()=>setWeekStatus("ausente");
+$("#weekClearStatus").onclick=()=>setWeekStatus("pendente");
 
-function renderMetaCalendarInto(containerId,memberId,ym,interactive=true){
+function renderMonthCalendar(containerId,memberId,ym,interactive=true){
   const el=$(containerId);if(!el)return;
   const member=DATA.membros.find(x=>x.id===memberId);
   if(!memberId||!member){el.innerHTML='<div class="empty">Selecione um membro.</div>';return}
   if(isManagerRole(member.cargo)){el.innerHTML='<div class="empty">Este cargo é isento de meta.</div>';return}
-  const weeks=weeksForMonth(ym);
-  el.innerHTML=weeks.map(mon=>{
-    const r=metaRec(memberId,mon),status=r?.status_meta||(n(r?.valor_pagamento)>0?"paga":r?"devendo":"pendente");
-    const cls=status==="paga"?"paid":status==="devendo"?"debt":"pending";
-    const label=status==="paga"?"Pago":status==="devendo"?"Devendo":"Não marcado";
-    return `<div class="metaWeek ${cls}">
-      <div class="weekTop">
-        <div class="weekDates">Semana ${dateBR(isoDate(mon)).slice(0,5)}<small>${metaWeekLabel(mon)}</small></div>
-        <span class="metaStatus ${cls}">${label}</span>
+
+  const [,monthNum]=ym.split("-").map(Number);
+  const weeks=calendarWeeks(ym);
+  const names=["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+  let out=`<div class="calHeader">${names.map(x=>`<div>${x}</div>`).join("")}</div>`;
+
+  for(const mon of weeks){
+    const r=metaRec(memberId,mon),status=metaStatusOf(r),cls=statusMetaClass(status),payDate=addDays(mon,7);
+    let cells="";
+    for(let i=0;i<7;i++){
+      const d=addDays(mon,i),other=d.getMonth()!==monthNum-1;
+      cells+=`<div class="calDay ${other?"otherMonth":""}"><span class="dayNum">${d.getDate()}</span>${i===0?'<span class="payFlag">pagamento</span>':""}</div>`;
+    }
+    out+=`<div class="calWeek ${cls}" ${interactive?`onclick="openWeekStatus('${memberId}',new Date('${isoDate(mon)}T12:00:00'))"`:""}>
+      ${cells}
+      <div class="weekRibbon">
+        <div class="weekInfo"><span class="weekStatusPill">${statusMetaLabel(status)}</span><span>${metaWeekLabel(mon)}</span></div>
+        <span class="payDate">Paga em ${dateBR(isoDate(payDate))}${status==="paga"?" • "+money(200000)+" sujo":""}</span>
       </div>
-      <div class="weekMoney">${status==="paga"?`Pagamento: <b>${money(200000)} sujo</b><br>Equiv. limpo: <b>${money(n(r?.valor_pagamento_limpo)||metaCleanValue())}</b>`:"Pagamento semanal: "+money(200000)+" sujo"}</div>
-      ${interactive?`<div class="metaWeekActions">
-        <button class="btn paidBtn" onclick="markMeta('${memberId}',new Date('${isoDate(mon)}T12:00:00'),'paga')">✓ Pago</button>
-        <button class="btn debtBtn" onclick="markMeta('${memberId}',new Date('${isoDate(mon)}T12:00:00'),'devendo')">✕ Devendo</button>
-      </div>`:""}
     </div>`;
-  }).join("");
+  }
+  el.innerHTML=out;
 }
 function metaMonthStats(memberId,ym){
-  const weeks=weeksForMonth(ym);
-  const rows=weeks.map(w=>metaRec(memberId,w)).filter(Boolean);
-  const paid=rows.filter(r=>(r.status_meta||(n(r.valor_pagamento)>0?"paga":"devendo"))==="paga");
-  const debt=rows.filter(r=>(r.status_meta||(n(r.valor_pagamento)>0?"paga":"devendo"))==="devendo");
-  return {paid:paid.length,debt:debt.length,dirty:sum(paid,"valor_pagamento"),clean:sum(paid,"valor_pagamento_limpo")};
+  const rows=calendarWeeks(ym).map(w=>metaRec(memberId,w)).filter(Boolean);
+  const paid=rows.filter(r=>metaStatusOf(r)==="paga"),debt=rows.filter(r=>metaStatusOf(r)==="devendo"),absent=rows.filter(r=>metaStatusOf(r)==="ausente");
+  return {paid:paid.length,debt:debt.length,absent:absent.length,dirty:sum(paid,"valor_pagamento"),clean:sum(paid,"valor_pagamento_limpo")};
 }
 function renderMetaCalendar(){
   const memberId=$("#metaCalendarMember")?.value,ym=$("#metaCalendarMonth")?.value;
-  renderMetaCalendarInto("#metaCalendar",memberId,ym,true);
+  renderMonthCalendar("#metaCalendar",memberId,ym,true);
   const m=DATA.membros.find(x=>x.id===memberId),s=metaMonthStats(memberId,ym);
-  $("#metaSummaryMember").textContent=m?`${m.nome} • ${m.cargo}`:"Selecione um membro.";
-  $("#metaPaidCount").textContent=s.paid;
-  $("#metaDebtCount").textContent=s.debt;
-  $("#metaPaidDirty").textContent=money(s.dirty);
-  $("#metaPaidClean").textContent=money(s.clean);
+  $("#metaSummaryMember").textContent=m?`${m.nome} • ${m.cargo} • ${monthName(ym)}`:"Selecione um membro.";
+  $("#metaPaidCount").textContent=s.paid;$("#metaDebtCount").textContent=s.debt;$("#metaAbsentCount").textContent=s.absent;
+  $("#metaPaidDirty").textContent=money(s.dirty);$("#metaPaidClean").textContent=money(s.clean);
 }
 let memberCalendarId=null;
 function openMemberCalendar(id){
@@ -375,34 +402,35 @@ function openMemberCalendar(id){
   $("#memberCalTitle").textContent=`Calendário — ${m.nome}`;
   $("#memberCalSubtitle").textContent=`${m.cargo}${m.passaporte?" • "+m.passaporte:""}`;
   $("#memberCalMonth").value=$("#metaCalendarMonth")?.value||monthValue();
-  renderMemberCalendar();
-  $("#memberCalendarModal").classList.add("on");
+  renderMemberCalendar();$("#memberCalendarModal").classList.add("on");
 }
 window.openMemberCalendar=openMemberCalendar;
 function renderMemberCalendar(){
   if(!memberCalendarId)return;
-  const ym=$("#memberCalMonth").value;
-  renderMetaCalendarInto("#memberCalendar",memberCalendarId,ym,false);
-  const s=metaMonthStats(memberCalendarId,ym);
-  $("#memberCalPaid").textContent=s.paid;
-  $("#memberCalDebt").textContent=s.debt;
-  $("#memberCalDirty").textContent=money(s.dirty);
-  $("#memberCalClean").textContent=money(s.clean);
+  const ym=$("#memberCalMonth").value,s=metaMonthStats(memberCalendarId,ym);
+  renderMonthCalendar("#memberCalendar",memberCalendarId,ym,true);
+  $("#memberCalPaid").textContent=s.paid;$("#memberCalDebt").textContent=s.debt;$("#memberCalAbsent").textContent=s.absent;
+  $("#memberCalDirty").textContent=money(s.dirty);$("#memberCalClean").textContent=money(s.clean);
 }
+
 function renderMetas(){
   if(!$("#metaCalendarMonth").value)$("#metaCalendarMonth").value=monthValue();
   const current=$("#metaCalendarMember").value;
   const eligible=DATA.membros.filter(m=>!isManagerRole(m.cargo));
   $("#metaCalendarMember").innerHTML='<option value="">Selecione...</option>'+eligible.map(m=>`<option value="${m.id}">${m.nome} — ${m.cargo}</option>`).join("");
   if(current&&eligible.some(m=>m.id===current))$("#metaCalendarMember").value=current;
+  else if(!current&&eligible.length)$("#metaCalendarMember").value=eligible[0].id;
+
   const names=Object.fromEntries(DATA.membros.map(m=>[m.id,m]));
   const rows=[...DATA.metas].sort((a,b)=>String(b.semana_inicio||b.created_at||"").localeCompare(String(a.semana_inicio||a.created_at||"")));
   $("#metaTable").innerHTML=rows.length?rows.map(x=>{
-    const m=names[x.membro_id],status=x.status_meta||(n(x.valor_pagamento)>0?"paga":"devendo"),paid=status==="paga";
-    return`<tr><td>${x.periodo||dateBR(x.semana_inicio)}</td><td>${m?.nome||"—"}</td><td><span class="badge">${paid?"Pago":"Devendo"}</span></td><td>${money(x.valor_pagamento)}</td><td class="${paid?"green":""}">${money(x.valor_pagamento_limpo)}</td><td>${paid?dateBR(x.data_pagamento):"—"}</td><td><button class="mini red" onclick="removeRecord('metas','${x.id}')">×</button></td></tr>`
+    const m=names[x.membro_id],status=metaStatusOf(x),paid=status==="paga";
+    return`<tr><td>${x.periodo||dateBR(x.semana_inicio)}</td><td>${m?.nome||"—"}</td><td><span class="badge">${statusMetaLabel(status)}</span></td><td>${money(x.valor_pagamento)}</td><td class="${paid?"green":""}">${money(x.valor_pagamento_limpo)}</td><td>${paid?dateBR(x.data_pagamento):"—"}</td><td><button class="mini red" onclick="removeRecord('metas','${x.id}')">×</button></td></tr>`
   }).join(""):`<tr><td colspan="7" class="empty">Nenhuma semana marcada ainda.</td></tr>`;
   renderMetaCalendar();
 }
+
+
 $("#metaCalendarMember").onchange=renderMetaCalendar;
 $("#metaCalendarMonth").onchange=renderMetaCalendar;
 $("#memberCalMonth").onchange=renderMemberCalendar;
