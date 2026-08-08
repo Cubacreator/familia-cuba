@@ -92,12 +92,66 @@
   </div>
 </section>
 
-<section class="page" id="metas"><div class="row"><div><h2>Metas & Pagamentos</h2><div class="mut">01, 02 e todos os cargos gerenciais são isentos.</div></div><button class="btn primary" data-open="metaModal">+ Registrar meta</button></div><div class="table"><table><thead><tr><th>Semana</th><th>Membro</th><th>Meta</th><th>Entregue</th><th>Pagamento sujo</th><th>Equiv. limpo</th><th>Data pagamento</th><th>Status</th><th></th></tr></thead><tbody id="metaTable"></tbody></table></div></section>
+
+<section class="page" id="metas">
+  <div class="row">
+    <div>
+      <h2>Calendário de Metas</h2>
+      <div class="mut">Cada semana pode ser marcada como <b>Pago</b> ou <b>Devendo</b>. O pagamento padrão é R$ 200.000,00 sujo.</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="row">
+      <div class="inline">
+        <div class="field">
+          <label>Membro</label>
+          <select id="metaCalendarMember"></select>
+        </div>
+        <div class="field">
+          <label>Mês</label>
+          <input type="month" id="metaCalendarMonth">
+        </div>
+      </div>
+      <div class="inline metaLegend">
+        <span class="metaDot paid"></span> Pago
+        <span class="metaDot debt"></span> Devendo
+        <span class="metaDot pending"></span> Não marcado
+      </div>
+    </div>
+    <div id="metaCalendar" class="metaCalendar"></div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="row">
+      <div>
+        <h3>Resumo do mês</h3>
+        <div class="mut" id="metaSummaryMember">Selecione um membro.</div>
+      </div>
+    </div>
+    <div class="sum">
+      <div><span>Semanas pagas</span><b class="green" id="metaPaidCount">0</b></div>
+      <div><span>Semanas devendo</span><b class="red" id="metaDebtCount">0</b></div>
+      <div><span>Pago em sujo</span><b id="metaPaidDirty">R$ 0,00</b></div>
+      <div><span>Equiv. limpo</span><b class="green" id="metaPaidClean">R$ 0,00</b></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <h3>Histórico</h3>
+    <div class="table" style="margin-top:12px">
+      <table>
+        <thead><tr><th>Semana</th><th>Membro</th><th>Status</th><th>Pagamento sujo</th><th>Equiv. limpo</th><th>Pago em</th><th></th></tr></thead>
+        <tbody id="metaTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
 <section class="page" id="acoes"><div class="row"><div><h2>Ações</h2><div class="mut">Entrada, custo, resultado e participantes.</div></div><button class="btn primary" data-open="acaoModal">+ Registrar ação</button></div><div class="table"><table><thead><tr><th>Data</th><th>Ação</th><th>Participantes</th><th>Entrada</th><th>Custo</th><th>Resultado</th><th>Status</th><th></th></tr></thead><tbody id="acaoTable"></tbody></table></div></section>
 
 <section class="page" id="clientes"><div class="row"><div><h2>Famílias / Clientes</h2><div class="mut">Histórico de lavagem por parceiro.</div></div><button class="btn primary" data-open="clienteModal">+ Novo cliente</button></div><div class="cards" id="clientCards"></div></section>
-<section class="page" id="membros"><div class="row"><div><h2>Membros</h2><div class="mut">Cadastro interno. Membros não recebem acesso ao sistema.</div></div><button class="btn primary" data-open="membroModal">+ Novo membro</button></div><div class="cards" id="memberCards"></div></section>
+<section class="page" id="membros"><div class="row"><div><h2>Membros</h2><div class="mut">Cadastro interno. Abra um membro para ver o calendário de metas dele.</div></div><button class="btn primary" data-open="membroModal">+ Novo membro</button></div><div class="cards" id="memberCards"></div></section>
 <section class="page" id="auditoria"><div class="row"><div><h2>Auditoria</h2><div class="mut">Registro automático de inclusões, alterações e exclusões.</div></div></div><div class="table"><table><thead><tr><th>Data/Hora</th><th>Gerente</th><th>Ação</th><th>Tabela</th><th>Registro</th></tr></thead><tbody id="auditTable"></tbody></table></div></section>
 </main>
 
@@ -192,25 +246,33 @@
 <div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div>
 <div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Registrar pagamento</button></div>
 </form></div></div>
-
-<div class="modal" id="metaModal"><div class="box"><div class="mh"><h3>Registrar meta semanal</h3><button class="close" data-close>×</button></div><form id="metaForm" class="formgrid">
-<input type="hidden" name="id">
-<input type="hidden" name="periodo">
-<div class="field"><label>Semana da meta (segunda-feira)</label><input type="date" name="semana_inicio" required><small class="mut" id="metaPeriodoPreview">Selecione a segunda-feira da semana.</small></div>
-<div class="field"><label>Membro</label><select name="membro_id" id="metaMember" required></select><small class="mut" id="metaMsg"></small></div>
-<div class="field"><label>Meta</label><input class="money" name="valor_meta" required></div>
-<div class="field"><label>Entregue</label><input class="money" name="valor_entregue" required></div>
-<div class="field"><label>Pagamento fixo (SUJO)</label><input class="money" name="valor_pagamento" value="200.000,00" readonly><small class="mut">Pagamento semanal fixo.</small></div>
-<div class="field"><label>Equivalente em LIMPO</label><input class="money" name="valor_pagamento_limpo" readonly><small class="mut" id="metaConversaoInfo">Convertido pela porcentagem atual da máquina.</small></div>
-<div class="field"><label>Data do pagamento</label><input type="date" name="data_pagamento" readonly><small class="mut">Segunda-feira seguinte ao fim da semana.</small></div>
-<div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary" id="metaSave">Salvar</button></div>
-</form></div></div>
-
 <div class="modal" id="acaoModal"><div class="box"><div class="mh"><h3>Registrar ação</h3><button class="close" data-close>×</button></div><form id="acaoForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Data</label><input type="date" name="data" required></div><div class="field"><label>Nome / Tipo</label><input name="nome" required></div><div class="field"><label>Entrada para família</label><input class="money" name="entrada" required></div><div class="field"><label>Custo</label><input class="money" name="custo" required value="0,00"></div><div class="field full"><label>Participantes</label><input name="participantes" placeholder="Separe os nomes por vírgula"></div><div class="field"><label>Status</label><select name="status"><option>Sucesso</option><option>Parcial</option><option>Falhou</option></select></div><div class="field full"><label>Observações</label><textarea name="observacoes"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
 
 <div class="modal" id="clienteModal"><div class="box"><div class="mh"><h3>Cliente</h3><button class="close" data-close>×</button></div><form id="clienteForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Nome</label><input name="nome" required></div><div class="field"><label>Contato / referência</label><input name="contato"></div><div class="field full"><label>Observações</label><textarea name="observacoes"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
 
-<div class="modal" id="membroModal"><div class="box"><div class="mh"><h3>Membro</h3><button class="close" data-close>×</button></div><form id="membroForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Nome</label><input name="nome" required></div><div class="field"><label>Cargo</label><input name="cargo" required></div><div class="field"><label>Passaporte</label><input name="passaporte"></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
+
+<div class="modal" id="memberCalendarModal"><div class="box memberCalBox">
+  <div class="mh"><div><h3 id="memberCalTitle">Calendário do membro</h3><div class="mut" id="memberCalSubtitle"></div></div><button class="close" data-close>×</button></div>
+  <div class="row" style="margin-bottom:12px">
+    <div class="field"><label>Mês</label><input type="month" id="memberCalMonth"></div>
+    <div class="inline metaLegend"><span class="metaDot paid"></span> Pago <span class="metaDot debt"></span> Devendo <span class="metaDot pending"></span> Não marcado</div>
+  </div>
+  <div id="memberCalendar" class="metaCalendar"></div>
+  <div class="sum" style="margin-top:12px">
+    <div><span>Pagas</span><b class="green" id="memberCalPaid">0</b></div>
+    <div><span>Devendo</span><b class="red" id="memberCalDebt">0</b></div>
+    <div><span>Total pago (sujo)</span><b id="memberCalDirty">R$ 0,00</b></div>
+    <div><span>Equiv. limpo</span><b class="green" id="memberCalClean">R$ 0,00</b></div>
+  </div>
+</div></div>
+
+<div class="modal" id="membroModal"><div class="box"><div class="mh"><h3>Membro</h3><button class="close" data-close>×</button></div><form id="membroForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Nome</label><input name="nome" required></div><div class="field"><label>Cargo</label>
+<select name="cargo" required>
+  <option value="Membro">Membro</option>
+  <option value="Gerente Geral">Gerente Geral</option>
+  <option value="Gerente de Ação">Gerente de Ação</option>
+</select>
+</div><div class="field"><label>Passaporte</label><input name="passaporte"></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
 
 <datalist id="membersList"></datalist><datalist id="clientsList"></datalist>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script>
