@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CUBA • Acesso Restrito</title>
+<link rel="stylesheet" href="common.css">
+<style>
+body{display:grid;place-items:center;padding:22px}.login{width:min(460px,96vw)}.brand{text-align:center;margin-bottom:18px}.logo{width:68px;height:68px;border-radius:19px;margin:auto;display:grid;place-items:center;background:linear-gradient(135deg,#0f2c52,#2563eb);font-size:30px;font-weight:900;box-shadow:0 0 45px rgba(59,130,246,.2)}.brand h1{letter-spacing:.25em;margin:15px 0 5px}.cuba-wordmark-login{display:block;width:min(300px,72vw);height:auto;margin:0 auto 8px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(37,99,235,.28))}.brand p{color:var(--mut);margin:0}.box{padding:20px}.stack{display:flex;flex-direction:column;gap:12px}.title{margin-bottom:16px}.title h2{margin:0 0 4px}.title p{margin:0;color:var(--mut);font-size:12px}.secure{display:flex;gap:8px;align-items:center;font-size:11px;color:#8fb3d6;margin-top:12px}.dot{width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 9px rgba(34,197,94,.5)}#qr{background:#fff;padding:10px;border-radius:12px;max-width:220px;margin:8px auto;display:block}.code{text-align:center;font-size:22px;letter-spacing:.25em}.err{color:#fca5a5;font-size:12px;min-height:18px}.step{display:none}.step.on{display:block}.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="login">
+  <div class="brand"><img class="cuba-wordmark-login" src="cuba-wordmark.png" alt="CUBA"><p>Sistema Gerencial • Acesso Restrito</p></div>
+  <div class="panel box">
+    <section id="loginStep" class="step on">
+      <div class="title"><h2>Validar identidade</h2><p>Somente integrantes autorizados da gerência.</p></div>
+      <form id="loginForm" class="stack">
+        <div class="field"><label>Passaporte</label><input id="passport" autocomplete="username" inputmode="numeric" required placeholder="Digite seu passaporte"></div>
+        <div class="field"><label>Senha</label><input id="password" type="password" autocomplete="current-password" required placeholder="••••••••••••"></div>
+        <button class="btn primary" id="loginBtn">VALIDAR IDENTIDADE</button>
+        <div class="err" id="loginErr"></div>
+      </form>
+    </section>
+<div class="secure"><span class="dot"></span> Passaporte + senha individual • sessão protegida pelo Supabase Auth</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const cfg=window.CUBA_CONFIG;
+if(!cfg||cfg.supabaseUrl.includes("COLE_AQUI")) alert("Configure o arquivo config.js antes de usar.");
+const sb=supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true}});
+const $=s=>document.querySelector(s);
+function emailFromPassport(p){return String(p).trim()+"@cuba.local"}
+$("#loginForm").onsubmit=async e=>{
+  e.preventDefault();
+  $("#loginErr").textContent="";
+  const btn=$("#loginBtn");btn.disabled=true;btn.textContent="Validando...";
+  try{
+    const pass=$("#passport").value.trim(),pw=$("#password").value;
+    const {error}=await sb.auth.signInWithPassword({email:emailFromPassport(pass),password:pw});
+    if(error) throw error;
+    location.href="app.html";
+  }catch(ex){
+    await sb.auth.signOut();
+    $("#loginErr").textContent="Passaporte, senha ou autorização inválidos.";
+  }finally{
+    btn.disabled=false;btn.textContent="VALIDAR IDENTIDADE";
+  }
+};
+(async()=>{
+  const {data}=await sb.auth.getSession();
+  if(data.session) location.href="app.html";
+})();
+</script>
+</body></html>

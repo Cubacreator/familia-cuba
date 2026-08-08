@@ -1,0 +1,17 @@
+CUBA V10.2 - CORREÇÃO DA AUDITORIA
+
+Problema corrigido:
+A tela tentava buscar o nome do gerente usando uma relação automática do Supabase
+que ainda não estava declarada como chave estrangeira no banco.
+
+Nesta versão:
+- app.js busca audit_log e profiles separadamente;
+- cruza o user_id com o nome do gerente no navegador;
+- não depende mais da relação automática;
+- inclui 03-corrigir-auditoria.sql para também criar a relação no banco.
+
+PASSOS:
+1. No Supabase > SQL Editor, rode 03-corrigir-auditoria.sql.
+2. O resultado da própria query deve mostrar os últimos eventos de audit_log, se já existirem.
+3. Use esta versão V10.2 e abra Auditoria novamente.
+4. Registre uma nova lavagem e clique em Atualizar para confirmar o novo evento.

@@ -1,0 +1,31 @@
+CUBA GERENCIAL — V11 FINAL
+
+VERSÃO FINAL PARA PUBLICAÇÃO
+
+Inclui:
+- Login por passaporte + senha via Supabase
+- Banco central compartilhado
+- Auditoria identificando o gerente
+- Ranking de clientes pelo período selecionado
+- Período personalizável
+- Lavagens, gastos, metas, ações, clientes e membros
+- Cálculo automático de malas/alvejantes e Valor Cuba
+- Todos os gerentes com acesso total
+- Membros comuns sem login
+- Wordmark CUBA metálico/azul aplicado na tela de login e na lateral do sistema
+- Mensagens de diagnóstico removidas
+
+IMPORTANTE:
+Os registros ficam no Supabase e NÃO dentro deste ZIP.
+O banco deve estar limpo antes do uso oficial, como já foi feito nos testes.
+
+Arquivos para publicar:
+- index.html
+- app.html
+- common.css
+- app.css
+- app.js
+- config.js
+- cuba-wordmark.png
+
+Os arquivos .sql e .txt são de configuração/documentação e não precisam ficar públicos no GitHub.

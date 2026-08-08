@@ -1,0 +1,99 @@
+CUBA GERENCIAL SEGURO — V9
+===========================
+
+Esta versão muda o projeto de uma página local para um sistema com:
+- autenticação por PASSAPORTE + SENHA;
+- banco central Supabase;
+- Row Level Security (RLS);
+- todos os 5 gerentes com o MESMO nível de acesso;
+- nenhum membro comum recebe login;
+- auditoria automática de INSERT / UPDATE / DELETE;
+- dados compartilhados entre PCs e celulares;
+- sessão autenticada por passaporte + senha;
+- logout;
+- dashboard, lavagens, gastos, metas, ações, clientes, membros e ranking por período;
+- período personalizável;
+- números em padrão brasileiro;
+- cálculo de lavagem automático;
+- malas/alvejantes automáticos;
+- Nickolay como Gerente de Ação;
+- 01, 02 e cargos gerenciais isentos de metas.
+
+GERENTES COM LOGIN
+- Caroll — 2423 — 01
+- Caio — 2098 — 02
+- Renan Desbrava — 3072 — Gerente Geral
+- Raissa Fernandez — 7206 — Gerente Geral
+- Nickolay Meketreff — 2368 — Gerente de Ação
+
+IMPORTANTE: AS SENHAS NÃO ESTÃO NESTES ARQUIVOS.
+Você cria uma senha individual para cada gerente diretamente no Supabase.
+
+COMO CONFIGURAR
+1. Crie um projeto no Supabase.
+2. No SQL Editor, rode primeiro: 01-schema.sql
+3. Em Authentication > Providers, mantenha Email/Password habilitado.
+4. Em Authentication, DESATIVE cadastro público / novas inscrições (Signups).
+5. Em Authentication > Users, crie manualmente 5 usuários:
+   2423@cuba.local
+   2098@cuba.local
+   3072@cuba.local
+   7206@cuba.local
+   2368@cuba.local
+   Cada um com uma senha forte DIFERENTE.
+6. Rode: 02-vincular-gerentes.sql
+7. Abra Project Settings/API e copie:
+   - Project URL
+   - Publishable key (ou anon key, conforme o painel mostrar)
+8. Cole os dois valores em config.js.
+9. Abra index.html por um servidor local ou publique a pasta.
+
+LOGIN
+Cada gerente entra com:
+- Passaporte
+- Senha individual
+
+Não há Google Authenticator, Microsoft Authenticator ou código de 6 dígitos.
+
+SEGURANÇA
+A chave publishable/anon pode existir no frontend. Ela NÃO dá acesso livre ao banco.
+A proteção real está no RLS do PostgreSQL.
+
+O arquivo 01-schema.sql exige simultaneamente:
+- usuário autenticado;
+- perfil ativo;
+- access_level = gerencial.
+
+Mesmo alguém copiando a URL, o JavaScript ou a chave pública, as tabelas não liberam
+os dados sem uma sessão gerencial AAL2.
+
+NUNCA coloque a service_role key em index.html, app.html, app.js ou config.js.
+
+GITHUB PAGES
+Depois de tudo testado, os arquivos que vão para a pasta gerencial são:
+- index.html
+- app.html
+- common.css
+- app.css
+- app.js
+- config.js
+
+Os arquivos SQL NÃO precisam ficar públicos no GitHub.
+
+OBSERVAÇÃO SOBRE O ENDEREÇO
+O GitHub Pages continuará sendo público como endereço, mas o banco NÃO é público.
+Quem descobrir o endereço verá apenas a tela de login e não consegue consultar os dados
+sem uma conta autorizada + senha.
+
+CÁLCULO DA LAVAGEM
+Valor limpo = valor sujo × porcentagem máquina
+Valor cliente = valor sujo × porcentagem cliente
+Qtd. de cada insumo = 1 conjunto mínimo; depois 1 conjunto a cada 10.000,00 de sujo
+Mala = 100,00 cada
+Alvejante = 200,00 cada
+Valor Cuba = valor limpo - valor cliente - custo dos insumos
+
+Exemplos informados:
+1.000,00 -> 1 mala + 1 alvejante
+100.000,00 -> 10 malas + 10 alvejantes
+1.000.000,00 -> 100 malas + 100 alvejantes

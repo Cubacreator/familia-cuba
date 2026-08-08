@@ -1,0 +1,10 @@
+CUBA V10.1 - DIAGNÓSTICO DE LOGIN
+
+Esta versão mostra o erro real do Supabase na tela de login.
+
+Se aparecer:
+- "Senha incorreta ou usuário não encontrado": revise a senha cadastrada no Authentication > Users.
+- "O usuário existe, mas o e-mail ainda não foi confirmado": confirme o usuário no painel do Supabase.
+- "O navegador não conseguiu falar com o Supabase": não teste abrindo index.html por file://; publique ou rode em servidor local.
+
+Depois de identificar o erro, podemos voltar a esconder mensagens técnicas.
