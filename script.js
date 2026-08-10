@@ -44,9 +44,9 @@ const membros = [
   },
   {
     nome: "Nickolay",
-    cargo: "Membro da Família Cuba",
+    cargo: "Grente de ação",
     imagem: "images/nickolay.png",
-    descricao: "Nickolay é membro da Família Cuba e um dos melhores P1 da cidade. Com ele no volante, a fuga perde até a graça: em poucos segundos, some da polícia e ninguém entende nada. Na trocação, também manda muito bem e sabe assumir a responsabilidade quando a família precisa.",
+    descricao: "Nickolay é gerente de ação e um dos melhores P1 da cidade. Com ele no volante, a fuga perde até a graça: em poucos segundos, some da polícia e ninguém entende nada. Na trocação, também manda muito bem e sabe assumir a responsabilidade quando a família precisa.",
     frase: "Piscou, ficou para trás."
   },
   {
