@@ -60,7 +60,47 @@
   </div>
 </section>
 
-<section class="page" id="gastos"><div class="row"><div><h2>Gastos</h2><div class="mut">Registre quantidade, item específico e de qual família o material foi comprado.</div></div><button class="btn primary" data-open="gastoModal">+ Registrar gasto</button></div><div class="table"><table><thead><tr><th>Data</th><th>Categoria</th><th>Item</th><th>Quantidade</th><th>Família fornecedora</th><th>Moeda</th><th>Descrição</th><th>Responsável</th><th>Valor total</th><th></th></tr></thead><tbody id="gastoTable"></tbody></table></div></section>
+
+<section class="page" id="gastos">
+  <div class="row">
+    <div><h2>Gastos</h2><div class="mut">Acompanhe compras, filtre por período e produto e visualize os gastos em gráficos.</div></div>
+    <button class="btn primary" data-open="gastoModal">+ Novo gasto</button>
+  </div>
+
+  <div class="panel expenseFilters">
+    <div class="filterGrid">
+      <div class="field"><label>De</label><input type="date" id="gastoFrom"></div>
+      <div class="field"><label>Até</label><input type="date" id="gastoTo"></div>
+      <div class="field"><label>Produto / item</label><select id="gastoProductFilter"><option value="">Todos os produtos</option></select></div>
+      <div class="field"><label>Moeda</label><select id="gastoCurrencyFilter"><option value="">Real + Dólar</option><option value="real">Real (R$)</option><option value="dolar">Dólar (US$)</option></select></div>
+      <div class="field filterActions"><label>&nbsp;</label><button class="btn" type="button" id="gastoClearFilters">Limpar filtros</button></div>
+    </div>
+  </div>
+
+  <div class="sum">
+    <div><span>Total filtrado em Real</span><b class="red" id="gastoFilteredReal">R$ 0,00</b></div>
+    <div><span>Total filtrado em Dólar</span><b class="red" id="gastoFilteredDollar">US$ 0,00</b></div>
+    <div><span>Compras encontradas</span><b id="gastoFilteredCount">0</b></div>
+    <div><span>Quantidade de itens</span><b id="gastoFilteredQty">0</b></div>
+  </div>
+
+  <div class="expenseCharts">
+    <div class="panel chartPanel">
+      <div class="chartHeader"><div><h3>Gastos por produto</h3><p>Considera os filtros selecionados.</p></div>
+      <select id="gastoChartCurrency"><option value="real">Real (R$)</option><option value="dolar">Dólar (US$)</option></select></div>
+      <div class="barChart" id="gastoProductChart"></div>
+    </div>
+    <div class="panel chartPanel">
+      <div class="chartHeader"><div><h3>Gastos por dia</h3><p>Evolução dentro do período filtrado.</p></div></div>
+      <div class="lineChart" id="gastoDateChart"></div>
+    </div>
+  </div>
+
+  <div class="table"><table>
+    <thead><tr><th>Data</th><th>Categoria</th><th>Item</th><th>Quantidade</th><th>Família fornecedora</th><th>Moeda</th><th>Descrição</th><th>Responsável</th><th>Valor total</th><th></th></tr></thead>
+    <tbody id="gastoTable"></tbody>
+  </table></div>
+</section>
 
 
 <section class="page" id="custosfixos">
@@ -140,7 +180,43 @@
   </div>
 </section>
 
-<section class="page" id="acoes"><div class="row"><div><h2>Ações</h2><div class="mut">Entrada, custo, resultado e participantes.</div></div><button class="btn primary" data-open="acaoModal">+ Registrar ação</button></div><div class="table"><table><thead><tr><th>Data</th><th>Ação</th><th>Participantes</th><th>Entrada</th><th>Custo</th><th>Resultado</th><th>Status</th><th></th></tr></thead><tbody id="acaoTable"></tbody></table></div></section>
+
+<section class="page" id="acoes">
+  <div class="row">
+    <div>
+      <h2>Ações</h2>
+      <div class="mut">Resultado da ação e controle separado do que realmente entrou para a família.</div>
+    </div>
+    <button class="btn primary" data-open="acaoModal">+ Registrar ação</button>
+  </div>
+
+  <div class="sum actionMoneySummary">
+    <div><span>Família • Real limpo</span><b class="green" id="acaoRealLimpo">R$ 0,00</b></div>
+    <div><span>Família • Real sujo</span><b id="acaoRealSujo">R$ 0,00</b></div>
+    <div><span>Família • Dólar limpo</span><b class="green" id="acaoDolLimpo">US$ 0,00</b></div>
+    <div><span>Família • Dólar sujo</span><b id="acaoDolSujo">US$ 0,00</b></div>
+  </div>
+
+  <div class="table">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Ação</th>
+          <th>Participantes</th>
+          <th>Status</th>
+          <th>Valor ganho</th>
+          <th>Tipo</th>
+          <th>Entrada família</th>
+          <th>Custo</th>
+          <th>Resultado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="acaoTable"></tbody>
+    </table>
+  </div>
+</section>
 
 <section class="page" id="clientes"><div class="row"><div><h2>Famílias / Clientes</h2><div class="mut">Histórico de lavagem por parceiro.</div></div><button class="btn primary" data-open="clienteModal">+ Novo cliente</button></div><div class="cards" id="clientCards"></div></section>
 <section class="page" id="membros"><div class="row"><div><h2>Membros</h2><div class="mut">Cadastro interno. Abra um membro para ver o calendário de metas dele.</div></div><button class="btn primary" data-open="membroModal">+ Novo membro</button></div><div class="cards" id="memberCards"></div></section>
@@ -148,7 +224,14 @@
 </main>
 
 <!-- Modais -->
-<div class="modal" id="lavModal"><div class="box"><div class="mh"><h3>Registrar lavagem</h3><button class="close" data-close>×</button></div><form id="lavForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Data</label><input type="date" name="data" required></div><div class="field"><label>Família / Cliente</label><input name="cliente" list="clientsList" required></div><div class="field"><label>Responsável Cuba</label><input name="responsavel" list="membersList" required></div><div class="field"><label>Valor sujo</label><input class="money" name="valor_sujo" inputmode="decimal" placeholder="1.000.000,00" required></div><div class="field"><label>Porcentagem máquina (%)</label><input type="number" name="pct_maquina" min="0" max="100" step=".01" value="57" required></div><div class="field"><label>Valor limpo gerado</label><input class="money" name="valor_limpo" readonly></div><div class="field"><label>Porcentagem para cliente (%)</label><input type="number" name="pct_cliente" min="0" max="100" step=".01" required></div><div class="field"><label>Valor do cliente</label><input class="money" name="valor_cliente" readonly></div><div class="field"><label>Malas</label><input name="qtd_malas" readonly></div><div class="field"><label>Custo malas</label><input class="money" name="custo_malas" readonly></div><div class="field"><label>Alvejantes</label><input name="qtd_alvejantes" readonly></div><div class="field"><label>Custo alvejantes</label><input class="money" name="custo_alvejantes" readonly></div><div class="field"><label>Custo total insumos</label><input class="money" name="custo_insumos" readonly></div><div class="field"><label>Valor Cuba</label><input class="money" name="valor_cuba" readonly></div><div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar lavagem</button></div></form></div></div>
+<div class="modal" id="lavModal"><div class="box"><div class="mh"><h3>Registrar lavagem</h3><button class="close" data-close>×</button></div><form id="lavForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Data</label><input type="date" name="data" required></div><div class="field"><label>Família / Cliente</label><input name="cliente" list="clientsList" required></div><div class="field"><label>Responsável Cuba</label><select name="responsavel" class="limitedResponsible" required>
+<option value="">Selecione...</option>
+<option value="Caio">Caio</option>
+<option value="Caroll">Caroll</option>
+<option value="Nicko">Nicko</option>
+<option value="Renan">Renan</option>
+<option value="Raissa">Raissa</option>
+</select></div><div class="field"><label>Valor sujo</label><input class="money" name="valor_sujo" inputmode="decimal" placeholder="1.000.000,00" required></div><div class="field"><label>Porcentagem máquina (%)</label><input type="number" name="pct_maquina" min="0" max="100" step=".01" value="57" required></div><div class="field"><label>Valor limpo gerado</label><input class="money" name="valor_limpo" readonly></div><div class="field"><label>Porcentagem para cliente (%)</label><input type="number" name="pct_cliente" min="0" max="100" step=".01" required></div><div class="field"><label>Valor do cliente</label><input class="money" name="valor_cliente" readonly></div><div class="field"><label>Malas</label><input name="qtd_malas" readonly></div><div class="field"><label>Custo malas</label><input class="money" name="custo_malas" readonly></div><div class="field"><label>Alvejantes</label><input name="qtd_alvejantes" readonly></div><div class="field"><label>Custo alvejantes</label><input class="money" name="custo_alvejantes" readonly></div><div class="field"><label>Custo total insumos</label><input class="money" name="custo_insumos" readonly></div><div class="field"><label>Valor Cuba</label><input class="money" name="valor_cuba" readonly></div><div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar lavagem</button></div></form></div></div>
 
 
 
@@ -157,7 +240,14 @@
 <form id="dolForm" class="formgrid">
 <input type="hidden" name="id">
 <div class="field"><label>Data</label><input type="date" name="data" required></div>
-<div class="field"><label>Responsável Cuba</label><input name="responsavel" list="membersList" required></div>
+<div class="field"><label>Responsável Cuba</label><select name="responsavel" class="limitedResponsible" required>
+<option value="">Selecione...</option>
+<option value="Caio">Caio</option>
+<option value="Caroll">Caroll</option>
+<option value="Nicko">Nicko</option>
+<option value="Renan">Renan</option>
+<option value="Raissa">Raissa</option>
+</select></div>
 
 <div class="field"><label>Valor sujo em DOL (US$)</label><input class="money" name="valor_sujo_dol" inputmode="decimal" placeholder="0,00" required><small class="mut">Permanece registrado em dólar.</small></div>
 <div class="field"><label>Valor limpo em DOL (US$)</label><input class="money" name="valor_limpo_dol" inputmode="decimal" placeholder="0,00" required><small class="mut">Valor em dólar antes do câmbio para real.</small></div>
@@ -201,7 +291,16 @@
 
 <div class="field"><label>Quantidade</label><input type="number" name="quantidade" min="0.01" step="0.01" value="1" required></div>
 <div class="field"><label>Família fornecedora</label><input name="familia_fornecedora" list="clientsList" placeholder="De quem a Cuba comprou?"></div>
-<div class="field"><label>Responsável Cuba</label><input name="responsavel" list="membersList"></div>
+<div class="field"><label>Responsável Cuba</label>
+<select name="responsavel" class="limitedResponsible">
+<option value="">Selecione...</option>
+<option value="Caio">Caio</option>
+<option value="Caroll">Caroll</option>
+<option value="Nicko">Nicko</option>
+<option value="Renan">Renan</option>
+<option value="Raissa">Raissa</option>
+</select>
+</div>
 <div class="field"><label>Moeda da compra</label>
 <select name="moeda" id="gastoMoeda" required>
   <option value="real">Real (R$)</option>
@@ -238,7 +337,103 @@
 <div class="field full"><label>Observações</label><textarea name="observacoes" rows="3"></textarea></div>
 <div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Registrar pagamento</button></div>
 </form></div></div>
-<div class="modal" id="acaoModal"><div class="box"><div class="mh"><h3>Registrar ação</h3><button class="close" data-close>×</button></div><form id="acaoForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Data</label><input type="date" name="data" required></div><div class="field"><label>Nome / Tipo</label><input name="nome" required></div><div class="field"><label>Entrada para família</label><input class="money" name="entrada" required></div><div class="field"><label>Custo</label><input class="money" name="custo" required value="0,00"></div><div class="field full"><label>Participantes</label><input name="participantes" placeholder="Separe os nomes por vírgula"></div><div class="field"><label>Status</label><select name="status"><option>Sucesso</option><option>Parcial</option><option>Falhou</option></select></div><div class="field full"><label>Observações</label><textarea name="observacoes"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
+
+<div class="modal" id="acaoModal"><div class="box actionModalBox">
+  <div class="mh"><h3>Registrar ação</h3><button class="close" data-close>×</button></div>
+
+  <form id="acaoForm" class="formgrid">
+    <input type="hidden" name="id">
+
+    <div class="field">
+      <label>Data</label>
+      <input type="date" name="data" required>
+    </div>
+
+    <div class="field">
+      <label>Nome / Tipo</label>
+      <input name="nome" required>
+    </div>
+
+    <div class="field full">
+      <label>Participantes</label>
+      <input name="participantes" placeholder="Separe os nomes por vírgula">
+    </div>
+
+    <div class="field">
+      <label>Status da ação</label>
+      <select name="status" id="acaoStatus" required>
+        <option value="Sucesso">Sucesso</option>
+        <option value="Parcial">Parcial</option>
+        <option value="Falhou">Falhou</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Custo da ação</label>
+      <input class="money" name="custo" required value="0,00">
+    </div>
+
+    <div class="full actionRewardPanel" id="actionRewardPanel">
+      <div class="actionRewardTitle">
+        <div>
+          <b>Valor conquistado na ação</b>
+          <small>Preencha somente quando a ação tiver Sucesso ou resultado Parcial.</small>
+        </div>
+      </div>
+
+      <div class="formgrid actionNestedGrid">
+        <div class="field">
+          <label>Valor que ganhou</label>
+          <input class="money" name="valor_ganho" id="acaoValorGanho" placeholder="0,00">
+        </div>
+
+        <div class="field">
+          <label>Moeda</label>
+          <div class="checkChoices">
+            <label class="checkChoice"><input type="radio" name="moeda" value="real" checked><span class="choiceCheck">✓</span><span>Real (R$)</span></label>
+            <label class="checkChoice"><input type="radio" name="moeda" value="dolar"><span class="choiceCheck">✓</span><span>Dólar (US$)</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tipo do dinheiro</label>
+          <div class="checkChoices">
+            <label class="checkChoice"><input type="radio" name="tipo_dinheiro" value="limpo" checked><span class="choiceCheck">✓</span><span>Limpo</span></label>
+            <label class="checkChoice"><input type="radio" name="tipo_dinheiro" value="sujo"><span class="choiceCheck">✓</span><span>Sujo</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="labelWithHelp">
+            Entrada para família
+            <span class="helpCircle" tabindex="0">?
+              <span class="helpBubble">Marque SIM quando o dinheiro ganho na ação foi entregue para o caixa da família. Nesse caso ele entra nos totais da família. Marque NÃO quando o dinheiro ficou com os participantes ou teve outro destino; assim ele fica apenas no histórico da ação e não entra no caixa.</span>
+            </span>
+          </label>
+          <div class="yesNoChoices">
+            <label><input type="radio" name="entrada_familia" value="true" checked><span>Sim</span></label>
+            <label><input type="radio" name="entrada_familia" value="false"><span>Não</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="full actionRedBox hidden" id="actionRedBox">
+      <b>DEU RED</b>
+      <span>A ação foi marcada como Falhou. Nenhum valor será adicionado ao caixa da família.</span>
+    </div>
+
+    <div class="field full">
+      <label>Observações</label>
+      <textarea name="observacoes"></textarea>
+    </div>
+
+    <div class="ma full">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button class="btn primary">Salvar</button>
+    </div>
+  </form>
+</div></div>
 
 <div class="modal" id="clienteModal"><div class="box"><div class="mh"><h3>Cliente</h3><button class="close" data-close>×</button></div><form id="clienteForm" class="formgrid"><input type="hidden" name="id"><div class="field"><label>Nome</label><input name="nome" required></div><div class="field"><label>Contato / referência</label><input name="contato"></div><div class="field full"><label>Observações</label><textarea name="observacoes"></textarea></div><div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div></form></div></div>
 

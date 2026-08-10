@@ -26,6 +26,32 @@ function mondayOfDate(value){
 }
 
 
+
+const RESPONSAVEIS_LIMITADOS=["Caio","Caroll","Nicko","Renan","Raissa"];
+function shortResponsible(v){
+  const s=String(v||"").toLowerCase();
+  if(s.includes("caio"))return"Caio";
+  if(s.includes("caroll")||s.includes("carol"))return"Caroll";
+  if(s.includes("nick"))return"Nicko";
+  if(s.includes("renan"))return"Renan";
+  if(s.includes("raissa"))return"Raissa";
+  return "";
+}
+function currentShortResponsible(){
+  return shortResponsible(profile?.nome||"");
+}
+
+
+function sortName(a,b){return String(a||"").localeCompare(String(b||""),"pt-BR",{sensitivity:"base"})}
+function memberHierarchyRank(cargo){
+  const c=String(cargo||"").trim().toLowerCase();
+  if(c==="01")return 1;
+  if(c==="02")return 2;
+  if(c==="gerente geral")return 3;
+  if(c==="gerente de ação")return 4;
+  if(c==="membro")return 5;
+  return 6;
+}
 function qtyInputs(sujo){if(n(sujo)<=0)return 0;return Math.max(1,Math.ceil(n(sujo)/10000))}
 function calcLav(){
  const f=$("#lavForm").elements,sujo=n(f.valor_sujo.value),pm=n(f.pct_maquina.value),pc=n(f.pct_cliente.value);
@@ -43,6 +69,26 @@ function calcDol(){
   f.custo_taxa_real.value=br(custo);
   f.valor_liquido_real.value=br(liquido);
 }
+
+function updateActionForm(){
+  const f=$("#acaoForm")?.elements;
+  if(!f)return;
+  const failed=f.status.value==="Falhou";
+  $("#actionRewardPanel").classList.toggle("hidden",failed);
+  $("#actionRedBox").classList.toggle("hidden",!failed);
+  if(failed){
+    f.valor_ganho.value="";
+    const fam=f["entrada_familia"];
+    if(fam)fam.value="false";
+  }
+}
+function actionCurrencyValue(x){
+  return x.moeda==="dolar"?usd(x.valor_ganho):money(x.valor_ganho);
+}
+function actionMoneyTypeLabel(x){
+  return `${x.moeda==="dolar"?"Dólar":"Real"} • ${x.tipo_dinheiro==="sujo"?"Sujo":"Limpo"}`;
+}
+
 function periodFilter(row){
  const p=$("#period").value,d=row.data||row.data_pagamento||row.created_at?.slice(0,10);
  if(!d)return true;if(p==="all")return true;
@@ -80,7 +126,28 @@ function openModal(id,rec){
  const m=$("#"+id),f=m.querySelector("form");m.classList.add("on");f?.reset();if(f?.elements.id)f.elements.id.value="";
  if(rec&&f)Object.entries(rec).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??""});
  if(id==="lavModal"){if(!rec){f.elements.data.value=today();f.elements.pct_maquina.value=DATA.config.pct_maquina;f.elements.pct_cliente.value=""}calcLav()}
- if(id==="gastoModal"&&!rec){f.elements.data.value=today();f.elements.moeda.value="real";updateGastoItems();updateGastoMoeda()}if(id==="gastoModal"&&rec){updateGastoItems(rec.item);updateGastoMoeda()}if(id==="dolModal"&&!rec){f.elements.data.value=today();f.elements.responsavel.value=profile?.nome||"";f.elements.taxa_cambio_pct.value=0;}if(id==="dolModal")calcDol();if(id==="pagarFixoModal"&&!rec)f.elements.data.value=today();if(id==="acaoModal"&&!rec)f.elements.data.value=today();if(id==="metaModal")updateMetaExempt()
+ if(id==="gastoModal"&&!rec){f.elements.data.value=today();f.elements.moeda.value="real";f.elements.responsavel.value=currentShortResponsible();updateGastoItems();updateGastoMoeda()}
+ if(id==="gastoModal"&&rec){f.elements.responsavel.value=shortResponsible(rec.responsavel);updateGastoItems(rec.item);updateGastoMoeda()}
+ if(id==="lavModal"){f.elements.responsavel.value=rec?shortResponsible(rec.responsavel):currentShortResponsible()}
+ if(id==="dolModal"&&!rec){f.elements.data.value=today();f.elements.responsavel.value=currentShortResponsible();f.elements.taxa_cambio_pct.value=0;}
+ if(id==="dolModal"&&rec)f.elements.responsavel.value=shortResponsible(rec.responsavel);
+ if(id==="dolModal")calcDol();
+ if(id==="pagarFixoModal"&&!rec)f.elements.data.value=today();
+ if(id==="acaoModal"){
+   if(!rec){
+     f.elements.data.value=today();
+     f.elements.status.value="Sucesso";
+     f.elements.custo.value="0,00";
+     f.elements.moeda.value="real";
+     f.elements.tipo_dinheiro.value="limpo";
+     f.elements.entrada_familia.value="true";
+   }else{
+     f.elements.moeda.value=rec.moeda||"real";
+     f.elements.tipo_dinheiro.value=rec.tipo_dinheiro||"limpo";
+     f.elements.entrada_familia.value=String(rec.entrada_familia ?? (n(rec.entrada)>0));
+   }
+   updateActionForm();
+ }
 }
 function closeModal(id){$("#"+id).classList.remove("on")}
 $$("[data-open]").forEach(b=>b.onclick=()=>openModal(b.dataset.open));$$("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.closest(".modal").id));$$(".modal").forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});
@@ -121,6 +188,7 @@ function updateGastoMoeda(){
   if(label)label.textContent=moeda==="dolar"?"Valor total (US$)":"Valor total (R$)";
 }
 $("#gastoMoeda").addEventListener("change",updateGastoMoeda);
+$("#acaoStatus").addEventListener("change",updateActionForm);
 
 $("#lavForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));const p={data:x.data,cliente:x.cliente,responsavel:x.responsavel,valor_sujo:n(x.valor_sujo),pct_maquina:n(x.pct_maquina),valor_limpo:n(x.valor_limpo),pct_cliente:n(x.pct_cliente),valor_cliente:n(x.valor_cliente),qtd_malas:n(x.qtd_malas),custo_malas:n(x.custo_malas),qtd_alvejantes:n(x.qtd_alvejantes),custo_alvejantes:n(x.custo_alvejantes),custo_insumos:n(x.custo_insumos),valor_cuba:n(x.valor_cuba),observacoes:x.observacoes||null};try{await saveRecord("lavagens",p,x.id);await ensureClient(x.cliente);closeModal("lavModal");await loadAll();toast("Lavagem salva.")}catch(ex){alert(ex.message)}};
 
@@ -192,7 +260,40 @@ function pagarFixo(id){
 window.pagarFixo=pagarFixo;
 
 
-$("#acaoForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("acoes",{data:x.data,nome:x.nome,entrada:n(x.entrada),custo:n(x.custo),participantes:x.participantes||null,status:x.status,observacoes:x.observacoes||null},x.id);closeModal("acaoModal");await loadAll();toast("Ação salva.")}catch(ex){alert(ex.message)}};
+$("#acaoForm").onsubmit=async e=>{
+  e.preventDefault();
+  const x=Object.fromEntries(new FormData(e.target));
+  const failed=x.status==="Falhou";
+  const valor=failed?0:n(x.valor_ganho);
+  const entradaFamilia=!failed && x.entrada_familia==="true";
+  const moeda=failed?"real":(x.moeda||"real");
+  const tipo=failed?"limpo":(x.tipo_dinheiro||"limpo");
+
+  if(!failed && valor<=0)return alert("Informe o valor que foi ganho na ação.");
+
+  // Campo antigo "entrada" é mantido por compatibilidade.
+  // Só recebe valor quando é dinheiro REAL + LIMPO que efetivamente entrou para a família.
+  const entradaLegada=entradaFamilia && moeda==="real" && tipo==="limpo" ? valor : 0;
+
+  try{
+    await saveRecord("acoes",{
+      data:x.data,
+      nome:x.nome,
+      entrada:entradaLegada,
+      custo:n(x.custo),
+      participantes:x.participantes||null,
+      status:x.status,
+      valor_ganho:valor,
+      moeda,
+      tipo_dinheiro:tipo,
+      entrada_familia:entradaFamilia,
+      observacoes:x.observacoes||null
+    },x.id);
+    closeModal("acaoModal");
+    await loadAll();
+    toast(failed?"Ação registrada: DEU RED.":"Ação salva.");
+  }catch(ex){alert(ex.message)}
+};
 $("#clienteForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("clientes",{nome:x.nome,contato:x.contato||null,observacoes:x.observacoes||null},x.id);closeModal("clienteModal");await loadAll();toast("Cliente salvo.")}catch(ex){alert(ex.message)}};
 $("#membroForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("membros",{nome:x.nome,cargo:x.cargo,passaporte:x.passaporte||null},x.id);closeModal("membroModal");await loadAll();toast("Membro salvo.")}catch(ex){alert(ex.message)}};
 async function ensureClient(nome){if(!nome||DATA.clientes.some(c=>c.nome.toLowerCase()===nome.toLowerCase()))return;await sb.from("clientes").insert({nome})}
@@ -234,11 +335,51 @@ function renderLavagensDol(){
     <td><button class="mini" onclick="editRecord('lavagens_dol','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('lavagens_dol','${x.id}')">×</button></td>
   </tr>`).join(""):`<tr><td colspan="11" class="empty">Sem registros DOL.</td></tr>`;
 }
+function gastoFilteredRows(){
+  const from=$("#gastoFrom")?.value||"",to=$("#gastoTo")?.value||"",prod=$("#gastoProductFilter")?.value||"",currency=$("#gastoCurrencyFilter")?.value||"";
+  return DATA.gastos.filter(x=>{
+    if(from&&String(x.data)<from)return false;
+    if(to&&String(x.data)>to)return false;
+    if(prod&&String(x.item||x.categoria||"")!==prod)return false;
+    if(currency&&(x.moeda||"real")!==currency)return false;
+    return true;
+  }).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));
+}
+function renderGastoProductFilter(){
+  const current=$("#gastoProductFilter")?.value||"";
+  const products=[...new Set(DATA.gastos.map(x=>String(x.item||x.categoria||"").trim()).filter(Boolean))].sort(sortName);
+  $("#gastoProductFilter").innerHTML='<option value="">Todos os produtos</option>'+products.map(x=>`<option value="${x}">${x}</option>`).join("");
+  if(products.includes(current))$("#gastoProductFilter").value=current;
+}
+function renderBarChart(elId,items,currency){
+  const el=$(elId);if(!el)return;
+  const grouped={};
+  items.filter(x=>(x.moeda||"real")===currency).forEach(x=>{const k=x.item||x.categoria||"Outros";grouped[k]=(grouped[k]||0)+n(x.valor)});
+  const rows=Object.entries(grouped).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(!rows.length){el.innerHTML='<div class="empty">Sem dados para o gráfico.</div>';return}
+  const max=Math.max(...rows.map(x=>x[1]),1);
+  el.innerHTML=rows.map(([name,val])=>`<div class="barRow"><div class="barLabel" title="${name}">${name}</div><div class="barTrack"><div class="barFill" style="width:${Math.max(3,val/max*100)}%"></div></div><div class="barValue">${currency==="dolar"?usd(val):money(val)}</div></div>`).join("");
+}
+function renderLineChart(elId,items){
+  const el=$(elId);if(!el)return;
+  const currency=$("#gastoChartCurrency")?.value||"real",grouped={};
+  items.filter(x=>(x.moeda||"real")===currency).forEach(x=>{grouped[x.data]=(grouped[x.data]||0)+n(x.valor)});
+  const rows=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0]));
+  if(!rows.length){el.innerHTML='<div class="empty">Sem dados para o gráfico.</div>';return}
+  const max=Math.max(...rows.map(x=>x[1]),1);
+  const pts=rows.map((r,i)=>`${rows.length===1?50:(i/(rows.length-1))*100},${92-(r[1]/max)*78}`).join(" ");
+  el.innerHTML=`<div class="lineChartWrap"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="92" x2="100" y2="92" class="chartAxis"/><polyline points="${pts}" class="chartLine"/>${rows.map((r,i)=>{const x=rows.length===1?50:(i/(rows.length-1))*100,y=92-(r[1]/max)*78;return`<circle cx="${x}" cy="${y}" r="1.6" class="chartPoint"><title>${dateBR(r[0])}: ${currency==="dolar"?usd(r[1]):money(r[1])}</title></circle>`}).join("")}</svg><div class="lineLabels"><span>${dateBR(rows[0][0])}</span><span>${currency==="dolar"?usd(max):money(max)}</span><span>${dateBR(rows[rows.length-1][0])}</span></div></div>`;
+}
 function renderGastos(){
-  $("#gastoTable").innerHTML=DATA.gastos.length?DATA.gastos.map(x=>`<tr>
-    <td>${dateBR(x.data)}</td><td>${x.categoria}</td><td>${x.item||"—"}</td><td>${br(x.quantidade||1)}</td><td>${x.familia_fornecedora||"—"}</td><td>${x.moeda==="dolar"?"Dólar (US$)":"Real (R$)"}</td><td>${x.descricao||"—"}</td><td>${x.responsavel||"—"}</td><td>${x.moeda==="dolar"?usd(x.valor):money(x.valor)}</td>
-    <td><button class="mini" onclick="editRecord('gastos','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('gastos','${x.id}')">×</button></td>
-  </tr>`).join(""):`<tr><td colspan="10" class="empty">Sem gastos.</td></tr>`
+  renderGastoProductFilter();
+  const rows=gastoFilteredRows(),real=rows.filter(x=>(x.moeda||"real")==="real"),dol=rows.filter(x=>x.moeda==="dolar");
+  $("#gastoFilteredReal").textContent=money(sum(real,"valor"));
+  $("#gastoFilteredDollar").textContent=usd(sum(dol,"valor"));
+  $("#gastoFilteredCount").textContent=rows.length;
+  $("#gastoFilteredQty").textContent=br(rows.reduce((s,x)=>s+n(x.quantidade||1),0));
+  $("#gastoTable").innerHTML=rows.length?rows.map(x=>`<tr><td>${dateBR(x.data)}</td><td>${x.categoria}</td><td>${x.item||"—"}</td><td>${br(x.quantidade||1)}</td><td>${x.familia_fornecedora||"—"}</td><td>${x.moeda==="dolar"?"Dólar (US$)":"Real (R$)"}</td><td>${x.descricao||"—"}</td><td>${x.responsavel||"—"}</td><td>${x.moeda==="dolar"?usd(x.valor):money(x.valor)}</td><td><button class="mini" onclick="editRecord('gastos','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('gastos','${x.id}')">×</button></td></tr>`).join(""):`<tr><td colspan="10" class="empty">Sem gastos para os filtros selecionados.</td></tr>`;
+  const cur=$("#gastoChartCurrency")?.value||"real";
+  renderBarChart("#gastoProductChart",rows,cur);renderLineChart("#gastoDateChart",rows);
 }
 function renderCustosFixos(){
   const ativos=DATA.custos_fixos.filter(x=>x.ativo);
@@ -416,7 +557,7 @@ function renderMemberCalendar(){
 function renderMetas(){
   if(!$("#metaCalendarMonth").value)$("#metaCalendarMonth").value=monthValue();
   const current=$("#metaCalendarMember").value;
-  const eligible=DATA.membros.filter(m=>!isManagerRole(m.cargo));
+  const eligible=DATA.membros.filter(m=>memberHierarchyRank(m.cargo)>=5).sort((a,b)=>sortName(a.nome,b.nome));
   $("#metaCalendarMember").innerHTML='<option value="">Selecione...</option>'+eligible.map(m=>`<option value="${m.id}">${m.nome} — ${m.cargo}</option>`).join("");
   if(current&&eligible.some(m=>m.id===current))$("#metaCalendarMember").value=current;
   else if(!current&&eligible.length)$("#metaCalendarMember").value=eligible[0].id;
@@ -434,20 +575,59 @@ function renderMetas(){
 $("#metaCalendarMember").onchange=renderMetaCalendar;
 $("#metaCalendarMonth").onchange=renderMetaCalendar;
 $("#memberCalMonth").onchange=renderMemberCalendar;
-function renderAcoes(){$("#acaoTable").innerHTML=DATA.acoes.length?DATA.acoes.map(x=>`<tr><td>${dateBR(x.data)}</td><td><b>${x.nome}</b></td><td>${x.participantes||"—"}</td><td>${money(x.entrada)}</td><td>${money(x.custo)}</td><td class="green">${money(n(x.entrada)-n(x.custo))}</td><td>${x.status}</td><td><button class="mini" onclick="editRecord('acoes','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('acoes','${x.id}')">×</button></td></tr>`).join(""):`<tr><td colspan="8" class="empty">Sem ações.</td></tr>`}
-function renderClients(){$("#clientCards").innerHTML=DATA.clientes.length?DATA.clientes.map(c=>{const l=DATA.lavagens.filter(x=>x.cliente.toLowerCase()===c.nome.toLowerCase());return`<div class="card entity"><h3>${c.nome}</h3><p>${c.contato||"Sem contato"}</p><div class="stats"><div><span>Lavagens</span><b>${l.length}</b></div><div><span>Valor sujo</span><b>${money(sum(l,"valor_sujo"))}</b></div><div><span>Valor cliente</span><b>${money(sum(l,"valor_cliente"))}</b></div><div><span>Valor Cuba</span><b>${money(sum(l,"valor_cuba"))}</b></div></div><p><button class="mini" onclick="editRecord('clientes','${c.id}')">Editar</button> <button class="mini red" onclick="removeRecord('clientes','${c.id}')">Excluir</button></p></div>`}).join(""):`<div class="empty">Sem clientes.</div>`}
+function renderAcoes(){
+  const family=DATA.acoes.filter(x=>x.entrada_familia===true && x.status!=="Falhou");
+  const rl=family.filter(x=>(x.moeda||"real")==="real" && (x.tipo_dinheiro||"limpo")==="limpo");
+  const rs=family.filter(x=>(x.moeda||"real")==="real" && x.tipo_dinheiro==="sujo");
+  const dl=family.filter(x=>x.moeda==="dolar" && (x.tipo_dinheiro||"limpo")==="limpo");
+  const ds=family.filter(x=>x.moeda==="dolar" && x.tipo_dinheiro==="sujo");
+
+  $("#acaoRealLimpo").textContent=money(sum(rl,"valor_ganho"));
+  $("#acaoRealSujo").textContent=money(sum(rs,"valor_ganho"));
+  $("#acaoDolLimpo").textContent=usd(sum(dl,"valor_ganho"));
+  $("#acaoDolSujo").textContent=usd(sum(ds,"valor_ganho"));
+
+  $("#acaoTable").innerHTML=DATA.acoes.length?DATA.acoes.map(x=>{
+    const failed=x.status==="Falhou";
+    const valor=n(x.valor_ganho) || (!failed?n(x.entrada):0);
+    const moeda=x.moeda||"real";
+    const tipo=x.tipo_dinheiro||"limpo";
+    const familyIn=x.entrada_familia ?? (n(x.entrada)>0);
+    const ganho=failed?'<b class="actionRedText">DEU RED</b>':(moeda==="dolar"?usd(valor):money(valor));
+    const resultado=failed?'<b class="actionRedText">DEU RED</b>':(familyIn?'<span class="green">Entrada registrada</span>':'<span class="mut">Não entrou para família</span>');
+    return`<tr>
+      <td>${dateBR(x.data)}</td>
+      <td><b>${x.nome}</b></td>
+      <td>${x.participantes||"—"}</td>
+      <td><span class="badge">${x.status}</span></td>
+      <td>${ganho}</td>
+      <td>${failed?"—":`${moeda==="dolar"?"Dólar":"Real"} • ${tipo==="sujo"?"Sujo":"Limpo"}`}</td>
+      <td>${failed?"—":(familyIn?'<span class="green">Sim</span>':'Não')}</td>
+      <td>${money(x.custo)}</td>
+      <td>${resultado}</td>
+      <td><button class="mini" onclick="editRecord('acoes','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('acoes','${x.id}')">×</button></td>
+    </tr>`
+  }).join(""):`<tr><td colspan="10" class="empty">Sem ações.</td></tr>`;
+}
+
+function renderClients(){
+  const ordered=[...DATA.clientes].sort((a,b)=>sortName(a.nome,b.nome));
+  $("#clientCards").innerHTML=ordered.length?ordered.map(c=>{
+    const l=DATA.lavagens.filter(x=>String(x.cliente||"").toLowerCase()===String(c.nome||"").toLowerCase());
+    return`<div class="card entity"><h3>${c.nome}</h3><p>${c.contato||"Sem contato"}</p><div class="stats"><div><span>Lavagens</span><b>${l.length}</b></div><div><span>Valor sujo</span><b>${money(sum(l,"valor_sujo"))}</b></div><div><span>Valor cliente</span><b>${money(sum(l,"valor_cliente"))}</b></div><div><span>Valor Cuba</span><b>${money(sum(l,"valor_cuba"))}</b></div></div><p><button class="mini" onclick="editRecord('clientes','${c.id}')">Editar</button> <button class="mini red" onclick="removeRecord('clientes','${c.id}')">Excluir</button></p></div>`
+  }).join(""):`<div class="empty">Sem clientes.</div>`;
+}
 function renderMembers(){
-  $("#memberCards").innerHTML=DATA.membros.length?DATA.membros.map(m=>`<div class="card entity">
-    <h3>${m.nome}</h3>
-    <p>${m.cargo} ${m.passaporte?"• "+m.passaporte:""} ${isManagerRole(m.cargo)?'• <span class="badge">Isento de meta</span>':""}</p>
-    <div class="memberActions">
-      ${!isManagerRole(m.cargo)?`<button class="mini" onclick="openMemberCalendar('${m.id}')">📅 Ver calendário</button>`:""}
-      <button class="mini" onclick="editRecord('membros','${m.id}')">Editar</button>
-      <button class="mini red" onclick="removeRecord('membros','${m.id}')">Excluir</button>
-    </div>
-  </div>`).join(""):`<div class="empty">Sem membros.</div>`
+  const ordered=[...DATA.membros].sort((a,b)=>{
+    const ra=memberHierarchyRank(a.cargo),rb=memberHierarchyRank(b.cargo);
+    return ra!==rb?ra-rb:sortName(a.nome,b.nome);
+  });
+  $("#memberCards").innerHTML=ordered.length?ordered.map(m=>`<div class="card entity"><h3>${m.nome}</h3><p>${m.cargo} ${m.passaporte?"• "+m.passaporte:""} ${isManagerRole(m.cargo)?'• <span class="badge">Isento de meta</span>':""}</p><div class="memberActions">${!isManagerRole(m.cargo)?`<button class="mini" onclick="openMemberCalendar('${m.id}')">📅 Ver calendário</button>`:""}<button class="mini" onclick="editRecord('membros','${m.id}')">Editar</button><button class="mini red" onclick="removeRecord('membros','${m.id}')">Excluir</button></div></div>`).join(""):`<div class="empty">Sem membros.</div>`;
 }
 function renderAudit(){$("#auditTable").innerHTML=DATA.auditoria.length?DATA.auditoria.map(a=>`<tr><td>${new Date(a.created_at).toLocaleString("pt-BR")}</td><td>${a.profile_nome||"Gerente"}</td><td>${a.action}</td><td>${a.table_name}</td><td>${a.record_id||"—"}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">Sem eventos.</td></tr>`}
 function renderLists(){$("#membersList").innerHTML=DATA.membros.map(m=>`<option value="${m.nome}">`).join("");$("#clientsList").innerHTML=DATA.clientes.map(c=>`<option value="${c.nome}">`).join("")}
+
+["gastoFrom","gastoTo","gastoProductFilter","gastoCurrencyFilter","gastoChartCurrency"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderGastos)});
+$("#gastoClearFilters").onclick=()=>{$("#gastoFrom").value="";$("#gastoTo").value="";$("#gastoProductFilter").value="";$("#gastoCurrencyFilter").value="";renderGastos()};
 function renderAll(){renderLists();renderDashboard();renderLavagens();renderLavagensDol();renderGastos();renderCustosFixos();renderMetas();renderAcoes();renderClients();renderMembers();renderAudit()}
 (async()=>{try{if(!await requireSession())return;await loadAll();$("#loader").classList.add("hide")}catch(e){console.error(e);alert("Não foi possível carregar o sistema.\n\nErro: "+(e?.message||String(e)));}})();

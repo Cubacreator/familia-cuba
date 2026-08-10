@@ -48,3 +48,40 @@ body.collapsed .brand-wordmark-wrap{display:none}
 .weekChoice.paid{border-color:rgba(54,212,139,.36)}.weekChoice.debt{border-color:rgba(255,93,104,.36)}.weekChoice.absent{border-color:rgba(243,195,77,.36)}.weekChoice.pending{border-color:rgba(96,114,134,.36)}
 .memberCalBox{max-width:1100px!important}
 @media(max-width:800px){.calDay{min-height:68px;padding:7px}.calHeader div{font-size:9px}.calDay .dayNum{font-size:11px}.calDay .payFlag{display:none}.weekStatusChoices{grid-template-columns:1fr}}
+
+
+/* V19 — Responsáveis e registro de ações */
+.actionMoneySummary{margin:12px 0}
+.actionModalBox{max-width:900px!important}
+.actionRewardPanel{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(10,30,52,.55)}
+.actionRewardTitle{margin-bottom:12px}
+.actionRewardTitle b{display:block;font-size:14px}
+.actionRewardTitle small{display:block;color:var(--muted);margin-top:3px}
+.actionNestedGrid{margin:0}
+.checkChoices{display:flex;gap:8px;flex-wrap:wrap}
+.checkChoice{position:relative;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;background:rgba(5,20,36,.62)}
+.checkChoice input{position:absolute;opacity:0;pointer-events:none}
+.choiceCheck{width:17px;height:17px;border-radius:5px;border:1px solid #53677e;display:grid;place-items:center;font-size:11px;color:transparent}
+.checkChoice:has(input:checked){border-color:rgba(48,132,255,.65);background:rgba(48,132,255,.12)}
+.checkChoice:has(input:checked) .choiceCheck{background:#2c79e8;border-color:#2c79e8;color:white}
+.yesNoChoices{display:flex;gap:8px}
+.yesNoChoices label{cursor:pointer}
+.yesNoChoices input{display:none}
+.yesNoChoices span{display:block;border:1px solid var(--line);border-radius:999px;padding:8px 18px;color:var(--muted)}
+.yesNoChoices input:checked+span{border-color:rgba(48,132,255,.7);background:rgba(48,132,255,.14);color:var(--text);font-weight:800}
+.labelWithHelp{display:flex!important;align-items:center;gap:7px}
+.helpCircle{width:18px;height:18px;border:1px solid #526a83;border-radius:50%;display:inline-grid;place-items:center;font-size:11px;font-weight:900;color:#89baff;position:relative;cursor:help}
+.helpBubble{display:none;position:absolute;z-index:30;width:290px;left:24px;top:-12px;background:#0a1d32;border:1px solid #25496d;border-radius:10px;padding:10px 12px;font-weight:400;line-height:1.4;color:#d9e5f1;box-shadow:0 12px 35px rgba(0,0,0,.35)}
+.helpCircle:hover .helpBubble,.helpCircle:focus .helpBubble{display:block}
+.actionRedBox{border:1px solid rgba(255,74,84,.55);background:rgba(255,74,84,.09);border-radius:14px;padding:16px}
+.actionRedBox b{display:block;color:#ff626c;font-size:22px;margin-bottom:4px}
+.actionRedBox span{color:#ff9da3}
+.actionRedText{color:#ff5964;font-weight:900}
+.limitedResponsible{width:100%}
+
+/* V20 — Gastos com filtros e gráficos */
+.expenseFilters{margin-top:12px}.filterGrid{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:10px;align-items:end}.filterActions .btn{width:100%}
+.expenseCharts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.chartPanel{min-height:310px}.chartHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}.chartHeader h3{margin:0 0 3px}.chartHeader p{margin:0;color:var(--muted);font-size:12px}.chartHeader select{max-width:150px}
+.barChart{display:flex;flex-direction:column;gap:11px}.barRow{display:grid;grid-template-columns:minmax(100px,150px) 1fr minmax(105px,auto);gap:10px;align-items:center}.barLabel{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.barTrack{height:12px;border-radius:999px;background:rgba(76,101,130,.18);overflow:hidden}.barFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2478e8,#62a8ff)}.barValue{text-align:right;font-size:11px;font-weight:800}
+.lineChart{height:230px}.lineChartWrap{height:100%;display:flex;flex-direction:column}.lineChartWrap svg{flex:1;width:100%;overflow:visible}.chartAxis{stroke:rgba(130,156,184,.25);stroke-width:.5}.chartLine{fill:none;stroke:#4f9bff;stroke-width:2;vector-effect:non-scaling-stroke}.chartPoint{fill:#9bc7ff;vector-effect:non-scaling-stroke}.lineLabels{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:10px;margin-top:5px}
+@media(max-width:1050px){.filterGrid{grid-template-columns:repeat(2,1fr)}.expenseCharts{grid-template-columns:1fr}}@media(max-width:620px){.filterGrid{grid-template-columns:1fr}.barRow{grid-template-columns:95px 1fr}.barValue{grid-column:2;text-align:left}}
