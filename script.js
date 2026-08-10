@@ -113,13 +113,6 @@ const membros = [
     frase: "Dirigir não. Para o resto, pode chamar."
   },
 {
-    nome: "Guizin",
-    cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
-    descricao: "Guizin é membro da Família Cuba. Acorda para fazer ação, entrar na resenha e fortalecer a família no que precisar.",
-    frase: "Acordou, é ação e resenha."
-  },
-{
     nome: "Darling",
     cargo: "Membro da Família Cuba",
     imagem: "images/darling.png",
