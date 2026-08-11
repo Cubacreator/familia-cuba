@@ -113,13 +113,6 @@ const membros = [
     frase: "Dirigir não. Para o resto, pode chamar."
   },
 {
-    nome: "Darling",
-    cargo: "Membro da Família Cuba",
-    imagem: "images/darling.png",
-    descricao: "Darling é membro da Família Cuba e gosta de qualquer coisa, menos trabalhar. Seu maior hobby é encher o saco e entrar na resenha. Mas, quando tem time de tiro, ele assume a organização: faz a convocação pelo rádio e manda a lista dos escolhidos no grupo.",
-    frase: "Trabalhar não. Convocar para a trocação, sempre."
-  },
-{
     nome: "Santana",
     cargo: "Membro da Família Cuba",
     imagem: "images/santana.png",
