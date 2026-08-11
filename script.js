@@ -175,7 +175,7 @@ const membros = [
     descricao: "Pablo chegou recentemente à família ao lado do seu irmão gêmeo e, em pouco tempo, já mostrou que também é do tipo que faz de tudo. Está sempre presente no farm, na trocação e ainda se arrisca no P1 quando precisa. Mesmo sendo um dos mais novos, já demonstra disposição, coragem e vontade de conquistar seu espaço dentro da Cuba.",
     frase: "Chegou com o irmão gêmeo e já virou o famoso faz tudo: farma, troca tiro e ainda se arrisca no P1."
   },
-      {
+    {
     nome: "Bagual",
     cargo: "Membro da Família Cuba",
     imagem: "images/bagual.png",
@@ -216,6 +216,7 @@ const membros = [
     imagem: "images/logo.jpg",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
+  },
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
 const intro=['Se você está lendo isso...','significa que alguém acreditou no seu potencial.','Durante esta missão, você foi observado.','Cada decisão foi analisada.','Cada palavra teve importância.','Agora é hora de conhecer quem realmente somos.'];
