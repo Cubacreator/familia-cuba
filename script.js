@@ -195,7 +195,27 @@ const membros = [
     imagem: "images/aurora.png",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
-  }
+  },
+   {
+    nome: "Filipi",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
+    frase: "Uma nova história começa dentro da Cuba.",
+  },
+  {
+    nome: "Anderson",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
+    frase: "Uma nova história começa dentro da Cuba.",
+  },
+  {
+    nome: "Robson",
+    cargo: "Membro da Família Cuba",
+    imagem: "images/logo.jpg",
+    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
+    frase: "Uma nova história começa dentro da Cuba.",
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
 const intro=['Se você está lendo isso...','significa que alguém acreditou no seu potencial.','Durante esta missão, você foi observado.','Cada decisão foi analisada.','Cada palavra teve importância.','Agora é hora de conhecer quem realmente somos.'];
