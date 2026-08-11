@@ -87,7 +87,7 @@ const membros = [
 {
     nome: "Todynho",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/todynho.png",
     descricao: "Todynho é membro da Família Cuba. Passa a maior parte do tempo arrumando confusão e faz qualquer coisa, menos trabalhar. Apaixonado por trocação, está sempre disponível quando a família precisa.",
     frase: "Trabalhar talvez. Trocar tiro, sempre."
   },
@@ -192,21 +192,21 @@ const membros = [
    {
     nome: "Filipi",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/filipi.png",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   },
   {
     nome: "Anderson",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/anderson.png",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   },
   {
     nome: "Robson",
     cargo: "Membro da Família Cuba",
-    imagem: "images/logo.jpg",
+    imagem: "images/robson.png",
     descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
     frase: "Uma nova história começa dentro da Cuba.",
   },
