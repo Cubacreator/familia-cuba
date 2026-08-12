@@ -144,8 +144,8 @@ const membros = [
     nome: "Caitov",
     cargo: "Membro da Família Cuba",
     imagem: "images/caitov.png",
-    descricao: "Yeshua é membro da Família Cuba e, ao contrário da tranquilidade que o nome transmite, gosta mesmo é de trocação. Quando entra em ação, seu objetivo é colocar policial para dormir em berço esplêndido.",
-    frase: "O nome é de paz, mas a mira é de guerra."
+    descricao: "Caitov é membro da Família Cuba e, quando começa a farmar, parece que esquece como se para. Fica focado até terminar tudo que tem pra fazer. Mas tem uma regra quase certa: se o Snoop estiver acordado, chamou o Caitov e provavelmente ganhou os dois de brinde.",
+    frase: "Chamou um, veio o combo completo."
   },
 {
     nome: "Snoop",
@@ -172,8 +172,8 @@ const membros = [
     nome: "Bagual",
     cargo: "Membro da Família Cuba",
     imagem: "images/bagual.png",
-    descricao: "Bagual chegou recentemente à família e irá provar seu valor.",
-    frase: "Uma nova história começa dentro da Cuba.",
+    descricao: "Bagual é membro da Família Cuba e simplesmente não consegue ficar parado. Se não está em alguma ação, provavelmente está farmando por algum canto da cidade. Tá precisando dele? Primeiro vale conferir se ele já não está ocupado fazendo alguma coisa.",
+    frase: "Se eu parar, eu durmo.",
   },
   {
     nome: "Cardoso",
@@ -186,8 +186,8 @@ const membros = [
     nome: "Aurora",
     cargo: "Membro da Família Cuba",
     imagem: "images/aurora.png",
-    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
-    frase: "Uma nova história começa dentro da Cuba.",
+    descricao: "Aurora é membro da Família Cuba e está quase sempre farmando. Se não está correndo atrás da meta, provavelmente está fazendo dinheiro na pescagem. Tá procurando ela? Dá uma olhada no pier. Se não estiver por lá, aí pode desconfiar que foi sequestrada de novo.",
+    frase: "Se eu não tô farmando, provavelmente tão me procurando.",
   },
    {
     nome: "Filipi",
