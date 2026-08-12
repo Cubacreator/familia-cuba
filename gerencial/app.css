@@ -85,3 +85,10 @@ body.collapsed .brand-wordmark-wrap{display:none}
 .barChart{display:flex;flex-direction:column;gap:11px}.barRow{display:grid;grid-template-columns:minmax(100px,150px) 1fr minmax(105px,auto);gap:10px;align-items:center}.barLabel{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.barTrack{height:12px;border-radius:999px;background:rgba(76,101,130,.18);overflow:hidden}.barFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2478e8,#62a8ff)}.barValue{text-align:right;font-size:11px;font-weight:800}
 .lineChart{height:230px}.lineChartWrap{height:100%;display:flex;flex-direction:column}.lineChartWrap svg{flex:1;width:100%;overflow:visible}.chartAxis{stroke:rgba(130,156,184,.25);stroke-width:.5}.chartLine{fill:none;stroke:#4f9bff;stroke-width:2;vector-effect:non-scaling-stroke}.chartPoint{fill:#9bc7ff;vector-effect:non-scaling-stroke}.lineLabels{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:10px;margin-top:5px}
 @media(max-width:1050px){.filterGrid{grid-template-columns:repeat(2,1fr)}.expenseCharts{grid-template-columns:1fr}}@media(max-width:620px){.filterGrid{grid-template-columns:1fr}.barRow{grid-template-columns:95px 1fr}.barValue{grid-column:2;text-align:left}}
+
+/* V21 — divisão do valor das ações */
+.splitChoices{display:flex;gap:8px;flex-wrap:wrap}
+.splitChoices label{cursor:pointer}
+.splitChoices input{display:none}
+.splitChoices span{display:block;border:1px solid var(--line);border-radius:999px;padding:9px 14px;color:var(--muted);transition:.15s}
+.splitChoices input:checked+span{border-color:rgba(48,132,255,.7);background:rgba(48,132,255,.14);color:var(--text);font-weight:800}

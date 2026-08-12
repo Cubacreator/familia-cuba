@@ -207,7 +207,7 @@
           <th>Status</th>
           <th>Valor ganho</th>
           <th>Tipo</th>
-          <th>Entrada família</th>
+          <th>Para família</th><th>Para integrantes</th>
           <th>Custo</th>
           <th>Resultado</th>
           <th></th>
@@ -403,18 +403,31 @@
           </div>
         </div>
 
-        <div class="field">
-          <label class="labelWithHelp">
-            Entrada para família
-            <span class="helpCircle" tabindex="0">?
-              <span class="helpBubble">Marque SIM quando o dinheiro ganho na ação foi entregue para o caixa da família. Nesse caso ele entra nos totais da família. Marque NÃO quando o dinheiro ficou com os participantes ou teve outro destino; assim ele fica apenas no histórico da ação e não entra no caixa.</span>
-            </span>
-          </label>
-          <div class="yesNoChoices">
-            <label><input type="radio" name="entrada_familia" value="true" checked><span>Sim</span></label>
-            <label><input type="radio" name="entrada_familia" value="false"><span>Não</span></label>
-          </div>
-        </div>
+        
+<div class="field full">
+  <label class="labelWithHelp">
+    Destino do valor
+    <span class="helpCircle" tabindex="0">?
+      <span class="helpBubble">Escolha como o valor ganho na ação será dividido. Se for dividido, informe quanto vai para a família; o sistema calcula automaticamente quanto fica para os integrantes. Somente a parte da família entra no caixa.</span>
+    </span>
+  </label>
+  <div class="splitChoices">
+    <label><input type="radio" name="destino_valor" value="familia" checked><span>Tudo para família</span></label>
+    <label><input type="radio" name="destino_valor" value="integrantes"><span>Tudo para integrantes</span></label>
+    <label><input type="radio" name="destino_valor" value="dividido"><span>Dividir valor</span></label>
+  </div>
+</div>
+
+<div class="field hidden" id="acaoValorFamiliaWrap">
+  <label>Valor para a família</label>
+  <input class="money" name="valor_familia" id="acaoValorFamilia" placeholder="0,00">
+</div>
+
+<div class="field hidden" id="acaoValorIntegrantesWrap">
+  <label>Valor para os integrantes</label>
+  <input class="money" name="valor_integrantes" id="acaoValorIntegrantes" readonly>
+</div>
+
       </div>
     </div>
 

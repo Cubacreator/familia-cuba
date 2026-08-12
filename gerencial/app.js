@@ -76,10 +76,33 @@ function updateActionForm(){
   const failed=f.status.value==="Falhou";
   $("#actionRewardPanel").classList.toggle("hidden",failed);
   $("#actionRedBox").classList.toggle("hidden",!failed);
+
   if(failed){
     f.valor_ganho.value="";
-    const fam=f["entrada_familia"];
-    if(fam)fam.value="false";
+    if(f.valor_familia)f.valor_familia.value="";
+    if(f.valor_integrantes)f.valor_integrantes.value="";
+    return;
+  }
+
+  const destino=f.destino_valor?.value||"familia";
+  const total=n(f.valor_ganho.value);
+
+  $("#acaoValorFamiliaWrap").classList.toggle("hidden",destino!=="dividido");
+  $("#acaoValorIntegrantesWrap").classList.toggle("hidden",destino!=="dividido");
+
+  if(destino==="familia"){
+    if(f.valor_familia)f.valor_familia.value=br(total);
+    if(f.valor_integrantes)f.valor_integrantes.value=br(0);
+  }else if(destino==="integrantes"){
+    if(f.valor_familia)f.valor_familia.value=br(0);
+    if(f.valor_integrantes)f.valor_integrantes.value=br(total);
+  }else{
+    let familia=n(f.valor_familia.value);
+    if(familia>total){
+      familia=total;
+      f.valor_familia.value=br(familia);
+    }
+    if(f.valor_integrantes)f.valor_integrantes.value=br(Math.max(0,total-familia));
   }
 }
 function actionCurrencyValue(x){
@@ -140,11 +163,18 @@ function openModal(id,rec){
      f.elements.custo.value="0,00";
      f.elements.moeda.value="real";
      f.elements.tipo_dinheiro.value="limpo";
-     f.elements.entrada_familia.value="true";
+     f.elements.destino_valor.value="familia";
+     if(f.elements.valor_familia)f.elements.valor_familia.value="";
+     if(f.elements.valor_integrantes)f.elements.valor_integrantes.value="";
    }else{
      f.elements.moeda.value=rec.moeda||"real";
      f.elements.tipo_dinheiro.value=rec.tipo_dinheiro||"limpo";
-     f.elements.entrada_familia.value=String(rec.entrada_familia ?? (n(rec.entrada)>0));
+     const total=n(rec.valor_ganho)||n(rec.entrada);
+     const vf=rec.valor_familia!=null?n(rec.valor_familia):(rec.entrada_familia?total:n(rec.entrada));
+     const vi=rec.valor_integrantes!=null?n(rec.valor_integrantes):Math.max(0,total-vf);
+     f.elements.destino_valor.value=rec.destino_valor||(vf>0&&vi>0?"dividido":vf>0?"familia":"integrantes");
+     if(f.elements.valor_familia)f.elements.valor_familia.value=br(vf);
+     if(f.elements.valor_integrantes)f.elements.valor_integrantes.value=br(vi);
    }
    updateActionForm();
  }
@@ -189,6 +219,11 @@ function updateGastoMoeda(){
 }
 $("#gastoMoeda").addEventListener("change",updateGastoMoeda);
 $("#acaoStatus").addEventListener("change",updateActionForm);
+
+$("#acaoValorGanho").addEventListener("input",updateActionForm);
+$("#acaoValorFamilia").addEventListener("input",updateActionForm);
+$$('input[name="destino_valor"]').forEach(x=>x.addEventListener("change",updateActionForm));
+
 
 $("#lavForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));const p={data:x.data,cliente:x.cliente,responsavel:x.responsavel,valor_sujo:n(x.valor_sujo),pct_maquina:n(x.pct_maquina),valor_limpo:n(x.valor_limpo),pct_cliente:n(x.pct_cliente),valor_cliente:n(x.valor_cliente),qtd_malas:n(x.qtd_malas),custo_malas:n(x.custo_malas),qtd_alvejantes:n(x.qtd_alvejantes),custo_alvejantes:n(x.custo_alvejantes),custo_insumos:n(x.custo_insumos),valor_cuba:n(x.valor_cuba),observacoes:x.observacoes||null};try{await saveRecord("lavagens",p,x.id);await ensureClient(x.cliente);closeModal("lavModal");await loadAll();toast("Lavagem salva.")}catch(ex){alert(ex.message)}};
 
@@ -262,18 +297,30 @@ window.pagarFixo=pagarFixo;
 
 $("#acaoForm").onsubmit=async e=>{
   e.preventDefault();
+  updateActionForm();
   const x=Object.fromEntries(new FormData(e.target));
   const failed=x.status==="Falhou";
   const valor=failed?0:n(x.valor_ganho);
-  const entradaFamilia=!failed && x.entrada_familia==="true";
   const moeda=failed?"real":(x.moeda||"real");
   const tipo=failed?"limpo":(x.tipo_dinheiro||"limpo");
+  const destino=failed?"integrantes":(x.destino_valor||"familia");
 
   if(!failed && valor<=0)return alert("Informe o valor que foi ganho na ação.");
 
-  // Campo antigo "entrada" é mantido por compatibilidade.
-  // Só recebe valor quando é dinheiro REAL + LIMPO que efetivamente entrou para a família.
-  const entradaLegada=entradaFamilia && moeda==="real" && tipo==="limpo" ? valor : 0;
+  let valorFamilia=0,valorIntegrantes=0;
+  if(!failed){
+    if(destino==="familia"){
+      valorFamilia=valor;
+    }else if(destino==="integrantes"){
+      valorIntegrantes=valor;
+    }else{
+      valorFamilia=n(x.valor_familia);
+      if(valorFamilia<0 || valorFamilia>valor)return alert("O valor para a família deve estar entre zero e o total ganho.");
+      valorIntegrantes=Math.max(0,valor-valorFamilia);
+    }
+  }
+
+  const entradaLegada=!failed && moeda==="real" && tipo==="limpo" ? valorFamilia : 0;
 
   try{
     await saveRecord("acoes",{
@@ -286,7 +333,10 @@ $("#acaoForm").onsubmit=async e=>{
       valor_ganho:valor,
       moeda,
       tipo_dinheiro:tipo,
-      entrada_familia:entradaFamilia,
+      entrada_familia:valorFamilia>0,
+      destino_valor:destino,
+      valor_familia:valorFamilia,
+      valor_integrantes:valorIntegrantes,
       observacoes:x.observacoes||null
     },x.id);
     closeModal("acaoModal");
@@ -576,38 +626,44 @@ $("#metaCalendarMember").onchange=renderMetaCalendar;
 $("#metaCalendarMonth").onchange=renderMetaCalendar;
 $("#memberCalMonth").onchange=renderMemberCalendar;
 function renderAcoes(){
-  const family=DATA.acoes.filter(x=>x.entrada_familia===true && x.status!=="Falhou");
-  const rl=family.filter(x=>(x.moeda||"real")==="real" && (x.tipo_dinheiro||"limpo")==="limpo");
-  const rs=family.filter(x=>(x.moeda||"real")==="real" && x.tipo_dinheiro==="sujo");
-  const dl=family.filter(x=>x.moeda==="dolar" && (x.tipo_dinheiro||"limpo")==="limpo");
-  const ds=family.filter(x=>x.moeda==="dolar" && x.tipo_dinheiro==="sujo");
+  const valid=DATA.acoes.filter(x=>x.status!=="Falhou");
+  const famValue=x=>x.valor_familia!=null?n(x.valor_familia):(x.entrada_familia?n(x.valor_ganho):n(x.entrada));
 
-  $("#acaoRealLimpo").textContent=money(sum(rl,"valor_ganho"));
-  $("#acaoRealSujo").textContent=money(sum(rs,"valor_ganho"));
-  $("#acaoDolLimpo").textContent=usd(sum(dl,"valor_ganho"));
-  $("#acaoDolSujo").textContent=usd(sum(ds,"valor_ganho"));
+  const rl=valid.filter(x=>(x.moeda||"real")==="real" && (x.tipo_dinheiro||"limpo")==="limpo");
+  const rs=valid.filter(x=>(x.moeda||"real")==="real" && x.tipo_dinheiro==="sujo");
+  const dl=valid.filter(x=>x.moeda==="dolar" && (x.tipo_dinheiro||"limpo")==="limpo");
+  const ds=valid.filter(x=>x.moeda==="dolar" && x.tipo_dinheiro==="sujo");
+
+  $("#acaoRealLimpo").textContent=money(rl.reduce((s,x)=>s+famValue(x),0));
+  $("#acaoRealSujo").textContent=money(rs.reduce((s,x)=>s+famValue(x),0));
+  $("#acaoDolLimpo").textContent=usd(dl.reduce((s,x)=>s+famValue(x),0));
+  $("#acaoDolSujo").textContent=usd(ds.reduce((s,x)=>s+famValue(x),0));
 
   $("#acaoTable").innerHTML=DATA.acoes.length?DATA.acoes.map(x=>{
     const failed=x.status==="Falhou";
-    const valor=n(x.valor_ganho) || (!failed?n(x.entrada):0);
+    const total=n(x.valor_ganho)||(!failed?n(x.entrada):0);
     const moeda=x.moeda||"real";
     const tipo=x.tipo_dinheiro||"limpo";
-    const familyIn=x.entrada_familia ?? (n(x.entrada)>0);
-    const ganho=failed?'<b class="actionRedText">DEU RED</b>':(moeda==="dolar"?usd(valor):money(valor));
-    const resultado=failed?'<b class="actionRedText">DEU RED</b>':(familyIn?'<span class="green">Entrada registrada</span>':'<span class="mut">Não entrou para família</span>');
+    const vf=failed?0:(x.valor_familia!=null?n(x.valor_familia):(x.entrada_familia?total:n(x.entrada)));
+    const vi=failed?0:(x.valor_integrantes!=null?n(x.valor_integrantes):Math.max(0,total-vf));
+
+    const ganho=failed?'<b class="actionRedText">DEU RED</b>':(moeda==="dolar"?usd(total):money(total));
+    const famTxt=failed?"—":(moeda==="dolar"?usd(vf):money(vf));
+    const intTxt=failed?"—":(moeda==="dolar"?usd(vi):money(vi));
+
+    const resultado=failed?'<b class="actionRedText">DEU RED</b>':
+      (vf>0&&vi>0?'<span class="green">Valor dividido</span>':
+       vf>0?'<span class="green">Tudo para família</span>':
+       '<span class="mut">Tudo para integrantes</span>');
+
     return`<tr>
-      <td>${dateBR(x.data)}</td>
-      <td><b>${x.nome}</b></td>
-      <td>${x.participantes||"—"}</td>
-      <td><span class="badge">${x.status}</span></td>
-      <td>${ganho}</td>
+      <td>${dateBR(x.data)}</td><td><b>${x.nome}</b></td><td>${x.participantes||"—"}</td>
+      <td><span class="badge">${x.status}</span></td><td>${ganho}</td>
       <td>${failed?"—":`${moeda==="dolar"?"Dólar":"Real"} • ${tipo==="sujo"?"Sujo":"Limpo"}`}</td>
-      <td>${failed?"—":(familyIn?'<span class="green">Sim</span>':'Não')}</td>
-      <td>${money(x.custo)}</td>
-      <td>${resultado}</td>
+      <td>${famTxt}</td><td>${intTxt}</td><td>${money(x.custo)}</td><td>${resultado}</td>
       <td><button class="mini" onclick="editRecord('acoes','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('acoes','${x.id}')">×</button></td>
     </tr>`
-  }).join(""):`<tr><td colspan="10" class="empty">Sem ações.</td></tr>`;
+  }).join(""):`<tr><td colspan="11" class="empty">Sem ações.</td></tr>`;
 }
 
 function renderClients(){
