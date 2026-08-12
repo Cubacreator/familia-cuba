@@ -418,7 +418,7 @@ function renderLineChart(elId,items){
   if(!rows.length){el.innerHTML='<div class="empty">Sem dados para o gráfico.</div>';return}
   const max=Math.max(...rows.map(x=>x[1]),1);
   const pts=rows.map((r,i)=>`${rows.length===1?50:(i/(rows.length-1))*100},${92-(r[1]/max)*78}`).join(" ");
-  el.innerHTML=`<div class="lineChartWrap"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="92" x2="100" y2="92" class="chartAxis"/><polyline points="${pts}" class="chartLine"/>${rows.map((r,i)=>{const x=rows.length===1?50:(i/(rows.length-1))*100,y=92-(r[1]/max)*78;return`<circle cx="${x}" cy="${y}" r="1.6" class="chartPoint"><title>${dateBR(r[0])}: ${currency==="dolar"?usd(r[1]):money(r[1])}</title></circle>`}).join("")}</svg><div class="lineLabels"><span>${dateBR(rows[0][0])}</span><span>${currency==="dolar"?usd(max):money(max)}</span><span>${dateBR(rows[rows.length-1][0])}</span></div></div>`;
+  el.innerHTML=`<div class="lineChartWrap"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="overflow:hidden"><defs><clipPath id="gastoLineClip"><rect x="0" y="0" width="100" height="100"/></clipPath></defs><g clip-path="url(#gastoLineClip)"><line x1="0" y1="92" x2="100" y2="92" class="chartAxis"/><polyline points="${pts}" class="chartLine"/>${rows.map((r,i)=>{const x=rows.length===1?50:(i/(rows.length-1))*100,y=92-(r[1]/max)*78;return`<circle cx="${x}" cy="${y}" r="1.6" class="chartPoint"><title>${dateBR(r[0])}: ${currency==="dolar"?usd(r[1]):money(r[1])}</title></circle>`}).join("")}</g></svg><div class="lineLabels"><span>${dateBR(rows[0][0])}</span><span>${currency==="dolar"?usd(max):money(max)}</span><span>${dateBR(rows[rows.length-1][0])}</span></div></div>`;
 }
 function renderGastos(){
   renderGastoProductFilter();
