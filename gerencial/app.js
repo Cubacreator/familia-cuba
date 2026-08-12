@@ -605,147 +605,268 @@ function renderMemberCalendar(){
 }
 
 
+
 function reportRange(){
   const mode=$("#metaReportMode")?.value||"month";
+
   if(mode==="month"){
     const ym=$("#metaReportMonth")?.value||monthValue();
     const [y,m]=ym.split("-").map(Number);
-    return {
-      from:isoDate(new Date(y,m-1,1,12)),
-      to:isoDate(new Date(y,m,0,12)),
-      label:monthName(ym)
-    };
+    const from=isoDate(new Date(y,m-1,1,12));
+    const to=isoDate(new Date(y,m,0,12));
+    return {mode,from,to,label:monthName(ym)};
   }
+
+  if(mode==="week"){
+    const chosen=$("#metaReportWeek")?.value||today();
+    const mon=weekMonday(chosen),sun=addDays(mon,6);
+    return {mode,from:isoDate(mon),to:isoDate(sun),label:`${dateBR(isoDate(mon))} a ${dateBR(isoDate(sun))}`};
+  }
+
   const from=$("#metaReportFrom")?.value||"";
   const to=$("#metaReportTo")?.value||"";
-  return {from,to,label:from&&to?`${dateBR(from)} a ${dateBR(to)}`:"Período personalizado"};
+  return {mode,from,to,label:from&&to?`${dateBR(from)} a ${dateBR(to)}`:"Selecione o intervalo"};
 }
+
 function weeksBetween(from,to){
   if(!from||!to)return[];
-  let cur=weekMonday(from),end=new Date(to+"T12:00:00"),out=[];
-  while(cur<=end){
+  const first=new Date(from+"T12:00:00"),last=new Date(to+"T12:00:00");
+  let cur=weekMonday(from),out=[];
+  while(cur<=last){
     const sun=addDays(cur,6);
-    if(sun>=new Date(from+"T12:00:00"))out.push(new Date(cur));
+    if(sun>=first)out.push(new Date(cur));
     cur=addDays(cur,7);
   }
   return out;
 }
+
 function eligibleMetaMembers(){
-  return DATA.membros.filter(m=>memberHierarchyRank(m.cargo)>=5).sort((a,b)=>sortName(a.nome,b.nome));
+  return DATA.membros
+    .filter(m=>memberHierarchyRank(m.cargo)>=5)
+    .sort((a,b)=>sortName(a.nome,b.nome));
 }
+
 function exemptMetaMembers(){
-  return DATA.membros.filter(m=>memberHierarchyRank(m.cargo)<5).sort((a,b)=>{
-    const ra=memberHierarchyRank(a.cargo),rb=memberHierarchyRank(b.cargo);
-    return ra!==rb?ra-rb:sortName(a.nome,b.nome);
-  });
+  return DATA.membros
+    .filter(m=>memberHierarchyRank(m.cargo)<5)
+    .sort((a,b)=>{
+      const ra=memberHierarchyRank(a.cargo),rb=memberHierarchyRank(b.cargo);
+      return ra!==rb?ra-rb:sortName(a.nome,b.nome);
+    });
 }
-function reportRows(){
-  const range=reportRange(),weeks=weeksBetween(range.from,range.to),members=eligibleMetaMembers();
+
+function reportDataset(){
+  const range=reportRange();
+  const weeks=weeksBetween(range.from,range.to);
+  const members=eligibleMetaMembers();
+  const exempt=exemptMetaMembers();
   const rows=[];
-  members.forEach(m=>{
-    weeks.forEach(w=>{
-      const rec=metaRec(m.id,w);
-      rows.push({member:m,week:w,record:rec,status:metaStatusOf(rec)});
+
+  members.forEach(member=>{
+    weeks.forEach(week=>{
+      const rec=metaRec(member.id,week);
+      rows.push({
+        member,
+        week,
+        record:rec,
+        status:metaStatusOf(rec)
+      });
     });
   });
-  return {range,weeks,members,rows,exempt:exemptMetaMembers()};
+
+  return {range,weeks,members,exempt,rows};
 }
+
+function weekSummaryRow(week,dataset){
+  const iso=isoDate(week);
+  const rows=dataset.rows.filter(x=>isoDate(x.week)===iso);
+  return {
+    week,
+    paid:rows.filter(x=>x.status==="paga"),
+    debt:rows.filter(x=>x.status==="devendo"),
+    absent:rows.filter(x=>x.status==="ausente"),
+    pending:rows.filter(x=>x.status==="pendente"),
+    exempt:dataset.exempt
+  };
+}
+
 function renderMetaReport(){
   if(!$("#metaReportMonth").value)$("#metaReportMonth").value=monthValue();
+  if(!$("#metaReportWeek").value)$("#metaReportWeek").value=today();
+
   const mode=$("#metaReportMode").value;
   $("#metaReportMonthWrap").classList.toggle("hidden",mode!=="month");
+  $("#metaReportWeekWrap").classList.toggle("hidden",mode!=="week");
   $("#metaReportFromWrap").classList.toggle("hidden",mode!=="custom");
   $("#metaReportToWrap").classList.toggle("hidden",mode!=="custom");
 
-  const r=reportRows();
-  const paid=r.rows.filter(x=>x.status==="paga");
-  const debt=r.rows.filter(x=>x.status==="devendo");
-  const absent=r.rows.filter(x=>x.status==="ausente");
-  const pending=r.rows.filter(x=>x.status==="pendente");
+  const d=reportDataset();
+  $("#metaReportPeriodLabel").textContent=d.range.label;
 
-  $("#metaReportPaid").textContent=paid.length;
-  $("#metaReportDebt").textContent=debt.length;
-  $("#metaReportAbsent").textContent=absent.length;
-  $("#metaReportPending").textContent=pending.length;
-  $("#metaReportExempt").textContent=r.exempt.length;
-
-  $("#metaWeeklySummary").innerHTML=r.weeks.length?r.weeks.map(w=>{
-    const weekRows=r.rows.filter(x=>isoDate(x.week)===isoDate(w));
-    const c=s=>weekRows.filter(x=>x.status===s).length;
-    return `<button class="weeklyRow" onclick="openWeeklyReport('${isoDate(w)}')">
-      <div>
-        <b>${metaWeekLabel(w)}</b>
-        <small>Pagamento: ${dateBR(isoDate(addDays(w,7)))}</small>
-      </div>
-      <div class="weeklyBadges">
-        <span class="paid">✓ ${c("paga")}</span>
-        <span class="debt">✕ ${c("devendo")}</span>
-        <span class="absent">— ${c("ausente")}</span>
-        <span class="pending">○ ${c("pendente")}</span>
-      </div>
-    </button>`;
-  }).join(""):`<div class="empty">Selecione um período válido.</div>`;
-
-  $("#metaMemberSummary").innerHTML=r.members.length?r.members.map(m=>{
-    const mr=r.rows.filter(x=>x.member.id===m.id),c=s=>mr.filter(x=>x.status===s).length;
+  $("#metaPeriodSummary").innerHTML=d.weeks.length?d.weeks.map(week=>{
+    const s=weekSummaryRow(week,d);
+    const wi=isoDate(week);
     return `<tr>
-      <td><b>${m.nome}</b></td>
-      <td class="green">${c("paga")}</td>
-      <td class="red">${c("devendo")}</td>
-      <td class="yellow">${c("ausente")}</td>
-      <td>${c("pendente")}</td>
-      <td><button class="mini" onclick="openMemberReport('${m.id}')">Ver detalhes</button></td>
+      <td>
+        <b>${metaWeekLabel(week)}</b>
+        <small class="tableSub">Pagamento: ${dateBR(isoDate(addDays(week,7)))}</small>
+      </td>
+      <td><button class="summaryNumber paid" onclick="openStatusDrilldown('${wi}','paga')">${s.paid.length}</button></td>
+      <td><button class="summaryNumber debt" onclick="openStatusDrilldown('${wi}','devendo')">${s.debt.length}</button></td>
+      <td><button class="summaryNumber exempt" onclick="openStatusDrilldown('${wi}','isento')">${s.exempt.length}</button></td>
+      <td><button class="summaryNumber absent" onclick="openStatusDrilldown('${wi}','ausente')">${s.absent.length}</button></td>
     </tr>`;
-  }).join(""):`<tr><td colspan="6" class="empty">Sem membros.</td></tr>`;
+  }).join(""):`<tr><td colspan="5" class="empty">Selecione um período válido.</td></tr>`;
 }
-function detailStatusTitle(type){
-  return type==="paid"?"Metas pagas":type==="debt"?"Metas devendo":type==="absent"?"Ausências":type==="exempt"?"Membros isentos":"Metas não marcadas";
+
+function drillStatusLabel(status){
+  return status==="paga"?"Pagas":status==="devendo"?"Devendo":status==="ausente"?"Ausentes":"Isentos";
 }
-function openMetaReportDetail(type){
-  const r=reportRows();
-  $("#metaReportDetailTitle").textContent=detailStatusTitle(type);
-  $("#metaReportDetailSubtitle").textContent=r.range.label;
-  let body="";
-  if(type==="exempt"){
-    body=r.exempt.length?r.exempt.map(m=>`<div class="detailLine"><b>${m.nome}</b><span>${m.cargo}</span></div>`).join(""):'<div class="empty">Nenhum membro isento.</div>';
-  }else{
-    const status=type==="paid"?"paga":type==="debt"?"devendo":type==="absent"?"ausente":"pendente";
-    const rows=r.rows.filter(x=>x.status===status);
-    body=rows.length?rows.map(x=>`<div class="detailLine">
-      <div><b>${x.member.nome}</b><small>${metaWeekLabel(x.week)}</small></div>
-      <span>${statusMetaLabel(status)}${status==="paga"?" • paga em "+dateBR(isoDate(addDays(x.week,7))):""}</span>
-    </div>`).join(""):'<div class="empty">Nenhum registro neste status.</div>';
+
+let metaDrillState={weekIso:null,status:null,memberId:null,monthKey:null};
+
+function reportSetBreadcrumb(items){
+  $("#metaReportBreadcrumb").innerHTML=items.map((x,i)=>{
+    const clickable=!!x.action;
+    return `<span class="${clickable?"clickable":""}" ${clickable?`onclick="${x.action}"`:""}>${x.label}</span>${i<items.length-1?'<i>›</i>':""}`;
+  }).join("");
+}
+
+function openStatusDrilldown(weekIso,status){
+  metaDrillState={weekIso,status,memberId:null,monthKey:null};
+
+  const d=reportDataset();
+  const week=new Date(weekIso+"T12:00:00");
+  const s=weekSummaryRow(week,d);
+
+  let members=[];
+  if(status==="paga")members=s.paid.map(x=>x.member);
+  else if(status==="devendo")members=s.debt.map(x=>x.member);
+  else if(status==="ausente")members=s.absent.map(x=>x.member);
+  else members=s.exempt;
+
+  $("#metaReportDetailTitle").textContent=`${drillStatusLabel(status)} — ${metaWeekLabel(week)}`;
+  $("#metaReportDetailSubtitle").textContent=`Pagamento da semana: ${dateBR(isoDate(addDays(week,7)))}`;
+
+  reportSetBreadcrumb([
+    {label:"Resumo"},
+    {label:drillStatusLabel(status)}
+  ]);
+
+  $("#metaReportDetailBody").innerHTML=members.length?`
+    <div class="drillList">
+      ${members.map(m=>`<button class="drillItem" onclick="openMemberMonthHistory('${m.id}')">
+        <div><b>${m.nome}</b><small>${m.cargo}</small></div>
+        <span>Ver histórico ›</span>
+      </button>`).join("")}
+    </div>
+  `:'<div class="empty">Nenhum membro nesta categoria.</div>';
+
+  $("#metaReportDetailModal").classList.add("on");
+}
+window.openStatusDrilldown=openStatusDrilldown;
+
+function allMemberMetaMonths(memberId){
+  const member=DATA.membros.find(m=>m.id===memberId);
+  if(!member)return[];
+
+  const recs=DATA.metas.filter(x=>x.membro_id===memberId && x.semana_inicio);
+  const keys=[...new Set(recs.map(x=>String(x.semana_inicio).slice(0,7)))].sort();
+
+  return keys.map(key=>{
+    const [y,m]=key.split("-").map(Number);
+    const from=isoDate(new Date(y,m-1,1,12));
+    const to=isoDate(new Date(y,m,0,12));
+    const weeks=weeksBetween(from,to);
+    const rows=weeks.map(w=>({week:w,record:metaRec(memberId,w),status:metaStatusOf(metaRec(memberId,w))}));
+    const debt=rows.filter(x=>x.status==="devendo").length;
+    const paid=rows.filter(x=>x.status==="paga").length;
+    const absent=rows.filter(x=>x.status==="ausente").length;
+    const pending=rows.filter(x=>x.status==="pendente").length;
+
+    let label="⚪ Não marcado",cls="pending";
+    if(debt>0){label="❌ Devendo";cls="debt"}
+    else if(paid>0){label="✅ Pago";cls="paid"}
+    else if(absent>0){label="🟡 Ausente";cls="absent"}
+
+    return {key,label,cls,paid,debt,absent,pending};
+  });
+}
+
+function openMemberMonthHistory(memberId){
+  metaDrillState.memberId=memberId;
+  const member=DATA.membros.find(m=>m.id===memberId);
+  if(!member)return;
+
+  if(memberHierarchyRank(member.cargo)<5){
+    $("#metaReportDetailTitle").textContent=member.nome;
+    $("#metaReportDetailSubtitle").textContent="Membro isento de meta";
+    reportSetBreadcrumb([
+      {label:"Resumo",action:`openStatusDrilldown('${metaDrillState.weekIso}','${metaDrillState.status}')`},
+      {label:drillStatusLabel(metaDrillState.status)},
+      {label:member.nome}
+    ]);
+    $("#metaReportDetailBody").innerHTML=`<div class="exemptMemberBox"><b>${member.cargo}</b><span>Este membro é isento de meta.</span></div>`;
+    return;
   }
-  $("#metaReportDetailBody").innerHTML=body;
-  $("#metaReportDetailModal").classList.add("on");
-}
-window.openMetaReportDetail=openMetaReportDetail;
 
-function openWeeklyReport(weekIso){
-  const r=reportRows(),w=new Date(weekIso+"T12:00:00"),rows=r.rows.filter(x=>isoDate(x.week)===weekIso);
-  $("#metaReportDetailTitle").textContent=`Semana ${metaWeekLabel(w)}`;
-  $("#metaReportDetailSubtitle").textContent=`Pagamento em ${dateBR(isoDate(addDays(w,7)))}`;
-  $("#metaReportDetailBody").innerHTML=rows.map(x=>`<div class="detailLine">
-    <b>${x.member.nome}</b>
-    <span class="${statusMetaClass(x.status)}Text">${statusMetaLabel(x.status)}</span>
-  </div>`).join("");
-  $("#metaReportDetailModal").classList.add("on");
-}
-window.openWeeklyReport=openWeeklyReport;
+  const months=allMemberMetaMonths(memberId);
 
-function openMemberReport(memberId){
-  const r=reportRows(),m=r.members.find(x=>x.id===memberId);
-  if(!m)return;
-  const rows=r.rows.filter(x=>x.member.id===memberId);
-  $("#metaReportDetailTitle").textContent=`Resumo — ${m.nome}`;
-  $("#metaReportDetailSubtitle").textContent=r.range.label;
-  $("#metaReportDetailBody").innerHTML=rows.map(x=>`<div class="detailLine">
-    <div><b>${metaWeekLabel(x.week)}</b><small>Pagamento: ${dateBR(isoDate(addDays(x.week,7)))}</small></div>
-    <span class="${statusMetaClass(x.status)}Text">${statusMetaLabel(x.status)}</span>
-  </div>`).join("");
-  $("#metaReportDetailModal").classList.add("on");
+  $("#metaReportDetailTitle").textContent=member.nome;
+  $("#metaReportDetailSubtitle").textContent="Histórico mensal de metas";
+
+  reportSetBreadcrumb([
+    {label:"Resumo",action:`openStatusDrilldown('${metaDrillState.weekIso}','${metaDrillState.status}')`},
+    {label:drillStatusLabel(metaDrillState.status)},
+    {label:member.nome}
+  ]);
+
+  $("#metaReportDetailBody").innerHTML=months.length?`
+    <div class="monthHistoryList">
+      ${months.map(x=>`<button class="monthHistoryItem ${x.cls}" onclick="openMemberMonthWeeks('${memberId}','${x.key}')">
+        <div>
+          <b>${new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"}).format(new Date(x.key+"-01T12:00:00"))}</b>
+          <small>${x.paid} pagas • ${x.debt} devendo • ${x.absent} ausentes</small>
+        </div>
+        <span>${x.label}</span>
+      </button>`).join("")}
+    </div>
+  `:'<div class="empty">Este membro ainda não possui histórico de metas.</div>';
 }
-window.openMemberReport=openMemberReport;
+window.openMemberMonthHistory=openMemberMonthHistory;
+
+function openMemberMonthWeeks(memberId,monthKey){
+  metaDrillState.monthKey=monthKey;
+  const member=DATA.membros.find(m=>m.id===memberId);
+  if(!member)return;
+
+  const [y,m]=monthKey.split("-").map(Number);
+  const from=isoDate(new Date(y,m-1,1,12));
+  const to=isoDate(new Date(y,m,0,12));
+  const weeks=weeksBetween(from,to);
+
+  $("#metaReportDetailTitle").textContent=`${new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"}).format(new Date(monthKey+"-01T12:00:00"))} — ${member.nome}`;
+  $("#metaReportDetailSubtitle").textContent="Detalhamento semanal";
+
+  reportSetBreadcrumb([
+    {label:"Resumo",action:`openStatusDrilldown('${metaDrillState.weekIso}','${metaDrillState.status}')`},
+    {label:drillStatusLabel(metaDrillState.status)},
+    {label:member.nome,action:`openMemberMonthHistory('${memberId}')`},
+    {label:new Intl.DateTimeFormat("pt-BR",{month:"short",year:"numeric"}).format(new Date(monthKey+"-01T12:00:00"))}
+  ]);
+
+  $("#metaReportDetailBody").innerHTML=weeks.map((w,i)=>{
+    const rec=metaRec(memberId,w),status=metaStatusOf(rec);
+    return `<div class="weekDetailLine">
+      <div>
+        <b>Semana ${i+1}</b>
+        <small>${metaWeekLabel(w)} • pagamento ${dateBR(isoDate(addDays(w,7)))}</small>
+      </div>
+      <span class="${statusMetaClass(status)}Text">${statusMetaLabel(status)}</span>
+    </div>`;
+  }).join("");
+}
+window.openMemberMonthWeeks=openMemberMonthWeeks;
 
 function renderMetas(){
   if(!$("#metaCalendarMonth").value)$("#metaCalendarMonth").value=monthValue();
@@ -830,8 +951,7 @@ function renderLists(){$("#membersList").innerHTML=DATA.membros.map(m=>`<option 
 ["gastoFrom","gastoTo","gastoProductFilter","gastoCurrencyFilter","gastoChartCurrency"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderGastos)});
 $("#gastoClearFilters").onclick=()=>{$("#gastoFrom").value="";$("#gastoTo").value="";$("#gastoProductFilter").value="";$("#gastoCurrencyFilter").value="";renderGastos()};
 
-["metaReportMode","metaReportMonth","metaReportFrom","metaReportTo"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderMetaReport)});
-$$(".metaReportCard").forEach(b=>b.addEventListener("click",()=>openMetaReportDetail(b.dataset.detail)));
+["metaReportMode","metaReportMonth","metaReportWeek","metaReportFrom","metaReportTo"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderMetaReport)});
 
 function renderAll(){renderLists();renderDashboard();renderLavagens();renderLavagensDol();renderGastos();renderCustosFixos();renderMetas();renderAcoes();renderClients();renderMembers();renderAudit()}
 (async()=>{try{if(!await requireSession())return;await loadAll();$("#loader").classList.add("hide")}catch(e){console.error(e);alert("Não foi possível carregar o sistema.\n\nErro: "+(e?.message||String(e)));}})();

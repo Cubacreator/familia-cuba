@@ -170,26 +170,33 @@
   </div>
 
   
+  
   <div class="panel metaReportPanel" style="margin-top:12px">
     <div class="row">
       <div>
-        <h3>Relatório geral de metas</h3>
-        <div class="mut">Selecione um período para ver o resumo semanal, quem pagou, quem deve, quem estava ausente e quem é isento.</div>
+        <h3>Resumo de metas por período</h3>
+        <div class="mut">Escolha semana, mês ou intervalo de dias. Cada número da tabela pode ser clicado para abrir o detalhamento.</div>
       </div>
     </div>
 
     <div class="filterGrid metaReportFilters">
       <div class="field">
-        <label>Visualização</label>
+        <label>Período</label>
         <select id="metaReportMode">
-          <option value="month">Por mês</option>
-          <option value="custom">Período personalizado</option>
+          <option value="month">Mês</option>
+          <option value="week">Semana</option>
+          <option value="custom">Intervalo de dias</option>
         </select>
       </div>
 
       <div class="field" id="metaReportMonthWrap">
         <label>Mês</label>
         <input type="month" id="metaReportMonth">
+      </div>
+
+      <div class="field hidden" id="metaReportWeekWrap">
+        <label>Escolha um dia da semana</label>
+        <input type="date" id="metaReportWeek">
       </div>
 
       <div class="field hidden" id="metaReportFromWrap">
@@ -203,47 +210,31 @@
       </div>
     </div>
 
-    <div class="metaReportCards">
-      <button class="metaReportCard paid" data-detail="paid">
-        <span>Metas pagas</span><b id="metaReportPaid">0</b><small>Clique para ver as semanas</small>
-      </button>
-      <button class="metaReportCard debt" data-detail="debt">
-        <span>Metas devendo</span><b id="metaReportDebt">0</b><small>Clique para ver quem e quando</small>
-      </button>
-      <button class="metaReportCard absent" data-detail="absent">
-        <span>Ausências</span><b id="metaReportAbsent">0</b><small>Clique para ver as semanas</small>
-      </button>
-      <button class="metaReportCard exempt" data-detail="exempt">
-        <span>Isentos</span><b id="metaReportExempt">0</b><small>01, 02 e gerência</small>
-      </button>
-      <button class="metaReportCard pending" data-detail="pending">
-        <span>Não marcadas</span><b id="metaReportPending">0</b><small>Sem status no período</small>
-      </button>
+    <div class="metaPeriodHeader">
+      <div>
+        <span>Período selecionado</span>
+        <b id="metaReportPeriodLabel">—</b>
+      </div>
+      <small>Pagas, Devendo, Isentos e Ausentes são clicáveis.</small>
     </div>
 
-    <div class="metaReportTwoCol">
-      <div class="metaReportBox">
-        <div class="reportBoxHeader">
-          <div><h4>Resumo semanal</h4><small>Quantidade de membros por status em cada semana.</small></div>
-        </div>
-        <div id="metaWeeklySummary" class="weeklySummary"></div>
-      </div>
-
-      <div class="metaReportBox">
-        <div class="reportBoxHeader">
-          <div><h4>Resumo por membro</h4><small>Pagas, devendo, ausente e pendentes no período.</small></div>
-        </div>
-        <div class="table compactTable">
-          <table>
-            <thead><tr><th>Membro</th><th>Pagas</th><th>Devendo</th><th>Ausente</th><th>Não marcado</th><th></th></tr></thead>
-            <tbody id="metaMemberSummary"></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="table metaSummaryTable">
+      <table>
+        <thead>
+          <tr>
+            <th>Semana</th>
+            <th>Pagas</th>
+            <th>Devendo</th>
+            <th>Isentos</th>
+            <th>Ausentes</th>
+          </tr>
+        </thead>
+        <tbody id="metaPeriodSummary"></tbody>
+      </table>
     </div>
   </div>
 
-<div class="panel" style="margin-top:12px">
+  <div class="panel" style="margin-top:12px">
     <h3>Histórico de marcações</h3>
     <div class="table" style="margin-top:12px">
       <table>
@@ -528,6 +519,7 @@
 
 
 
+
 <div class="modal" id="metaReportDetailModal"><div class="box metaReportDetailBox">
   <div class="mh">
     <div>
@@ -536,6 +528,7 @@
     </div>
     <button class="close" data-close>×</button>
   </div>
+  <div id="metaReportBreadcrumb" class="reportBreadcrumb"></div>
   <div id="metaReportDetailBody"></div>
 </div></div>
 
