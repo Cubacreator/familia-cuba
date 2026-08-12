@@ -194,7 +194,7 @@ const membros = [
     cargo: "Membro da Família Cuba",
     imagem: "images/filipi.png",
     descricao: "Filipi é membro da Família Cuba e faz parte do famoso Trio Parada Dura. Gosta de ação, trocação e não costuma pensar duas vezes quando a situação aperta. Se o rádio chamar dizendo que o tiro começou, pode ter certeza que ele vai querer saber onde é.",
-    frase: “Se começou o tiro, já manda a localização.”,
+    frase: "Se começou o tiro, já manda a localização.",
   },
   {
     nome: "Anderson",
@@ -208,7 +208,7 @@ const membros = [
     cargo: "Membro da Família Cuba",
     imagem: "images/robson.png",
     descricao: "Robson é membro da Família Cuba e um dos integrantes do Trio Parada Dura. Onde tem confusão, ele não costuma ficar muito longe. Gosta de trocar tiro e, quando aparece uma ação, já fica pronto para entrar no meio e ajudar a família.",
-    frase: “Não precisa chamar duas vezes, se tiver tiro eu já tô indo.”,
+    frase: "Não precisa chamar duas vezes, se tiver tiro eu já tô indo.",
   },
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
