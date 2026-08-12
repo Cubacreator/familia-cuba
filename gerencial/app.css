@@ -99,3 +99,41 @@ body.collapsed .brand-wordmark-wrap{display:none}
 .lineChartWrap svg{display:block!important;width:100%!important;height:195px!important;min-height:195px!important;max-height:195px!important;flex:0 0 195px!important;overflow:hidden!important}
 .lineChartWrap .chartLine,.lineChartWrap .chartPoint,.lineChartWrap .chartAxis{pointer-events:none}
 .lineLabels{flex:0 0 25px!important;height:25px!important;overflow:hidden!important}
+
+/* V22 — Relatório geral de metas */
+.metaReportFilters{margin-top:14px;grid-template-columns:repeat(4,minmax(170px,1fr))}
+.metaReportCards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}
+.metaReportCard{border:1px solid var(--line);background:rgba(8,27,46,.72);border-radius:14px;padding:14px;text-align:left;color:var(--text);cursor:pointer;transition:.15s}
+.metaReportCard:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.metaReportCard span{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}
+.metaReportCard b{display:block;font-size:24px;margin-bottom:4px}
+.metaReportCard small{color:var(--muted);font-size:10px}
+.metaReportCard.paid{border-color:rgba(54,212,139,.35)}
+.metaReportCard.debt{border-color:rgba(255,93,104,.35)}
+.metaReportCard.absent{border-color:rgba(243,195,77,.35)}
+.metaReportCard.exempt{border-color:rgba(117,163,255,.35)}
+.metaReportCard.pending{border-color:rgba(96,114,134,.35)}
+
+.metaReportTwoCol{display:grid;grid-template-columns:1fr 1.25fr;gap:12px}
+.metaReportBox{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(6,22,39,.5)}
+.reportBoxHeader h4{margin:0 0 3px}.reportBoxHeader small{color:var(--muted)}
+.weeklySummary{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.weeklyRow{width:100%;border:1px solid var(--line);background:rgba(11,31,52,.65);color:var(--text);border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;text-align:left}
+.weeklyRow:hover{filter:brightness(1.08)}
+.weeklyRow b{display:block}.weeklyRow small{display:block;color:var(--muted);margin-top:2px}
+.weeklyBadges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.weeklyBadges span{font-size:10px;font-weight:800;padding:4px 7px;border-radius:999px}
+.weeklyBadges .paid{background:rgba(54,212,139,.14);color:#69e7aa}
+.weeklyBadges .debt{background:rgba(255,93,104,.14);color:#ff8790}
+.weeklyBadges .absent{background:rgba(243,195,77,.14);color:#f9d978}
+.weeklyBadges .pending{background:rgba(96,114,134,.16);color:#a7b3c0}
+.compactTable table{font-size:12px}
+.metaReportDetailBox{max-width:760px!important}
+.detailLine{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.detailLine:last-child{border-bottom:0}
+.detailLine small{display:block;color:var(--muted);margin-top:2px}
+.detailLine>span{font-size:12px}
+.paidText{color:#69e7aa}.debtText{color:#ff8790}.absentText{color:#f9d978}.pendingText{color:#a7b3c0}
+
+@media(max-width:1150px){.metaReportCards{grid-template-columns:repeat(3,1fr)}.metaReportTwoCol{grid-template-columns:1fr}}
+@media(max-width:700px){.metaReportCards{grid-template-columns:1fr 1fr}.metaReportFilters{grid-template-columns:1fr}.weeklyRow{align-items:flex-start;flex-direction:column}.weeklyBadges{justify-content:flex-start}}

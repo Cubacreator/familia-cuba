@@ -604,6 +604,149 @@ function renderMemberCalendar(){
   $("#memberCalDirty").textContent=money(s.dirty);$("#memberCalClean").textContent=money(s.clean);
 }
 
+
+function reportRange(){
+  const mode=$("#metaReportMode")?.value||"month";
+  if(mode==="month"){
+    const ym=$("#metaReportMonth")?.value||monthValue();
+    const [y,m]=ym.split("-").map(Number);
+    return {
+      from:isoDate(new Date(y,m-1,1,12)),
+      to:isoDate(new Date(y,m,0,12)),
+      label:monthName(ym)
+    };
+  }
+  const from=$("#metaReportFrom")?.value||"";
+  const to=$("#metaReportTo")?.value||"";
+  return {from,to,label:from&&to?`${dateBR(from)} a ${dateBR(to)}`:"Período personalizado"};
+}
+function weeksBetween(from,to){
+  if(!from||!to)return[];
+  let cur=weekMonday(from),end=new Date(to+"T12:00:00"),out=[];
+  while(cur<=end){
+    const sun=addDays(cur,6);
+    if(sun>=new Date(from+"T12:00:00"))out.push(new Date(cur));
+    cur=addDays(cur,7);
+  }
+  return out;
+}
+function eligibleMetaMembers(){
+  return DATA.membros.filter(m=>memberHierarchyRank(m.cargo)>=5).sort((a,b)=>sortName(a.nome,b.nome));
+}
+function exemptMetaMembers(){
+  return DATA.membros.filter(m=>memberHierarchyRank(m.cargo)<5).sort((a,b)=>{
+    const ra=memberHierarchyRank(a.cargo),rb=memberHierarchyRank(b.cargo);
+    return ra!==rb?ra-rb:sortName(a.nome,b.nome);
+  });
+}
+function reportRows(){
+  const range=reportRange(),weeks=weeksBetween(range.from,range.to),members=eligibleMetaMembers();
+  const rows=[];
+  members.forEach(m=>{
+    weeks.forEach(w=>{
+      const rec=metaRec(m.id,w);
+      rows.push({member:m,week:w,record:rec,status:metaStatusOf(rec)});
+    });
+  });
+  return {range,weeks,members,rows,exempt:exemptMetaMembers()};
+}
+function renderMetaReport(){
+  if(!$("#metaReportMonth").value)$("#metaReportMonth").value=monthValue();
+  const mode=$("#metaReportMode").value;
+  $("#metaReportMonthWrap").classList.toggle("hidden",mode!=="month");
+  $("#metaReportFromWrap").classList.toggle("hidden",mode!=="custom");
+  $("#metaReportToWrap").classList.toggle("hidden",mode!=="custom");
+
+  const r=reportRows();
+  const paid=r.rows.filter(x=>x.status==="paga");
+  const debt=r.rows.filter(x=>x.status==="devendo");
+  const absent=r.rows.filter(x=>x.status==="ausente");
+  const pending=r.rows.filter(x=>x.status==="pendente");
+
+  $("#metaReportPaid").textContent=paid.length;
+  $("#metaReportDebt").textContent=debt.length;
+  $("#metaReportAbsent").textContent=absent.length;
+  $("#metaReportPending").textContent=pending.length;
+  $("#metaReportExempt").textContent=r.exempt.length;
+
+  $("#metaWeeklySummary").innerHTML=r.weeks.length?r.weeks.map(w=>{
+    const weekRows=r.rows.filter(x=>isoDate(x.week)===isoDate(w));
+    const c=s=>weekRows.filter(x=>x.status===s).length;
+    return `<button class="weeklyRow" onclick="openWeeklyReport('${isoDate(w)}')">
+      <div>
+        <b>${metaWeekLabel(w)}</b>
+        <small>Pagamento: ${dateBR(isoDate(addDays(w,7)))}</small>
+      </div>
+      <div class="weeklyBadges">
+        <span class="paid">✓ ${c("paga")}</span>
+        <span class="debt">✕ ${c("devendo")}</span>
+        <span class="absent">— ${c("ausente")}</span>
+        <span class="pending">○ ${c("pendente")}</span>
+      </div>
+    </button>`;
+  }).join(""):`<div class="empty">Selecione um período válido.</div>`;
+
+  $("#metaMemberSummary").innerHTML=r.members.length?r.members.map(m=>{
+    const mr=r.rows.filter(x=>x.member.id===m.id),c=s=>mr.filter(x=>x.status===s).length;
+    return `<tr>
+      <td><b>${m.nome}</b></td>
+      <td class="green">${c("paga")}</td>
+      <td class="red">${c("devendo")}</td>
+      <td class="yellow">${c("ausente")}</td>
+      <td>${c("pendente")}</td>
+      <td><button class="mini" onclick="openMemberReport('${m.id}')">Ver detalhes</button></td>
+    </tr>`;
+  }).join(""):`<tr><td colspan="6" class="empty">Sem membros.</td></tr>`;
+}
+function detailStatusTitle(type){
+  return type==="paid"?"Metas pagas":type==="debt"?"Metas devendo":type==="absent"?"Ausências":type==="exempt"?"Membros isentos":"Metas não marcadas";
+}
+function openMetaReportDetail(type){
+  const r=reportRows();
+  $("#metaReportDetailTitle").textContent=detailStatusTitle(type);
+  $("#metaReportDetailSubtitle").textContent=r.range.label;
+  let body="";
+  if(type==="exempt"){
+    body=r.exempt.length?r.exempt.map(m=>`<div class="detailLine"><b>${m.nome}</b><span>${m.cargo}</span></div>`).join(""):'<div class="empty">Nenhum membro isento.</div>';
+  }else{
+    const status=type==="paid"?"paga":type==="debt"?"devendo":type==="absent"?"ausente":"pendente";
+    const rows=r.rows.filter(x=>x.status===status);
+    body=rows.length?rows.map(x=>`<div class="detailLine">
+      <div><b>${x.member.nome}</b><small>${metaWeekLabel(x.week)}</small></div>
+      <span>${statusMetaLabel(status)}${status==="paga"?" • paga em "+dateBR(isoDate(addDays(x.week,7))):""}</span>
+    </div>`).join(""):'<div class="empty">Nenhum registro neste status.</div>';
+  }
+  $("#metaReportDetailBody").innerHTML=body;
+  $("#metaReportDetailModal").classList.add("on");
+}
+window.openMetaReportDetail=openMetaReportDetail;
+
+function openWeeklyReport(weekIso){
+  const r=reportRows(),w=new Date(weekIso+"T12:00:00"),rows=r.rows.filter(x=>isoDate(x.week)===weekIso);
+  $("#metaReportDetailTitle").textContent=`Semana ${metaWeekLabel(w)}`;
+  $("#metaReportDetailSubtitle").textContent=`Pagamento em ${dateBR(isoDate(addDays(w,7)))}`;
+  $("#metaReportDetailBody").innerHTML=rows.map(x=>`<div class="detailLine">
+    <b>${x.member.nome}</b>
+    <span class="${statusMetaClass(x.status)}Text">${statusMetaLabel(x.status)}</span>
+  </div>`).join("");
+  $("#metaReportDetailModal").classList.add("on");
+}
+window.openWeeklyReport=openWeeklyReport;
+
+function openMemberReport(memberId){
+  const r=reportRows(),m=r.members.find(x=>x.id===memberId);
+  if(!m)return;
+  const rows=r.rows.filter(x=>x.member.id===memberId);
+  $("#metaReportDetailTitle").textContent=`Resumo — ${m.nome}`;
+  $("#metaReportDetailSubtitle").textContent=r.range.label;
+  $("#metaReportDetailBody").innerHTML=rows.map(x=>`<div class="detailLine">
+    <div><b>${metaWeekLabel(x.week)}</b><small>Pagamento: ${dateBR(isoDate(addDays(x.week,7)))}</small></div>
+    <span class="${statusMetaClass(x.status)}Text">${statusMetaLabel(x.status)}</span>
+  </div>`).join("");
+  $("#metaReportDetailModal").classList.add("on");
+}
+window.openMemberReport=openMemberReport;
+
 function renderMetas(){
   if(!$("#metaCalendarMonth").value)$("#metaCalendarMonth").value=monthValue();
   const current=$("#metaCalendarMember").value;
@@ -619,6 +762,7 @@ function renderMetas(){
     return`<tr><td>${x.periodo||dateBR(x.semana_inicio)}</td><td>${m?.nome||"—"}</td><td><span class="badge">${statusMetaLabel(status)}</span></td><td>${money(x.valor_pagamento)}</td><td class="${paid?"green":""}">${money(x.valor_pagamento_limpo)}</td><td>${paid?dateBR(x.data_pagamento):"—"}</td><td><button class="mini red" onclick="removeRecord('metas','${x.id}')">×</button></td></tr>`
   }).join(""):`<tr><td colspan="7" class="empty">Nenhuma semana marcada ainda.</td></tr>`;
   renderMetaCalendar();
+  renderMetaReport();
 }
 
 
@@ -685,5 +829,9 @@ function renderLists(){$("#membersList").innerHTML=DATA.membros.map(m=>`<option 
 
 ["gastoFrom","gastoTo","gastoProductFilter","gastoCurrencyFilter","gastoChartCurrency"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderGastos)});
 $("#gastoClearFilters").onclick=()=>{$("#gastoFrom").value="";$("#gastoTo").value="";$("#gastoProductFilter").value="";$("#gastoCurrencyFilter").value="";renderGastos()};
+
+["metaReportMode","metaReportMonth","metaReportFrom","metaReportTo"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderMetaReport)});
+$$(".metaReportCard").forEach(b=>b.addEventListener("click",()=>openMetaReportDetail(b.dataset.detail)));
+
 function renderAll(){renderLists();renderDashboard();renderLavagens();renderLavagensDol();renderGastos();renderCustosFixos();renderMetas();renderAcoes();renderClients();renderMembers();renderAudit()}
 (async()=>{try{if(!await requireSession())return;await loadAll();$("#loader").classList.add("hide")}catch(e){console.error(e);alert("Não foi possível carregar o sistema.\n\nErro: "+(e?.message||String(e)));}})();
