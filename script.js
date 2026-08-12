@@ -193,22 +193,22 @@ const membros = [
     nome: "Filipi",
     cargo: "Membro da Família Cuba",
     imagem: "images/filipi.png",
-    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
-    frase: "Uma nova história começa dentro da Cuba.",
+    descricao: "Filipi é membro da Família Cuba e faz parte do famoso Trio Parada Dura. Gosta de ação, trocação e não costuma pensar duas vezes quando a situação aperta. Se o rádio chamar dizendo que o tiro começou, pode ter certeza que ele vai querer saber onde é.",
+    frase: “Se começou o tiro, já manda a localização.”,
   },
   {
     nome: "Anderson",
     cargo: "Membro da Família Cuba",
     imagem: "images/anderson.png",
-    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
-    frase: "Uma nova história começa dentro da Cuba.",
+    descricao: "Anderson é membro da Família Cuba e completa o Trio Parada Dura. Tem espírito de ação e parece ter um radar próprio para descobrir onde está acontecendo trocação. Falou que tem tiro em algum lugar? Não demora muito para ele aparecer por perto.",
+    frase: "Onde tem bala cantando, eu encontro o caminho.",
   },
   {
     nome: "Robson",
     cargo: "Membro da Família Cuba",
     imagem: "images/robson.png",
-    descricao: "Aurora chegou recentemente à família e irá provar seu valor.",
-    frase: "Uma nova história começa dentro da Cuba.",
+    descricao: "Robson é membro da Família Cuba e um dos integrantes do Trio Parada Dura. Onde tem confusão, ele não costuma ficar muito longe. Gosta de trocar tiro e, quando aparece uma ação, já fica pronto para entrar no meio e ajudar a família.",
+    frase: “Não precisa chamar duas vezes, se tiver tiro eu já tô indo.”,
   },
 ];
 const mensagens=['Inicializando sistema...','Verificando credenciais...','Descriptografando arquivos...','Validando identidade...','Acesso autorizado.'];
