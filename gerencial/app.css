@@ -185,3 +185,6 @@ body.collapsed .brand-wordmark-wrap{display:none}
 
 /* V25 — conversão de dinheiro sujo nas ações */
 .actionMoneySummary small{display:block;margin-top:5px;color:var(--muted);font-size:10px}
+
+/* V26 — Resultado exclusivo das lavagens */
+#kCubaLavagens{font-variant-numeric:tabular-nums}
