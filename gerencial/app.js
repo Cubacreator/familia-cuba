@@ -112,6 +112,35 @@ function actionMoneyTypeLabel(x){
   return `${x.moeda==="dolar"?"Dólar":"Real"} • ${x.tipo_dinheiro==="sujo"?"Sujo":"Limpo"}`;
 }
 
+
+function actionFamilyShare(x){
+  if(x.status==="Falhou")return 0;
+  if(x.valor_familia!=null)return n(x.valor_familia);
+  if(x.entrada_familia===true)return n(x.valor_ganho)||n(x.entrada);
+  return n(x.entrada);
+}
+function actionCashContribution(x){
+  const family=actionFamilyShare(x);
+  if(family<=0)return 0;
+  if((x.moeda||"real")==="dolar")return 0;
+  return (x.tipo_dinheiro||"limpo")==="sujo"
+    ? family*n(DATA.config.pct_maquina||57)/100
+    : family;
+}
+function actionContributionDetails(rows){
+  let realLimpo=0,realSujo=0,realSujoConvertido=0,dolar=0;
+  rows.forEach(x=>{
+    const family=actionFamilyShare(x);
+    if(family<=0||x.status==="Falhou")return;
+    if((x.moeda||"real")==="dolar"){dolar+=family;return}
+    if((x.tipo_dinheiro||"limpo")==="sujo"){
+      realSujo+=family;
+      realSujoConvertido+=family*n(DATA.config.pct_maquina||57)/100;
+    }else realLimpo+=family;
+  });
+  return {realLimpo,realSujo,realSujoConvertido,dolar,total:realLimpo+realSujoConvertido};
+}
+
 function periodFilter(row){
  const p=$("#period").value,d=row.data||row.data_pagamento||row.created_at?.slice(0,10);
  if(!d)return true;if(p==="all")return true;
@@ -355,7 +384,7 @@ function rankingHTML(L){
 }
 function renderDashboard(){
  const L=DATA.lavagens.filter(periodFilter),LD=DATA.lavagens_dol.filter(periodFilter),G=DATA.gastos.filter(periodFilter),GR=G.filter(x=>(x.moeda||"real")==="real"),GD=G.filter(x=>x.moeda==="dolar"),A=DATA.acoes.filter(periodFilter),M=DATA.metas.filter(periodFilter),FP=DATA.pagamentos_custos_fixos.filter(periodFilter);
- $("#kSujo").textContent=money(sum(L,"valor_sujo"));$("#kLimpo").textContent=money(sum(L,"valor_limpo"));$("#kCliente").textContent=money(sum(L,"valor_cliente"));$("#kCuba").textContent=money(sum(L,"valor_cuba")+sum(LD,"valor_liquido_real")+sum(A,"entrada")-sum(A,"custo")-sum(GR,"valor")-sum(M,"valor_pagamento_limpo"));$("#kGastos").textContent=money(sum(GR,"valor")+sum(A,"custo"));$("#kAcoes").textContent=money(sum(A,"entrada"));$("#kFixosSujo").textContent=money(FP.filter(x=>x.tipo_dinheiro==="sujo").reduce((s,x)=>s+n(x.valor),0));$("#kDolLimpo").textContent=money(sum(LD,"valor_liquido_real"));$("#kGastosDol").textContent=usd(sum(GD,"valor"));
+ $("#kSujo").textContent=money(sum(L,"valor_sujo"));$("#kLimpo").textContent=money(sum(L,"valor_limpo"));$("#kCliente").textContent=money(sum(L,"valor_cliente"));$("#kCuba").textContent=money(sum(L,"valor_cuba")+sum(LD,"valor_liquido_real")+actionContributionDetails(A).total-sum(A,"custo")-sum(GR,"valor")-sum(M,"valor_pagamento_limpo"));$("#kGastos").textContent=money(sum(GR,"valor")+sum(A,"custo"));const ac=actionContributionDetails(A);$("#kAcoes").textContent=money(ac.total);$("#kAcoesInfo").textContent=`${money(ac.realLimpo)} limpo + ${money(ac.realSujo)} sujo → ${money(ac.realSujoConvertido)} após ${n(DATA.config.pct_maquina||57)}%`;$("#kFixosSujo").textContent=money(FP.filter(x=>x.tipo_dinheiro==="sujo").reduce((s,x)=>s+n(x.valor),0));$("#kDolLimpo").textContent=money(sum(LD,"valor_liquido_real"));$("#kGastosDol").textContent=usd(sum(GD,"valor"));
  const p=$("#period").value;$("#customDates").classList.toggle("hidden",p!=="custom");$("#periodLabel").textContent=p==="custom"?`Período: ${dateBR($("#from").value)} até ${dateBR($("#to").value)}`:p==="all"?"Todo o histórico":`Últimos ${p} dias`;
  const cats=Object.entries(group(G,"categoria","valor")).sort((a,b)=>b[1]-a[1]),mx=cats[0]?.[1]||1;$("#expenseBars").innerHTML=cats.length?cats.map(([k,v])=>`<div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v/mx*100}%"></div></div><b>${money(v)}</b></div>`).join(""):`<div class="empty">Sem gastos no período.</div>`;
  const rank=rankingHTML(L);$("#top5").innerHTML=rank.length?rank.slice(0,5).map((r,i)=>`<div class="rank"><i>${i+1}</i><div>${r.nome}<small>${r.qtd} ${r.qtd===1?"lavagem":"lavagens"}</small></div><b>${money(r.sujo)}</b></div>`).join(""):`<div class="empty">Sem lavagens no período.</div>`;
@@ -916,10 +945,13 @@ function renderAcoes(){
     const famTxt=failed?"—":(moeda==="dolar"?usd(vf):money(vf));
     const intTxt=failed?"—":(moeda==="dolar"?usd(vi):money(vi));
 
+    const convertido=(moeda==="real"&&tipo==="sujo")?vf*n(DATA.config.pct_maquina||57)/100:vf;
     const resultado=failed?'<b class="actionRedText">DEU RED</b>':
-      (vf>0&&vi>0?'<span class="green">Valor dividido</span>':
-       vf>0?'<span class="green">Tudo para família</span>':
-       '<span class="mut">Tudo para integrantes</span>');
+      (vf>0&&vi>0
+        ?`<span class="green">Valor dividido${moeda==="real"&&tipo==="sujo"?` • caixa: ${money(convertido)}`:""}</span>`
+        :vf>0
+          ?`<span class="green">Tudo para família${moeda==="real"&&tipo==="sujo"?` • caixa: ${money(convertido)}`:""}</span>`
+          :'<span class="mut">Tudo para integrantes</span>');
 
     return`<tr>
       <td>${dateBR(x.data)}</td><td><b>${x.nome}</b></td><td>${x.participantes||"—"}</td>

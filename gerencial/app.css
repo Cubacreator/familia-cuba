@@ -179,3 +179,6 @@ body.collapsed .brand-wordmark-wrap{display:none}
 
 @media(max-width:900px){.metaReportFilters{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.metaReportFilters{grid-template-columns:1fr}.metaPeriodHeader{align-items:flex-start;flex-direction:column}.metaSummaryTable{overflow:auto}}
+
+/* V24 — contribuição líquida das ações no caixa */
+.actionKpi small{display:block;margin-top:8px;color:var(--muted);font-size:10px;line-height:1.35}

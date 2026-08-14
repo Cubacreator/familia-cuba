@@ -26,7 +26,7 @@
 <section class="page on" id="dashboard">
  <div class="row"><div class="inline"><div class="field"><label>Período</label><select id="period"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">12 meses</option><option value="all">Todo período</option><option value="custom">Personalizável</option></select></div><div class="inline hidden" id="customDates"><div class="field"><label>De</label><input type="date" id="from"></div><div class="field"><label>Até</label><input type="date" id="to"></div></div></div><button class="btn primary" data-open="lavModal">+ Nova lavagem</button></div>
  <div class="mut" id="periodLabel" style="margin-bottom:10px"></div>
- <div class="kpis"><div class="kpi"><span>Valor sujo recebido</span><b id="kSujo">R$ 0,00</b></div><div class="kpi"><span>Valor limpo gerado</span><b id="kLimpo">R$ 0,00</b></div><div class="kpi"><span>Valor dos clientes</span><b id="kCliente">R$ 0,00</b></div><div class="kpi"><span>Valor Cuba</span><b class="green" id="kCuba">R$ 0,00</b></div><div class="kpi"><span>Gastos + custos ações</span><b class="yellow" id="kGastos">R$ 0,00</b></div><div class="kpi"><span>Entrada por ações</span><b id="kAcoes">R$ 0,00</b></div><div class="kpi"><span>Custos fixos pagos (sujo)</span><b class="yellow" id="kFixosSujo">R$ 0,00</b></div><div class="kpi"><span>Lavagem DOL → caixa</span><b class="green" id="kDolLimpo">R$ 0,00</b></div><div class="kpi"><span>Gastos em dólar</span><b class="red" id="kGastosDol">US$ 0,00</b></div></div>
+ <div class="kpis"><div class="kpi"><span>Valor sujo recebido</span><b id="kSujo">R$ 0,00</b></div><div class="kpi"><span>Valor limpo gerado</span><b id="kLimpo">R$ 0,00</b></div><div class="kpi"><span>Valor dos clientes</span><b id="kCliente">R$ 0,00</b></div><div class="kpi"><span>Valor Cuba</span><b class="green" id="kCuba">R$ 0,00</b></div><div class="kpi"><span>Gastos + custos ações</span><b class="yellow" id="kGastos">R$ 0,00</b></div><div class="kpi actionKpi"><span>Entrada líquida por ações</span><b id="kAcoes">R$ 0,00</b><small id="kAcoesInfo">Real limpo + 57% do Real sujo destinado à família</small></div><div class="kpi"><span>Custos fixos pagos (sujo)</span><b class="yellow" id="kFixosSujo">R$ 0,00</b></div><div class="kpi"><span>Lavagem DOL → caixa</span><b class="green" id="kDolLimpo">R$ 0,00</b></div><div class="kpi"><span>Gastos em dólar</span><b class="red" id="kGastosDol">US$ 0,00</b></div></div>
  <div class="grid2"><div class="panel"><h3>Gastos por categoria</h3><p>Dentro do período selecionado.</p><div id="expenseBars" class="bars"></div></div><div class="panel"><h3>Top 5 clientes</h3><p>Maior valor sujo lavado no período.</p><div id="top5"></div></div></div>
  <div class="panel" style="margin-top:12px"><h3>Ranking completo de clientes</h3><p>Recalculado automaticamente conforme o período.</p><div class="table" style="margin-top:12px"><table><thead><tr><th>#</th><th>Cliente</th><th>Lavagens</th><th>Valor sujo</th><th>Valor cliente</th><th>Valor Cuba</th><th>Última</th></tr></thead><tbody id="ranking"></tbody></table></div></div>
 </section>
@@ -256,8 +256,8 @@
   </div>
 
   <div class="sum actionMoneySummary">
-    <div><span>Família • Real limpo</span><b class="green" id="acaoRealLimpo">R$ 0,00</b></div>
-    <div><span>Família • Real sujo</span><b id="acaoRealSujo">R$ 0,00</b></div>
+    <div><span>Família • Real limpo (entra 100%)</span><b class="green" id="acaoRealLimpo">R$ 0,00</b></div>
+    <div><span>Família • Real sujo (converte 57%)</span><b id="acaoRealSujo">R$ 0,00</b></div>
     <div><span>Família • Dólar limpo</span><b class="green" id="acaoDolLimpo">US$ 0,00</b></div>
     <div><span>Família • Dólar sujo</span><b id="acaoDolSujo">US$ 0,00</b></div>
   </div>
