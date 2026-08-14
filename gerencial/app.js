@@ -122,23 +122,55 @@ function actionFamilyShare(x){
 function actionCashContribution(x){
   const family=actionFamilyShare(x);
   if(family<=0)return 0;
-  if((x.moeda||"real")==="dolar")return 0;
-  return (x.tipo_dinheiro||"limpo")==="sujo"
-    ? family*n(DATA.config.pct_maquina||57)/100
-    : family;
+
+  const moeda=x.moeda||"real";
+  const tipo=x.tipo_dinheiro||"limpo";
+
+  // O Dashboard principal é em R$, então dólar continua separado até o câmbio.
+  if(moeda==="dolar")return 0;
+
+  // Real sujo vira limpo pela porcentagem atual da máquina.
+  if(tipo==="sujo")return family*n(DATA.config.pct_maquina||57)/100;
+  return family;
 }
 function actionContributionDetails(rows){
-  let realLimpo=0,realSujo=0,realSujoConvertido=0,dolar=0;
+  let realLimpo=0,realSujo=0,realSujoConvertido=0,dolarLimpo=0,dolarSujo=0,dolarSujoConvertido=0;
   rows.forEach(x=>{
     const family=actionFamilyShare(x);
     if(family<=0||x.status==="Falhou")return;
-    if((x.moeda||"real")==="dolar"){dolar+=family;return}
-    if((x.tipo_dinheiro||"limpo")==="sujo"){
+
+    const moeda=x.moeda||"real";
+    const tipo=x.tipo_dinheiro||"limpo";
+
+    if(moeda==="dolar"){
+      if(tipo==="sujo"){
+        dolarSujo+=family;
+        dolarSujoConvertido+=family*0.40;
+      }else{
+        dolarLimpo+=family;
+      }
+      return;
+    }
+
+    if(tipo==="sujo"){
       realSujo+=family;
       realSujoConvertido+=family*n(DATA.config.pct_maquina||57)/100;
-    }else realLimpo+=family;
+    }else{
+      realLimpo+=family;
+    }
   });
-  return {realLimpo,realSujo,realSujoConvertido,dolar,total:realLimpo+realSujoConvertido};
+
+  return {
+    realLimpo,
+    realSujo,
+    realSujoConvertido,
+    dolarLimpo,
+    dolarSujo,
+    dolarSujoConvertido,
+    totalReal:realLimpo+realSujoConvertido,
+    totalDolar:dolarLimpo+dolarSujoConvertido,
+    total:realLimpo+realSujoConvertido
+  };
 }
 
 function periodFilter(row){
@@ -384,7 +416,7 @@ function rankingHTML(L){
 }
 function renderDashboard(){
  const L=DATA.lavagens.filter(periodFilter),LD=DATA.lavagens_dol.filter(periodFilter),G=DATA.gastos.filter(periodFilter),GR=G.filter(x=>(x.moeda||"real")==="real"),GD=G.filter(x=>x.moeda==="dolar"),A=DATA.acoes.filter(periodFilter),M=DATA.metas.filter(periodFilter),FP=DATA.pagamentos_custos_fixos.filter(periodFilter);
- $("#kSujo").textContent=money(sum(L,"valor_sujo"));$("#kLimpo").textContent=money(sum(L,"valor_limpo"));$("#kCliente").textContent=money(sum(L,"valor_cliente"));$("#kCuba").textContent=money(sum(L,"valor_cuba")+sum(LD,"valor_liquido_real")+actionContributionDetails(A).total-sum(A,"custo")-sum(GR,"valor")-sum(M,"valor_pagamento_limpo"));$("#kGastos").textContent=money(sum(GR,"valor")+sum(A,"custo"));const ac=actionContributionDetails(A);$("#kAcoes").textContent=money(ac.total);$("#kAcoesInfo").textContent=`${money(ac.realLimpo)} limpo + ${money(ac.realSujo)} sujo → ${money(ac.realSujoConvertido)} após ${n(DATA.config.pct_maquina||57)}%`;$("#kFixosSujo").textContent=money(FP.filter(x=>x.tipo_dinheiro==="sujo").reduce((s,x)=>s+n(x.valor),0));$("#kDolLimpo").textContent=money(sum(LD,"valor_liquido_real"));$("#kGastosDol").textContent=usd(sum(GD,"valor"));
+ $("#kSujo").textContent=money(sum(L,"valor_sujo"));$("#kLimpo").textContent=money(sum(L,"valor_limpo"));$("#kCliente").textContent=money(sum(L,"valor_cliente"));$("#kCuba").textContent=money(sum(L,"valor_cuba")+sum(LD,"valor_liquido_real")+actionContributionDetails(A).total-sum(A,"custo")-sum(GR,"valor")-sum(M,"valor_pagamento_limpo"));$("#kGastos").textContent=money(sum(GR,"valor")+sum(A,"custo"));const ac=actionContributionDetails(A);$("#kAcoes").textContent=money(ac.totalReal);$("#kAcoesInfo").textContent=`${money(ac.realLimpo)} limpo + ${money(ac.realSujo)} sujo → ${money(ac.realSujoConvertido)} após ${n(DATA.config.pct_maquina||57)}% • Dólar: ${usd(ac.totalDolar)} limpo equivalente`;$("#kFixosSujo").textContent=money(FP.filter(x=>x.tipo_dinheiro==="sujo").reduce((s,x)=>s+n(x.valor),0));$("#kDolLimpo").textContent=money(sum(LD,"valor_liquido_real"));$("#kGastosDol").textContent=usd(sum(GD,"valor"));
  const p=$("#period").value;$("#customDates").classList.toggle("hidden",p!=="custom");$("#periodLabel").textContent=p==="custom"?`Período: ${dateBR($("#from").value)} até ${dateBR($("#to").value)}`:p==="all"?"Todo o histórico":`Últimos ${p} dias`;
  const cats=Object.entries(group(G,"categoria","valor")).sort((a,b)=>b[1]-a[1]),mx=cats[0]?.[1]||1;$("#expenseBars").innerHTML=cats.length?cats.map(([k,v])=>`<div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v/mx*100}%"></div></div><b>${money(v)}</b></div>`).join(""):`<div class="empty">Sem gastos no período.</div>`;
  const rank=rankingHTML(L);$("#top5").innerHTML=rank.length?rank.slice(0,5).map((r,i)=>`<div class="rank"><i>${i+1}</i><div>${r.nome}<small>${r.qtd} ${r.qtd===1?"lavagem":"lavagens"}</small></div><b>${money(r.sujo)}</b></div>`).join(""):`<div class="empty">Sem lavagens no período.</div>`;
@@ -923,15 +955,24 @@ function renderAcoes(){
   const valid=DATA.acoes.filter(x=>x.status!=="Falhou");
   const famValue=x=>x.valor_familia!=null?n(x.valor_familia):(x.entrada_familia?n(x.valor_ganho):n(x.entrada));
 
-  const rl=valid.filter(x=>(x.moeda||"real")==="real" && (x.tipo_dinheiro||"limpo")==="limpo");
-  const rs=valid.filter(x=>(x.moeda||"real")==="real" && x.tipo_dinheiro==="sujo");
-  const dl=valid.filter(x=>x.moeda==="dolar" && (x.tipo_dinheiro||"limpo")==="limpo");
-  const ds=valid.filter(x=>x.moeda==="dolar" && x.tipo_dinheiro==="sujo");
+  const realLimpoRows=valid.filter(x=>(x.moeda||"real")==="real" && (x.tipo_dinheiro||"limpo")==="limpo");
+  const realSujoRows=valid.filter(x=>(x.moeda||"real")==="real" && x.tipo_dinheiro==="sujo");
+  const dolLimpoRows=valid.filter(x=>x.moeda==="dolar" && (x.tipo_dinheiro||"limpo")==="limpo");
+  const dolSujoRows=valid.filter(x=>x.moeda==="dolar" && x.tipo_dinheiro==="sujo");
 
-  $("#acaoRealLimpo").textContent=money(rl.reduce((s,x)=>s+famValue(x),0));
-  $("#acaoRealSujo").textContent=money(rs.reduce((s,x)=>s+famValue(x),0));
-  $("#acaoDolLimpo").textContent=usd(dl.reduce((s,x)=>s+famValue(x),0));
-  $("#acaoDolSujo").textContent=usd(ds.reduce((s,x)=>s+famValue(x),0));
+  const realLimpoTotal=realLimpoRows.reduce((s,x)=>s+famValue(x),0);
+  const realSujoTotal=realSujoRows.reduce((s,x)=>s+famValue(x),0);
+  const realSujoConvertido=realSujoTotal*n(DATA.config.pct_maquina||57)/100;
+  const dolLimpoTotal=dolLimpoRows.reduce((s,x)=>s+famValue(x),0);
+  const dolSujoTotal=dolSujoRows.reduce((s,x)=>s+famValue(x),0);
+  const dolSujoConvertido=dolSujoTotal*0.40;
+
+  $("#acaoRealLimpo").textContent=money(realLimpoTotal);
+  $("#acaoRealSujo").textContent=money(realSujoTotal);
+  $("#acaoDolLimpo").textContent=usd(dolLimpoTotal);
+  $("#acaoDolSujo").textContent=usd(dolSujoTotal);
+  if($("#acaoRealSujoInfo"))$("#acaoRealSujoInfo").textContent=`Convertido: ${money(realSujoConvertido)}`;
+  if($("#acaoDolSujoInfo"))$("#acaoDolSujoInfo").textContent=`Convertido: ${usd(dolSujoConvertido)}`;
 
   $("#acaoTable").innerHTML=DATA.acoes.length?DATA.acoes.map(x=>{
     const failed=x.status==="Falhou";
@@ -945,12 +986,12 @@ function renderAcoes(){
     const famTxt=failed?"—":(moeda==="dolar"?usd(vf):money(vf));
     const intTxt=failed?"—":(moeda==="dolar"?usd(vi):money(vi));
 
-    const convertido=(moeda==="real"&&tipo==="sujo")?vf*n(DATA.config.pct_maquina||57)/100:vf;
+    const convertido=(tipo==="sujo")?(moeda==="dolar"?vf*0.40:vf*n(DATA.config.pct_maquina||57)/100):vf;
     const resultado=failed?'<b class="actionRedText">DEU RED</b>':
       (vf>0&&vi>0
-        ?`<span class="green">Valor dividido${moeda==="real"&&tipo==="sujo"?` • caixa: ${money(convertido)}`:""}</span>`
+        ?`<span class="green">Valor dividido${tipo==="sujo"?` • limpo: ${moeda==="dolar"?usd(convertido):money(convertido)}`:""}</span>`
         :vf>0
-          ?`<span class="green">Tudo para família${moeda==="real"&&tipo==="sujo"?` • caixa: ${money(convertido)}`:""}</span>`
+          ?`<span class="green">Tudo para família${tipo==="sujo"?` • limpo: ${moeda==="dolar"?usd(convertido):money(convertido)}`:""}</span>`
           :'<span class="mut">Tudo para integrantes</span>');
 
     return`<tr>
