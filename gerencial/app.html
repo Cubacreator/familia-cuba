@@ -11,6 +11,7 @@
     <button data-p="lavagens">◉ <span>Lavagens</span></button>
     <button data-p="lavagensdol">$ <span>Lavagem DOL</span></button>
     <button data-p="gastos">▾ <span>Gastos</span></button>
+    <button data-p="bau">▤ <span>Controle de Baú</span></button>
     <button data-p="custosfixos">▣ <span>Custos Fixos</span></button>
     <button data-p="metas">◆ <span>Metas & Pagamentos</span></button>
     <button data-p="acoes">⚑ <span>Ações</span></button>
@@ -102,6 +103,41 @@
   </table></div>
 </section>
 
+
+
+<section class="page" id="bau">
+  <div class="row">
+    <div>
+      <h2>Controle de Baú</h2>
+      <div class="mut">Controle manual dos itens armazenados no baú da família.</div>
+    </div>
+    <button class="btn primary" data-open="bauModal">+ Novo registro</button>
+  </div>
+
+  <div class="sum bauSummary">
+    <div><span>Registros</span><b id="bauQtdRegistros">0</b></div>
+    <div><span>Quantidade total</span><b id="bauQtdTotal">0</b></div>
+    <div><span>Itens diferentes</span><b id="bauItensDiferentes">0</b></div>
+  </div>
+
+  <div class="panel bauFilters">
+    <div class="filterGrid">
+      <div class="field"><label>De</label><input type="date" id="bauFrom"></div>
+      <div class="field"><label>Até</label><input type="date" id="bauTo"></div>
+      <div class="field"><label>Item</label><input id="bauItemFilter" placeholder="Buscar item..."></div>
+      <div class="field filterActions"><label>&nbsp;</label><button type="button" class="btn" id="bauClearFilters">Limpar filtros</button></div>
+    </div>
+  </div>
+
+  <div class="table">
+    <table>
+      <thead>
+        <tr><th>Data</th><th>Item</th><th>Quantidade</th><th></th></tr>
+      </thead>
+      <tbody id="bauTable"></tbody>
+    </table>
+  </div>
+</section>
 
 <section class="page" id="custosfixos">
   <div class="row">
@@ -376,6 +412,16 @@
 <div class="field"><label id="gastoValorLabel">Valor total (R$)</label><input class="money" name="valor" required placeholder="0,00"></div>
 <div class="field full"><label>Descrição / observações</label><input name="descricao" placeholder="Opcional"></div>
 <div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar gasto</button></div>
+</form></div></div>
+
+
+<div class="modal" id="bauModal"><div class="box"><div class="mh"><h3>Registro do Baú</h3><button class="close" data-close>×</button></div>
+<form id="bauForm" class="formgrid">
+  <input type="hidden" name="id">
+  <div class="field"><label>Data</label><input type="date" name="data" required></div>
+  <div class="field"><label>Item</label><input name="item" required placeholder="Ex.: Colete, Five, munição..."></div>
+  <div class="field"><label>Quantidade</label><input type="number" name="quantidade" min="0" step="0.01" required placeholder="0"></div>
+  <div class="ma full"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar registro</button></div>
 </form></div></div>
 
 <div class="modal" id="fixoModal"><div class="box"><div class="mh"><h3>Custo fixo</h3><button class="close" data-close>×</button></div>

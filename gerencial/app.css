@@ -188,3 +188,12 @@ body.collapsed .brand-wordmark-wrap{display:none}
 
 /* V26 — Resultado exclusivo das lavagens */
 #kCubaLavagens{font-variant-numeric:tabular-nums}
+
+
+/* V27 — Controle de Baú */
+.bauSummary{margin:12px 0}
+.bauFilters{margin:12px 0}
+#bauTable td:nth-child(3){font-weight:800}
+@media(max-width:700px){
+  #bau .filterGrid{grid-template-columns:1fr}
+}

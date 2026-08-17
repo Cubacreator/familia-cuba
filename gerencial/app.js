@@ -1,7 +1,7 @@
 const cfg=window.CUBA_CONFIG;
 const sb=supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true}});
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let DATA={lavagens:[],lavagens_dol:[],gastos:[],custos_fixos:[],pagamentos_custos_fixos:[],metas:[],acoes:[],clientes:[],membros:[],auditoria:[],config:{pct_maquina:57}},profile=null,current="dashboard";
+let DATA={lavagens:[],lavagens_dol:[],gastos:[],bau:[],custos_fixos:[],pagamentos_custos_fixos:[],metas:[],acoes:[],clientes:[],membros:[],auditoria:[],config:{pct_maquina:57}},profile=null,current="dashboard";
 const n=v=>{if(typeof v==="number")return v||0;let s=String(v??"").trim().replace(/\s/g,"");if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");return Number(s.replace(/[^0-9.-]/g,""))||0};
 const br=v=>n(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
 const money=v=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n(v));
@@ -187,7 +187,7 @@ async function requireSession(){
  profile=data;$("#whoName").textContent=data.nome;$("#whoRole").textContent=data.cargo||"Gerencial";return true
 }
 async function loadAll(){
- const tables=["lavagens","lavagens_dol","gastos","custos_fixos","pagamentos_custos_fixos","metas","acoes","clientes","membros"];
+ const tables=["lavagens","lavagens_dol","gastos","bau","custos_fixos","pagamentos_custos_fixos","metas","acoes","clientes","membros"];
  const req=tables.map(t=>sb.from(t).select("*").order("created_at",{ascending:false}));
  const res=await Promise.all(req);
  res.forEach((r,i)=>{if(r.error)throw r.error;DATA[tables[i]]=r.data||[]});
@@ -203,7 +203,7 @@ async function loadAll(){
  if(co.data)DATA.config.pct_maquina=n(co.data.valor);
  renderAll()
 }
-function page(id){current=id;$$(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===id));$$(".page").forEach(p=>p.classList.toggle("on",p.id===id));const titles={dashboard:["Dashboard","Visão financeira e operacional da Cuba."],lavagens:["Lavagens","Registros financeiros de lavagem em reais."],lavagensdol:["Lavagem DOL","Conversão separada de DOL para valor limpo no caixa."],gastos:["Gastos","Saídas financeiras."],custosfixos:["Custos Fixos","Despesas recorrentes da família."],metas:["Metas & Pagamentos","Controle de metas dos membros."],acoes:["Ações","Registro operacional."],clientes:["Famílias / Clientes","Parceiros de lavagem."],membros:["Membros","Cadastro interno sem acesso ao sistema."],auditoria:["Auditoria","Histórico de alterações da gerência."]};$("#title").textContent=titles[id][0];$("#subtitle").textContent=titles[id][1];renderAll()}
+function page(id){current=id;$$(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===id));$$(".page").forEach(p=>p.classList.toggle("on",p.id===id));const titles={dashboard:["Dashboard","Visão financeira e operacional da Cuba."],lavagens:["Lavagens","Registros financeiros de lavagem em reais."],lavagensdol:["Lavagem DOL","Conversão separada de DOL para valor limpo no caixa."],gastos:["Gastos","Saídas financeiras."],bau:["Controle de Baú","Registro manual de itens e quantidades do baú."],custosfixos:["Custos Fixos","Despesas recorrentes da família."],metas:["Metas & Pagamentos","Controle de metas dos membros."],acoes:["Ações","Registro operacional."],clientes:["Famílias / Clientes","Parceiros de lavagem."],membros:["Membros","Cadastro interno sem acesso ao sistema."],auditoria:["Auditoria","Histórico de alterações da gerência."]};$("#title").textContent=titles[id][0];$("#subtitle").textContent=titles[id][1];renderAll()}
 $$(".nav button").forEach(b=>b.onclick=()=>page(b.dataset.p));$("#collapse").onclick=()=>document.body.classList.toggle("collapsed");$("#mobileMenu").onclick=()=>$("#side").classList.toggle("mobile");
 $("#logout").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};$("#refresh").onclick=async()=>{await loadAll();toast("Dados atualizados.")};
 function openModal(id,rec){
@@ -249,7 +249,7 @@ async function saveRecord(table,payload,id){
 }
 async function removeRecord(table,id,silent=false){if(!silent&&!confirm("Excluir este registro?"))return;const {error}=await sb.from(table).delete().eq("id",id);if(error)return alert(error.message);await loadAll();toast("Registro excluído.")}
 window.removeRecord=removeRecord;
-function editRecord(type,id){const map={lavagens:["lavModal","lavagens"],lavagens_dol:["dolModal","lavagens_dol"],gastos:["gastoModal","gastos"],custos_fixos:["fixoModal","custos_fixos"],acoes:["acaoModal","acoes"],clientes:["clienteModal","clientes"],membros:["membroModal","membros"]};const [modal,t]=map[type],r=DATA[t].find(x=>x.id===id);openModal(modal,r)}window.editRecord=editRecord;
+function editRecord(type,id){const map={lavagens:["lavModal","lavagens"],lavagens_dol:["dolModal","lavagens_dol"],gastos:["gastoModal","gastos"],bau:["bauModal","bau"],custos_fixos:["fixoModal","custos_fixos"],acoes:["acaoModal","acoes"],clientes:["clienteModal","clientes"],membros:["membroModal","membros"]};const [modal,t]=map[type],r=DATA[t].find(x=>x.id===id);openModal(modal,r)}window.editRecord=editRecord;
 
 const GASTO_ITENS={
   "Armas":["Five","Tec","Submetralhadora","Fuzil"],
@@ -309,6 +309,22 @@ $("#dolForm").onsubmit=async e=>{
 };
 
 $("#gastoForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("gastos",{data:x.data,categoria:x.categoria,item:x.item||null,quantidade:n(x.quantidade)||1,familia_fornecedora:x.familia_fornecedora||null,moeda:x.moeda||"real",descricao:x.descricao||null,responsavel:x.responsavel||null,valor:n(x.valor)},x.id);closeModal("gastoModal");await loadAll();toast("Gasto salvo.")}catch(ex){alert(ex.message)}};
+
+
+$("#bauForm").onsubmit=async e=>{
+  e.preventDefault();
+  const x=Object.fromEntries(new FormData(e.target));
+  try{
+    await saveRecord("bau",{
+      data:x.data,
+      item:(x.item||"").trim(),
+      quantidade:n(x.quantidade)
+    },x.id);
+    closeModal("bauModal");
+    await loadAll();
+    toast("Registro do baú salvo.");
+  }catch(ex){alert(ex.message)}
+};
 
 $("#fixoForm").onsubmit=async e=>{
   e.preventDefault();
@@ -492,6 +508,36 @@ function renderGastos(){
   const cur=$("#gastoChartCurrency")?.value||"real";
   renderBarChart("#gastoProductChart",rows,cur);renderLineChart("#gastoDateChart",rows);
 }
+
+function bauFilteredRows(){
+  const from=$("#bauFrom")?.value||"",to=$("#bauTo")?.value||"";
+  const q=($("#bauItemFilter")?.value||"").trim().toLowerCase();
+  return DATA.bau.filter(x=>{
+    if(from&&x.data<from)return false;
+    if(to&&x.data>to)return false;
+    if(q&&!String(x.item||"").toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>{
+    if(a.data!==b.data)return String(b.data).localeCompare(String(a.data));
+    return String(a.item||"").localeCompare(String(b.item||""),"pt-BR");
+  });
+}
+
+function renderBau(){
+  const rows=bauFilteredRows();
+  $("#bauQtdRegistros").textContent=rows.length;
+  $("#bauQtdTotal").textContent=br(rows.reduce((s,x)=>s+n(x.quantidade),0));
+  $("#bauItensDiferentes").textContent=new Set(rows.map(x=>String(x.item||"").trim().toLowerCase()).filter(Boolean)).size;
+
+  $("#bauTable").innerHTML=rows.length?rows.map(x=>`
+    <tr>
+      <td>${dateBR(x.data)}</td>
+      <td><b>${x.item||"—"}</b></td>
+      <td>${br(x.quantidade)}</td>
+      <td><button class="mini" onclick="editRecord('bau','${x.id}')">Editar</button> <button class="mini red" onclick="removeRecord('bau','${x.id}')">×</button></td>
+    </tr>`).join(""):`<tr><td colspan="4" class="empty">Nenhum registro de baú encontrado.</td></tr>`;
+}
+
 function renderCustosFixos(){
   const ativos=DATA.custos_fixos.filter(x=>x.ativo);
   $("#fixAtivos").textContent=ativos.length;
@@ -1024,7 +1070,12 @@ function renderLists(){$("#membersList").innerHTML=DATA.membros.map(m=>`<option 
 ["gastoFrom","gastoTo","gastoProductFilter","gastoCurrencyFilter","gastoChartCurrency"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderGastos)});
 $("#gastoClearFilters").onclick=()=>{$("#gastoFrom").value="";$("#gastoTo").value="";$("#gastoProductFilter").value="";$("#gastoCurrencyFilter").value="";renderGastos()};
 
+
+["bauFrom","bauTo"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderBau)});
+if($("#bauItemFilter"))$("#bauItemFilter").addEventListener("input",renderBau);
+if($("#bauClearFilters"))$("#bauClearFilters").onclick=()=>{$("#bauFrom").value="";$("#bauTo").value="";$("#bauItemFilter").value="";renderBau()};
+
 ["metaReportMode","metaReportMonth","metaReportWeek","metaReportFrom","metaReportTo"].forEach(id=>{const e=$("#"+id);if(e)e.addEventListener("change",renderMetaReport)});
 
-function renderAll(){renderLists();renderDashboard();renderLavagens();renderLavagensDol();renderGastos();renderCustosFixos();renderMetas();renderAcoes();renderClients();renderMembers();renderAudit()}
+function renderAll(){renderLists();renderDashboard();renderLavagens();renderLavagensDol();renderGastos();renderBau();renderCustosFixos();renderMetas();renderAcoes();renderClients();renderMembers();renderAudit()}
 (async()=>{try{if(!await requireSession())return;await loadAll();$("#loader").classList.add("hide")}catch(e){console.error(e);alert("Não foi possível carregar o sistema.\n\nErro: "+(e?.message||String(e)));}})();
