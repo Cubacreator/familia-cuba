@@ -191,6 +191,9 @@ async function loadAll(){
  const req=tables.map(t=>sb.from(t).select("*").order("created_at",{ascending:false}));
  const res=await Promise.all(req);
  res.forEach((r,i)=>{if(r.error)throw r.error;DATA[tables[i]]=r.data||[]});
+ const HIDDEN_FAMILY_MEMBERS=["darling","arthur","will"];
+ DATA.membros=(DATA.membros||[]).filter(m=>!HIDDEN_FAMILY_MEMBERS.includes(String(m.nome||"").trim().toLowerCase()));
+
  const [au,pr]=await Promise.all([
    sb.from("audit_log").select("*").order("created_at",{ascending:false}).limit(200),
    sb.from("profiles").select("user_id,nome,cargo")
