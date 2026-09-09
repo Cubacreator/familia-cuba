@@ -1,7 +1,7 @@
 const cfg=window.CUBA_CONFIG;
 const sb=supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true}});
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let DATA={lavagens:[],lavagens_dol:[],gastos:[],bau:[],custos_fixos:[],pagamentos_custos_fixos:[],metas:[],acoes:[],clientes:[],membros:[],auditoria:[],config:{pct_maquina:57}},profile=null,current="dashboard";
+let DATA={lavagens:[],lavagens_dol:[],gastos:[],bau:[],custos_fixos:[],pagamentos_custos_fixos:[],metas:[],acoes:[],clientes:[],membros:[],membros_all:[],auditoria:[],config:{pct_maquina:57}},profile=null,current="dashboard";
 const n=v=>{if(typeof v==="number")return v||0;let s=String(v??"").trim().replace(/\s/g,"");if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");return Number(s.replace(/[^0-9.-]/g,""))||0};
 const br=v=>n(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
 const money=v=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n(v));
@@ -191,8 +191,8 @@ async function loadAll(){
  const req=tables.map(t=>sb.from(t).select("*").order("created_at",{ascending:false}));
  const res=await Promise.all(req);
  res.forEach((r,i)=>{if(r.error)throw r.error;DATA[tables[i]]=r.data||[]});
- const HIDDEN_FAMILY_MEMBERS=["darling","arthur","will"];
- DATA.membros=(DATA.membros||[]).filter(m=>!HIDDEN_FAMILY_MEMBERS.includes(String(m.nome||"").trim().toLowerCase()));
+ DATA.membros_all=[...(DATA.membros||[])];
+ DATA.membros=DATA.membros_all.filter(m=>m.ativo!==false);
 
  const [au,pr]=await Promise.all([
    sb.from("audit_log").select("*").order("created_at",{ascending:false}).limit(200),
@@ -425,7 +425,7 @@ $("#acaoForm").onsubmit=async e=>{
   }catch(ex){alert(ex.message)}
 };
 $("#clienteForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("clientes",{nome:x.nome,contato:x.contato||null,observacoes:x.observacoes||null},x.id);closeModal("clienteModal");await loadAll();toast("Cliente salvo.")}catch(ex){alert(ex.message)}};
-$("#membroForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("membros",{nome:x.nome,cargo:x.cargo,passaporte:x.passaporte||null},x.id);closeModal("membroModal");await loadAll();toast("Membro salvo.")}catch(ex){alert(ex.message)}};
+$("#membroForm").onsubmit=async e=>{e.preventDefault();const x=Object.fromEntries(new FormData(e.target));try{await saveRecord("membros",{nome:x.nome,cargo:x.cargo,passaporte:x.passaporte||null,ativo:true},x.id);closeModal("membroModal");await loadAll();toast("Membro salvo.")}catch(ex){alert(ex.message)}};
 async function ensureClient(nome){if(!nome||DATA.clientes.some(c=>c.nome.toLowerCase()===nome.toLowerCase()))return;await sb.from("clientes").insert({nome})}
 
 
@@ -978,7 +978,83 @@ function openMemberMonthWeeks(memberId,monthKey){
 }
 window.openMemberMonthWeeks=openMemberMonthWeeks;
 
+
+function openMetaMemberModal(id=""){
+  const f=$("#metaMemberForm");
+  f.reset();
+  f.elements.id.value=id||"";
+  if(id){
+    const m=DATA.membros_all.find(x=>x.id===id);
+    if(!m)return;
+    f.elements.nome.value=m.nome||"";
+    $("#metaMemberModalTitle").textContent="Editar membro";
+  }else{
+    $("#metaMemberModalTitle").textContent="Cadastrar membro";
+  }
+  $("#metaMemberModal").classList.add("on");
+}
+window.openMetaMemberModal=openMetaMemberModal;
+
+async function deactivateMetaMember(id){
+  const m=DATA.membros_all.find(x=>x.id===id);
+  if(!m)return;
+  if(!confirm(`Retirar ${m.nome} da lista de metas?\n\nO histórico antigo será preservado.`))return;
+  const {error}=await sb.from("membros").update({ativo:false}).eq("id",id);
+  if(error)return alert(error.message);
+  await loadAll();
+  toast("Membro retirado da lista.");
+}
+window.deactivateMetaMember=deactivateMetaMember;
+
+function renderMetaMembersManager(){
+  const members=DATA.membros
+    .filter(m=>memberHierarchyRank(m.cargo)>=5)
+    .sort((a,b)=>sortName(a.nome,b.nome));
+
+  const el=$("#metaMembersManageList");
+  if(!el)return;
+
+  el.innerHTML=members.length?members.map(m=>`
+    <div class="metaManageMember">
+      <div><b>${m.nome}</b><small>${m.cargo||"Membro"}</small></div>
+      <div class="metaManageActions">
+        <button class="mini" type="button" onclick="openMetaMemberModal('${m.id}')">Editar</button>
+        <button class="mini red" type="button" onclick="deactivateMetaMember('${m.id}')">Excluir da lista</button>
+      </div>
+    </div>
+  `).join(""):`<div class="empty">Nenhum membro cadastrado para metas.</div>`;
+}
+
+$("#metaMemberForm").onsubmit=async e=>{
+  e.preventDefault();
+  const x=Object.fromEntries(new FormData(e.target));
+  const nome=(x.nome||"").trim();
+  if(!nome)return;
+
+  try{
+    if(x.id){
+      const {error}=await sb.from("membros").update({nome,ativo:true}).eq("id",x.id);
+      if(error)throw error;
+    }else{
+      const existing=DATA.membros_all.find(m=>String(m.nome||"").trim().toLowerCase()===nome.toLowerCase());
+      if(existing){
+        const {error}=await sb.from("membros").update({ativo:true,nome}).eq("id",existing.id);
+        if(error)throw error;
+      }else{
+        const {error}=await sb.from("membros").insert({nome,cargo:"Membro",passaporte:null,ativo:true});
+        if(error)throw error;
+      }
+    }
+    closeModal("metaMemberModal");
+    await loadAll();
+    toast("Lista de metas atualizada.");
+  }catch(ex){alert(ex.message)}
+};
+
+if($("#addMetaMemberBtn"))$("#addMetaMemberBtn").onclick=()=>openMetaMemberModal();
+
 function renderMetas(){
+  renderMetaMembersManager();
   if(!$("#metaCalendarMonth").value)$("#metaCalendarMonth").value=monthValue();
   const current=$("#metaCalendarMember").value;
   const eligible=DATA.membros.filter(m=>memberHierarchyRank(m.cargo)>=5).sort((a,b)=>sortName(a.nome,b.nome));
