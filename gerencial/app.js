@@ -14,6 +14,7 @@ function isManagerRole(cargo){
   cargo=String(cargo||"").trim().toLowerCase();
   return cargo==="01"||
          cargo==="02"||
+         cargo==="gerente"||
          cargo==="gerente geral"||
          cargo==="gerente de ação";
 }
@@ -49,6 +50,7 @@ function memberHierarchyRank(cargo){
   if(c==="02")return 2;
   if(c==="gerente geral")return 3;
   if(c==="gerente de ação")return 4;
+  if(c==="gerente")return 4;
   if(c==="membro")return 5;
   return 6;
 }
