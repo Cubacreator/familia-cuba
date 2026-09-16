@@ -16,7 +16,8 @@ function isManagerRole(cargo){
          cargo==="02"||
          cargo==="gerente"||
          cargo==="gerente geral"||
-         cargo==="gerente de ação";
+         cargo==="gerente de ação"||
+         cargo==="gerente de famr";
 }
 function isoLocal(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
 function mondayOfDate(value){
@@ -28,11 +29,12 @@ function mondayOfDate(value){
 
 
 
-const RESPONSAVEIS_LIMITADOS=["Caio","Caroll","Nicko","Renan","Raissa"];
+const RESPONSAVEIS_LIMITADOS=["Caio","Caroll","Felipe","Nicko","Renan","Raissa"];
 function shortResponsible(v){
   const s=String(v||"").toLowerCase();
   if(s.includes("caio"))return"Caio";
   if(s.includes("caroll")||s.includes("carol"))return"Caroll";
+  if(s.includes("felipe"))return"Felipe";
   if(s.includes("nick"))return"Nicko";
   if(s.includes("renan"))return"Renan";
   if(s.includes("raissa"))return"Raissa";
@@ -51,6 +53,7 @@ function memberHierarchyRank(cargo){
   if(c==="gerente geral")return 3;
   if(c==="gerente de ação")return 4;
   if(c==="gerente")return 4;
+  if(c==="gerente de famr")return 4;
   if(c==="membro")return 5;
   return 6;
 }
