@@ -17,7 +17,7 @@ function isManagerRole(cargo){
          cargo==="gerente"||
          cargo==="gerente geral"||
          cargo==="gerente de ação"||
-         cargo==="gerente de famr";
+         cargo==="gerente de farm";
 }
 function isoLocal(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
 function mondayOfDate(value){
@@ -53,7 +53,7 @@ function memberHierarchyRank(cargo){
   if(c==="gerente geral")return 3;
   if(c==="gerente de ação")return 4;
   if(c==="gerente")return 4;
-  if(c==="gerente de famr")return 4;
+  if(c==="gerente de farm")return 4;
   if(c==="membro")return 5;
   return 6;
 }
