@@ -1,123 +1,221 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Família Cuba — Acesso Restrito</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071525">
+  <title>CUBA — Mercadinho</title>
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
-  <div id="loader" class="loader-screen">
-    <div class="loader-box">
-      <p class="eyebrow">SISTEMA INTERNO</p>
-      <h1>FAMÍLIA CUBA</h1>
-      <p id="loaderText">Inicializando sistema...</p>
-      <div class="progress"><span id="progressBar"></span></div>
+<div id="toast" class="toast"></div>
+
+<section id="loginScreen" class="loginScreen">
+  <div class="loginCard">
+    <img src="cuba-wordmark.png" class="loginLogo" alt="CUBA">
+    <div class="loginTitle">
+      <h1>Mercadinho Cuba</h1>
+      <p>Membros e gerência</p>
     </div>
+
+    <form id="loginForm" class="loginForm">
+      <label>Passaporte
+        <input id="passport" inputmode="numeric" autocomplete="username" required placeholder="Digite seu passaporte">
+      </label>
+      <label>Senha
+        <input id="password" type="password" autocomplete="current-password" required placeholder="Digite sua senha">
+      </label>
+      <button class="btn primary" id="loginBtn">ENTRAR</button>
+      <div id="loginErr" class="error"></div>
+    </form>
+    <small class="loginHint">Gerentes, 01 e 02 usam o mesmo acesso do site gerencial. Demais membros usam o acesso criado pela gerência.</small>
   </div>
+</section>
 
-  <main id="site" class="hidden">
-    <section class="hero">
-      <div class="overlay"></div>
-      <div class="hero-content reveal">
-        <img src="images/logo.jpg" alt="Logo da Família Cuba" class="logo">
-        <p class="eyebrow">ACESSO AUTORIZADO</p>
-        <h1>FAMÍLIA CUBA</h1>
-        <p class="motto">Silêncio também mata.</p>
-        <button id="enterButton" class="gold-button">ENTRAR</button>
-        <small>Ative o som para uma experiência completa.</small>
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="cuba-wordmark.png" alt="CUBA">
+      <span>Mercadinho</span>
+    </div>
+
+    <nav>
+      <button class="navBtn on" data-page="mercado">▦ <span>Mercado</span></button>
+      <button class="navBtn memberOnly" data-page="minhas">◷ <span>Minhas retiradas</span></button>
+      <button class="navBtn adminOnly" data-page="bau">▤ <span>Controle de Baú</span></button>
+      <button class="navBtn adminOnly" data-page="acessos">♟ <span>Acessos</span></button>
+      <button class="navBtn adminOnly" data-page="movimentos">⌁ <span>Movimentos</span></button>
+    </nav>
+
+    <div class="profileBox">
+      <b id="whoName">—</b>
+      <small id="whoRole">—</small>
+      <button class="btn ghost" id="logoutBtn">Sair</button>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div>
+        <h2 id="pageTitle">Mercado</h2>
+        <p id="pageSubtitle">Retire itens disponíveis no estoque da família.</p>
       </div>
-    </section>
+      <button class="btn" id="refreshBtn">Atualizar</button>
+    </header>
 
-    <section id="intro" class="section dark">
-      <div class="wrap narrow reveal">
-        <p class="eyebrow">ARQUIVO CONFIDENCIAL</p>
-        <div id="typewriter" class="typewriter"></div>
-        <button id="continueButton" class="outline-button hidden">CONTINUAR</button>
-      </div>
-    </section>
-
-    <section id="quem-somos" class="section">
-      <div class="wrap split">
-        <div class="photo-frame reveal">
-          <img src="images/familia.png" alt="Foto da Família Cuba">
-        </div>
-        <div class="reveal">
-          <p class="eyebrow">QUEM SOMOS</p>
-          <h2>Mais do que uma organização.</h2>
-          <p>A Família Cuba é construída por pessoas que entendem o valor da palavra, da presença e da confiança. Aqui, ninguém caminha sozinho.</p>
-          <p>Cada integrante carrega uma responsabilidade: proteger a família, respeitar a hierarquia e honrar quem esteve presente desde o início.</p>
-          <blockquote>“Família não é sobrenome. É escolha.”</blockquote>
-        </div>
-      </div>
-    </section>
-
-    <section class="section dark">
-      <div class="wrap">
-        <div class="heading reveal">
-          <p class="eyebrow">NOSSOS PILARES</p>
-          <h2>O que sustenta a Cuba</h2>
-        </div>
-        <div class="pillars">
-          <article class="card reveal"><span>01</span><h3>Lealdade</h3><p>Nunca abandonar quem escolheu caminhar ao nosso lado.</p></article>
-          <article class="card reveal"><span>02</span><h3>Respeito</h3><p>Respeito não se exige. Ele é conquistado todos os dias.</p></article>
-          <article class="card reveal"><span>03</span><h3>Discrição</h3><p>O silêncio protege, preserva e revela quem sabe permanecer.</p></article>
+    <section class="page on" id="mercado">
+      <div class="hero">
+        <div>
+          <span class="eyebrow">MERCADINHO CUBA</span>
+          <h1>Itens disponíveis</h1>
+          <p>Escolha um item e informe a quantidade. A retirada atualiza o estoque automaticamente.</p>
         </div>
       </div>
+
+      <div class="toolbar">
+        <input id="marketSearch" placeholder="Buscar item...">
+      </div>
+
+      <div id="marketGrid" class="marketGrid"></div>
     </section>
 
-    <section class="section">
-      <div class="wrap">
-        <div class="heading reveal">
-          <p class="eyebrow">HIERARQUIA</p>
-          <h2>Conheça a Família</h2>
-          <p>Clique em um integrante para abrir o dossiê.</p>
+    <section class="page" id="minhas">
+      <div class="sectionHead">
+        <div>
+          <h2>Minhas retiradas</h2>
+          <p>Histórico das suas retiradas no mercadinho.</p>
         </div>
-        <div id="membersGrid" class="members"></div>
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Data</th><th>Item</th><th>Quantidade</th></tr></thead>
+          <tbody id="myMovesTable"></tbody>
+        </table>
       </div>
     </section>
 
-    <section class="section essence">
-      <div class="wrap narrow center">
-        <p class="eyebrow reveal">NOSSA ESSÊNCIA</p>
-        <p class="essence-line reveal">Lealdade vale mais que promessa.</p>
-        <p class="essence-line reveal">Respeito vale mais que medo.</p>
-        <p class="essence-line reveal">Quem fala demais esquece que...</p>
-        <h2 class="reveal">Silêncio também mata.</h2>
+    <section class="page" id="bau">
+      <div class="sectionHead">
+        <div>
+          <h2>Controle de Baú</h2>
+          <p>Visível somente para gerência, 01 e 02. Este é o estoque usado pelo Mercadinho.</p>
+        </div>
+        <button class="btn primary" id="newItemBtn">+ Novo item</button>
+      </div>
+
+      <div class="summary">
+        <div><span>Itens ativos</span><b id="stockItemCount">0</b></div>
+        <div><span>Unidades no baú</span><b id="stockTotal">0</b></div>
+        <div><span>Sem estoque</span><b id="stockEmpty">0</b></div>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Item</th><th>Quantidade</th><th>Descrição</th><th></th></tr></thead>
+          <tbody id="stockTable"></tbody>
+        </table>
       </div>
     </section>
 
-    <section class="section final">
-      <div class="wrap narrow center reveal">
-        <img src="images/logo.jpg" alt="Logo da Família Cuba" class="logo small-logo">
-        <p class="final-message">Se você chegou até aqui, significa que passou pelo primeiro teste.<strong>Sua verdadeira história começa agora.</strong></p>
-        <p class="signature">FAMÍLIA CUBA</p>
-        <small>LEALDADE • RESPEITO • SILÊNCIO</small>
+    <section class="page" id="acessos">
+      <div class="sectionHead">
+        <div>
+          <h2>Acessos dos membros</h2>
+          <p>Crie e exclua livremente os logins do Mercadinho. Isso não altera o login dos gerentes.</p>
+        </div>
+        <button class="btn primary" id="newAccessBtn">+ Criar acesso</button>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Passaporte</th><th>Criado em</th><th></th></tr></thead>
+          <tbody id="accessTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="movimentos">
+      <div class="sectionHead">
+        <div>
+          <h2>Movimentos do estoque</h2>
+          <p>Entradas, retiradas e ajustes realizados no Mercadinho.</p>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Data</th><th>Item</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Antes</th><th>Depois</th><th>Obs.</th></tr></thead>
+          <tbody id="movesTable"></tbody>
+        </table>
       </div>
     </section>
   </main>
+</div>
 
-  <div id="memberModal" class="modal hidden">
-    <div class="modal-bg" data-close></div>
-    <div class="modal-card">
-      <button class="close" data-close>×</button>
-      <img id="modalImage" src="" alt="">
-      <div class="modal-text">
-        <p id="modalRole" class="eyebrow"></p>
-        <h2 id="modalName"></h2>
-        <p id="modalDescription"></p>
-        <blockquote id="modalQuote"></blockquote>
-      </div>
-    </div>
+<div class="modal" id="withdrawModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3>Retirar item</h3><button data-close>×</button></div>
+    <form id="withdrawForm" class="form">
+      <input type="hidden" name="item_id">
+      <label>Item<input name="item_nome" readonly></label>
+      <label>Quantidade<input name="quantidade" type="number" min="1" step="1" value="1" required></label>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Confirmar retirada</button></div>
+    </form>
   </div>
+</div>
 
-  <audio id="themeMusic" loop preload="auto">
-    <source src="music/tema.mp3" type="audio/mpeg">
-  </audio>
+<div class="modal" id="itemModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3>Novo item</h3><button data-close>×</button></div>
+    <form id="itemForm" class="form">
+      <label>Nome do item<input name="nome" required placeholder="Ex.: Colete"></label>
+      <label>Descrição<input name="descricao" placeholder="Opcional"></label>
+      <label>Quantidade inicial<input name="estoque" type="number" min="0" step="1" value="0" required></label>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Criar item</button></div>
+    </form>
+  </div>
+</div>
 
-  <script src="script.js"></script>
+<div class="modal" id="stockModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3 id="stockModalTitle">Atualizar estoque</h3><button data-close>×</button></div>
+    <form id="stockForm" class="form">
+      <input type="hidden" name="item_id">
+      <label>Item<input name="item_nome" readonly></label>
+      <label>Operação
+        <select name="operacao" id="stockOperation">
+          <option value="entrada">Adicionar ao baú</option>
+          <option value="ajuste">Definir quantidade exata</option>
+        </select>
+      </label>
+      <label id="stockQtyLabel">Quantidade a adicionar<input name="quantidade" type="number" min="0" step="1" required></label>
+      <label>Observação<input name="observacao" placeholder="Opcional"></label>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="accessModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3>Criar acesso</h3><button data-close>×</button></div>
+    <form id="accessForm" class="form">
+      <label>Nome do membro<input name="nome" list="membersSuggestions" required placeholder="Nome"></label>
+      <label>Passaporte<input name="passaporte" inputmode="numeric" required placeholder="Ex.: 1234"></label>
+      <label>Senha
+        <div class="passwordRow">
+          <input name="senha" required minlength="6" placeholder="Mínimo 6 caracteres">
+          <button class="btn" type="button" id="generatePasswordBtn">Gerar</button>
+        </div>
+      </label>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Criar acesso</button></div>
+    </form>
+  </div>
+</div>
+
+<datalist id="membersSuggestions"></datalist>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
