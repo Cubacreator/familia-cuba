@@ -42,7 +42,6 @@
 
     <nav>
       <button class="navBtn on" data-page="mercado">▦ <span>Mercado</span></button>
-      <button class="navBtn memberOnly" data-page="minhas">◷ <span>Minhas retiradas</span></button>
       <button class="navBtn adminOnly" data-page="bau">▤ <span>Controle de Baú</span></button>
       <button class="navBtn adminOnly" data-page="compras">▧ <span>Lista de compras</span></button>
       <button class="navBtn adminOnly" data-page="acessos">♟ <span>Acessos</span></button>
@@ -70,7 +69,7 @@
         <div>
           <span class="eyebrow">MERCADINHO CUBA</span>
           <h1>Itens disponíveis</h1>
-          <p>Escolha um item e informe a quantidade. A retirada atualiza o estoque automaticamente.</p>
+          <p>Adicione itens ao estoque ou retire o que estiver disponível. As duas operações ficam registradas.</p>
         </div>
       </div>
 
@@ -79,21 +78,6 @@
       </div>
 
       <div id="marketGrid" class="marketGrid"></div>
-    </section>
-
-    <section class="page" id="minhas">
-      <div class="sectionHead">
-        <div>
-          <h2>Minhas retiradas</h2>
-          <p>Histórico das suas retiradas no mercadinho.</p>
-        </div>
-      </div>
-      <div class="tableWrap">
-        <table>
-          <thead><tr><th>Data</th><th>Item</th><th>Quantidade</th></tr></thead>
-          <tbody id="myMovesTable"></tbody>
-        </table>
-      </div>
     </section>
 
     <section class="page" id="bau">
@@ -170,6 +154,20 @@
       <label>Item<input name="item_nome" readonly></label>
       <label>Quantidade<input name="quantidade" type="number" min="1" step="1" value="1" required></label>
       <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Confirmar retirada</button></div>
+    </form>
+  </div>
+</div>
+
+
+<div class="modal" id="memberEntryModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3>Adicionar ao estoque</h3><button type="button" data-close>×</button></div>
+    <form id="memberEntryForm" class="form">
+      <input type="hidden" name="item_id">
+      <label>Item<input name="item_nome" readonly></label>
+      <label>Quantidade adicionada<input name="quantidade" type="number" min="1" step="1" value="1" required></label>
+      <label>Observação<input name="observacao" placeholder="Opcional"></label>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Confirmar entrada</button></div>
     </form>
   </div>
 </div>
