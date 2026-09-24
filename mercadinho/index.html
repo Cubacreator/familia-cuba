@@ -184,6 +184,19 @@
   </div>
 </div>
 
+<div class="modal" id="imageModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3>Imagem do item</h3><button data-close>×</button></div>
+    <form id="imageForm" class="form">
+      <input type="hidden" name="item_id">
+      <label>Item<input name="item_nome" readonly></label>
+      <label>Escolher imagem<input name="imagem" type="file" accept="image/png,image/jpeg,image/webp" required></label>
+      <small>JPG, PNG ou WebP. A imagem será ajustada automaticamente.</small>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar imagem</button></div>
+    </form>
+  </div>
+</div>
+
 <div class="modal" id="stockModal">
   <div class="modalBox">
     <div class="modalHead"><h3 id="stockModalTitle">Atualizar estoque</h3><button data-close>×</button></div>
