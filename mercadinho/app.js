@@ -101,7 +101,7 @@ const PAGE_TEXT={
   movimentos:["Movimentos","Histórico de entradas, retiradas e ajustes."]
 };
 function page(id){
-  if(!SESSION.admin&&["bau","acessos","movimentos"].includes(id))id="mercado";
+  if(!SESSION.admin&&["minhas","bau","acessos","movimentos"].includes(id))id="mercado";
   if(SESSION.admin&&id==="minhas")id="mercado";
   $$(".page").forEach(p=>p.classList.toggle("on",p.id===id));
   $$(".navBtn").forEach(b=>b.classList.toggle("on",b.dataset.page===id));
@@ -121,9 +121,6 @@ async function loadMarket(){
 
   if(SESSION.admin){
     await Promise.all([loadAdminItems(),loadAccesses(),loadMoves(),loadMemberSuggestions()]);
-  }else{
-    MY_MOVES=await rpc("mercado_minhas_retiradas",{p_token:SESSION.token});
-    renderMyMoves();
   }
 }
 
