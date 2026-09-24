@@ -44,3 +44,5 @@ table{width:100%;border-collapse:collapse;min-width:680px}th,td{padding:11px 12p
 .empty{padding:28px!important;text-align:center!important;color:var(--muted)}
 @media(max-width:800px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.sidebar nav{grid-template-columns:repeat(2,1fr)}.profileBox{margin-top:12px}.topbar{position:static}.summary{grid-template-columns:1fr}.page{padding:16px}.marketGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.marketGrid{grid-template-columns:1fr}.sectionHead{align-items:flex-start;flex-direction:column}.sidebar nav{grid-template-columns:1fr 1fr}.topbar{padding:14px 16px}.hero h1{font-size:26px}}
+
+.productCard .state.productStockLine{justify-content:flex-start;flex-wrap:wrap;gap:8px}.productActions{display:flex;flex-wrap:wrap;gap:7px;margin-left:auto}.productActions .btn{padding:8px 10px}.productActions .memberAdd{background:#103427;border-color:#286448;color:#a7f0c3}
