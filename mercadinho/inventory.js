@@ -42,6 +42,44 @@
     });
   }
 
+  window.openMemberEntry = function (id, nome) {
+    if (!SESSION || SESSION.admin) return;
+    const form = document.querySelector("#memberEntryForm");
+    if (!form) return;
+    form.reset();
+    form.elements.item_id.value = id;
+    form.elements.item_nome.value = nome;
+    form.elements.quantidade.value = 1;
+    document.querySelector("#memberEntryModal").classList.add("on");
+  };
+
+  const memberEntryForm = document.querySelector("#memberEntryForm");
+  if (memberEntryForm) memberEntryForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!SESSION || SESSION.admin || SESSION.type !== "member") return;
+    const form = event.currentTarget;
+    const quantity = Number(form.elements.quantidade.value);
+    if (!Number.isInteger(quantity) || quantity < 1) return;
+    if (!confirm(`Confirmar entrada de ${quantity} unidade(s) de ${form.elements.item_nome.value}?`)) return;
+    const submit = form.querySelector('button[type="submit"],button:not([type])');
+    if (submit) submit.disabled = true;
+    try {
+      await rpc("mercado_membro_entrada", {
+        p_token: SESSION.token,
+        p_item_id: form.elements.item_id.value,
+        p_quantidade: quantity,
+        p_observacao: form.elements.observacao.value.trim() || null
+      });
+      document.querySelector("#memberEntryModal").classList.remove("on");
+      toast("Entrada registrada.");
+      await loadMarket();
+    } catch (error) {
+      alert(error.message || "Não foi possível registrar a entrada.");
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+
   function decorateMarket() {
     document.querySelectorAll("#marketGrid .productCard").forEach(card => {
       const title = card.querySelector("h3");
@@ -72,9 +110,27 @@
       if (item && item.estoque != null) quantity.textContent = Number(item.estoque).toLocaleString("pt-BR") + " un. disponíveis";
       else if (!quantity.textContent) quantity.textContent = item && item.disponivel ? "Disponível" : "0 un.";
       const state = info.querySelector(".state");
-      if (state) state.classList.add("productStockLine");
-      const button = info.querySelector(".state .btn");
-      if (button) button.textContent = "Retirar item";
+      if (state) {
+        state.classList.add("productStockLine");
+        let button = state.querySelector(".btn:not(.memberAdd)");
+        if (button) {
+          button.textContent = "Retirar item";
+          if (!button.closest(".productActions")) {
+            const actions = document.createElement("div");
+            actions.className = "productActions";
+            button.parentNode.insertBefore(actions, button);
+            actions.appendChild(button);
+          }
+        }
+        if (SESSION && !SESSION.admin && item && !state.querySelector(".memberAdd")) {
+          const addButton = document.createElement("button");
+          addButton.type = "button";
+          addButton.className = "btn memberAdd";
+          addButton.textContent = "Adicionar";
+          addButton.onclick = () => window.openMemberEntry(item.id, item.nome);
+          state.querySelector(".productActions")?.appendChild(addButton);
+        }
+      }
     });
   }
 
