@@ -13,7 +13,10 @@
   const escHtml = value => String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
   const itemByName = name => (SESSION && SESSION.admin ? (ADMIN_ITEMS || []).concat(MARKET_ITEMS || []) : (MARKET_ITEMS || []).concat(ADMIN_ITEMS || [])).find(item => String(item.nome) === String(name));
   const imageMarkup = (name, className) => {
-    const src = photoFor(name);
+    const item = itemByName(name);
+    const imagePath = item && ITEM_IMAGE_PATHS ? ITEM_IMAGE_PATHS[item.id] : null;
+    const uploadedSrc = imagePath ? sb.storage.from("mercado-imagens").getPublicUrl(imagePath).data.publicUrl : null;
+    const src = uploadedSrc || photoFor(name);
     return src ? '<img class="' + className + '" src="' + src + '" alt="Foto de ' + escHtml(name) + '" loading="lazy">' : '<span class="photoFallback" aria-hidden="true">▦</span>';
   };
 
