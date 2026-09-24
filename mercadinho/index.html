@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#071525">
   <title>CUBA — Mercadinho</title>
   <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="inventory.css">
 </head>
 <body>
 <div id="toast" class="toast"></div>
@@ -43,6 +44,7 @@
       <button class="navBtn on" data-page="mercado">▦ <span>Mercado</span></button>
       <button class="navBtn memberOnly" data-page="minhas">◷ <span>Minhas retiradas</span></button>
       <button class="navBtn adminOnly" data-page="bau">▤ <span>Controle de Baú</span></button>
+      <button class="navBtn adminOnly" data-page="compras">▧ <span>Lista de compras</span></button>
       <button class="navBtn adminOnly" data-page="acessos">♟ <span>Acessos</span></button>
       <button class="navBtn adminOnly" data-page="movimentos">⌁ <span>Movimentos</span></button>
     </nav>
@@ -60,7 +62,7 @@
         <h2 id="pageTitle">Mercado</h2>
         <p id="pageSubtitle">Retire itens disponíveis no estoque da família.</p>
       </div>
-      <button class="btn" id="refreshBtn">Atualizar</button>
+      <div class="topActions"><button class="btn adminOnly" id="enableStockAlerts">Ativar avisos</button><button class="btn" id="refreshBtn">Atualizar</button></div>
     </header>
 
     <section class="page on" id="mercado">
@@ -115,6 +117,14 @@
           <tbody id="stockTable"></tbody>
         </table>
       </div>
+    </section>
+
+    <section class="page" id="compras">
+      <div class="sectionHead">
+        <div><h2>Lista de compras</h2><p>Itens esgotados entram aqui automaticamente.</p></div>
+        <span class="shoppingCount" id="shoppingCount">0 itens</span>
+      </div>
+      <div id="shoppingGrid" class="shoppingGrid"></div>
     </section>
 
     <section class="page" id="acessos">
@@ -217,5 +227,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="inventory.js"></script>
 </body>
 </html>
