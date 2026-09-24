@@ -10,6 +10,7 @@ const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setT
 
 let SESSION={type:null,token:null,nome:null,cargo:null,admin:false};
 let MARKET_ITEMS=[],ADMIN_ITEMS=[],ACCESSES=[],MOVES=[],MY_MOVES=[];
+let ITEM_IMAGE_PATHS={};
 
 function emailFromPassport(p){return String(p).trim()+"@cuba.local"}
 function memberToken(){return localStorage.getItem("cuba_market_token")||null}
@@ -117,6 +118,7 @@ $$(".modal").forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});
 
 async function loadMarket(){
   MARKET_ITEMS=await rpc("mercado_listar_itens",{p_token:SESSION.token});
+  await loadItemImages();
   renderMarket();
 
   if(SESSION.admin){
@@ -124,6 +126,14 @@ async function loadMarket(){
   }
 }
 
+async function loadItemImages(){
+  try{
+    const rows=await rpc("mercado_listar_imagens_publicas");
+    ITEM_IMAGE_PATHS=Object.fromEntries((rows||[]).map(x=>[x.item_id,x.imagem_path]));
+  }catch(_){
+    ITEM_IMAGE_PATHS={};
+  }
+}
 async function loadAdminItems(){
   ADMIN_ITEMS=await rpc("mercado_admin_listar_itens");
   renderStock();
@@ -194,6 +204,7 @@ function renderStock(){
       <td>${esc(x.descricao||"—")}</td>
       <td>
         <button class="mini" onclick="openStock('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Estoque</button>
+        <button class="mini" onclick="openItemImage('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">${ITEM_IMAGE_PATHS[x.id]?"Trocar imagem":"Adicionar imagem"}</button>
         <button class="mini red" onclick="disableItem('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Excluir</button>
       </td>
     </tr>`).join(""):`<tr><td colspan="4" class="empty">Nenhum item cadastrado.</td></tr>`;
@@ -211,6 +222,89 @@ $("#itemForm").onsubmit=async e=>{
     });
     closeModal("itemModal");toast("Item criado.");await loadMarket();
   }catch(ex){alert(ex.message)}
+};
+
+function openItemImage(id,nome){
+  const f=$("#imageForm");f.reset();
+  f.elements.item_id.value=id;
+  f.elements.item_nome.value=nome;
+  openModal("imageModal");
+}
+window.openItemImage=openItemImage;
+
+function optimizeItemImage(file){
+  return new Promise((resolve,reject)=>{
+    const objectUrl=URL.createObjectURL(file);
+    const image=new Image();
+    image.onload=()=>{
+      const maxSide=720;
+      const ratio=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+      const canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
+      canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
+      canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
+      const finish=blob=>{
+        URL.revokeObjectURL(objectUrl);
+        if(blob)resolve(blob);
+        else reject(new Error("Não foi possível processar essa imagem."));
+      };
+      canvas.toBlob(blob=>{
+        if(blob)finish(blob);
+        else canvas.toBlob(finish,"image/jpeg",0.84);
+      },"image/webp",0.84);
+    };
+    image.onerror=()=>{
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Não foi possível abrir essa imagem."));
+    };
+    image.src=objectUrl;
+  });
+}
+
+$("#imageForm").onsubmit=async e=>{
+  e.preventDefault();
+  const f=e.target;
+  const file=f.elements.imagem.files[0];
+  if(!file)return;
+  if(!["image/png","image/jpeg","image/webp"].includes(file.type)){
+    alert("Escolha uma imagem PNG, JPG ou WebP.");
+    return;
+  }
+  if(file.size>10*1024*1024){
+    alert("A imagem original precisa ter até 10 MB.");
+    return;
+  }
+  const itemId=f.elements.item_id.value;
+  const oldPath=ITEM_IMAGE_PATHS[itemId]||null;
+  const submit=f.querySelector('button[type="submit"],button:not([type])');
+  if(submit)submit.disabled=true;
+  let uploadedPath=null;
+  try{
+    const blob=await optimizeItemImage(file);
+    const extension=blob.type==="image/webp"?"webp":blob.type==="image/png"?"png":"jpg";
+    const unique=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+    uploadedPath=itemId+"/"+unique+"."+extension;
+    const storage=sb.storage.from("mercado-imagens");
+    const {error:uploadError}=await storage.upload(uploadedPath,blob,{
+      contentType:blob.type||"image/jpeg",
+      cacheControl:"3600",
+      upsert:false
+    });
+    if(uploadError)throw uploadError;
+    await rpc("mercado_admin_salvar_imagem",{
+      p_item_id:itemId,
+      p_imagem_path:uploadedPath
+    });
+    if(oldPath)await storage.remove([oldPath]);
+    closeModal("imageModal");
+    toast("Imagem salva.");
+    await loadMarket();
+  }catch(error){
+    if(uploadedPath)try{await sb.storage.from("mercado-imagens").remove([uploadedPath])}catch(_){}
+    alert(error.message||"Não foi possível salvar a imagem.");
+  }finally{
+    if(submit)submit.disabled=false;
+  }
 };
 
 function openStock(id,nome){
