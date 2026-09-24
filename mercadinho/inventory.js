@@ -122,6 +122,8 @@
       decorateMarket();
       return result;
     };
+    const marketSearch = document.querySelector("#marketSearch");
+    if (marketSearch) marketSearch.oninput = () => window.renderMarket();
   }
   const baseStock = window.renderStock;
   if (typeof baseStock === "function") {
