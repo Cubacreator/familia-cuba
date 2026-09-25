@@ -370,7 +370,7 @@ window.disableItem=disableItem;
 function renderAccesses(){
   $("#accessTable").innerHTML=(ACCESSES||[]).length?ACCESSES.map(x=>`
     <tr><td><b>${esc(x.nome)}</b></td><td>${esc(x.passaporte)}</td><td>${dt(x.created_at)}</td>
-    <td><button class="mini red" onclick="deleteAccess('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Excluir acesso</button></td></tr>`
+    <td><button class="mini" onclick="openResetPassword('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}','${esc(x.passaporte)}')">Redefinir senha</button> <button class="mini red" onclick="deleteAccess('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Excluir acesso</button></td></tr>`
   ).join(""):`<tr><td colspan="4" class="empty">Nenhum acesso de membro criado.</td></tr>`;
 }
 $("#newAccessBtn").onclick=()=>{$("#accessForm").reset();openModal("accessModal")};
@@ -388,6 +388,38 @@ $("#accessForm").onsubmit=async e=>{
     alert(`Acesso criado.\n\nPassaporte: ${f.elements.passaporte.value.trim()}\nSenha: ${senha}\n\nEnvie esses dados ao membro. A senha não ficará visível depois.`);
   }catch(ex){alert(ex.message)}
 };
+function openResetPassword(id,nome,passaporte){
+  const f=$("#resetPasswordForm");f.reset();
+  f.elements.access_id.value=id;
+  f.elements.passaporte.value=passaporte;
+  f.elements.membro.value=nome;
+  openModal("resetPasswordModal");
+}
+window.openResetPassword=openResetPassword;
+
+$("#generateResetPasswordBtn").onclick=()=>{
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
+  let p="";crypto.getRandomValues(new Uint32Array(12)).forEach(n=>p+=chars[n%chars.length]);
+  $("#resetPasswordForm").elements.senha.value=p;
+};
+$("#resetPasswordForm").onsubmit=async e=>{
+  e.preventDefault();
+  const f=e.target;
+  const passaporte=f.elements.passaporte.value;
+  const senha=f.elements.senha.value;
+  try{
+    await rpc("mercado_admin_redefinir_senha",{
+      p_id:f.elements.access_id.value,
+      p_senha:senha
+    });
+    closeModal("resetPasswordModal");
+    await loadAccesses();
+    alert("Senha redefinida.\n\nPassaporte: "+passaporte+"\nNova senha: "+senha+"\n\nEnvie a nova senha ao membro.");
+  }catch(error){
+    alert(error.message||"Não foi possível redefinir a senha.");
+  }
+};
+
 async function deleteAccess(id,nome){
   if(!confirm(`Excluir o acesso de ${nome}?`))return;
   try{await rpc("mercado_excluir_acesso",{p_id:id});toast("Acesso excluído.");await loadAccesses()}catch(ex){alert(ex.message)}
