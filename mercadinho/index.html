@@ -178,6 +178,8 @@
     <form id="itemForm" class="form">
       <label>Nome do item<input name="nome" required placeholder="Ex.: Colete"></label>
       <label>Descrição<input name="descricao" placeholder="Opcional"></label>
+      <label>Imagem do item (opcional)<input name="imagem" type="file" accept="image/png,image/jpeg,image/webp"></label>
+      <small>JPG, PNG ou WebP. A imagem será ajustada automaticamente.</small>
       <label>Quantidade inicial<input name="estoque" type="number" min="0" step="1" value="0" required></label>
       <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Criar item</button></div>
     </form>
