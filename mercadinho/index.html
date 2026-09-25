@@ -235,6 +235,24 @@
   </div>
 </div>
 
+<div class="modal" id="resetPasswordModal">
+  <div class="modalBox">
+    <div class="modalHead"><h3>Redefinir senha</h3><button data-close>×</button></div>
+    <form id="resetPasswordForm" class="form">
+      <input type="hidden" name="access_id">
+      <input type="hidden" name="passaporte">
+      <label>Membro<input name="membro" readonly></label>
+      <label>Nova senha
+        <div class="passwordRow">
+          <input name="senha" type="password" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+          <button class="btn" type="button" id="generateResetPasswordBtn">Gerar</button>
+        </div>
+      </label>
+      <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Salvar nova senha</button></div>
+    </form>
+  </div>
+</div>
+
 <datalist id="membersSuggestions"></datalist>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
