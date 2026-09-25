@@ -214,14 +214,38 @@ $("#newItemBtn").onclick=()=>{$("#itemForm").reset();$("#itemForm").elements.est
 $("#itemForm").onsubmit=async e=>{
   e.preventDefault();
   const f=e.target;
+  const itemName=f.elements.nome.value.trim();
+  const file=f.elements.imagem.files[0];
+  const imageError=validateItemImage(file);
+  if(imageError){alert(imageError);return;}
   try{
     await rpc("mercado_admin_criar_item",{
-      p_nome:f.elements.nome.value.trim(),
+      p_nome:itemName,
       p_descricao:f.elements.descricao.value.trim()||null,
       p_estoque_inicial:Number(f.elements.estoque.value||0)
     });
-    closeModal("itemModal");toast("Item criado.");await loadMarket();
-  }catch(ex){alert(ex.message)}
+  }catch(error){
+    alert(error.message);
+    return;
+  }
+
+  if(file){
+    try{
+      await loadAdminItems();
+      const item=ADMIN_ITEMS.find(x=>String(x.nome).trim()===itemName);
+      if(!item)throw new Error("O item foi criado, mas não consegui localizar seu cadastro para anexar a imagem.");
+      await storeItemImage(item.id,file,null);
+    }catch(error){
+      closeModal("itemModal");
+      try{await loadMarket()}catch(_){}
+      alert("O item foi criado, mas a imagem não foi salva: "+(error.message||"tente novamente."));
+      return;
+    }
+  }
+
+  closeModal("itemModal");
+  toast(file?"Item e imagem salvos.":"Item criado.");
+  try{await loadMarket()}catch(error){alert("Item salvo, mas a tela não atualizou: "+error.message)}
 };
 
 function openItemImage(id,nome){
@@ -261,46 +285,56 @@ function optimizeItemImage(file){
   });
 }
 
+function validateItemImage(file){
+  if(!file)return null;
+  if(!["image/png","image/jpeg","image/webp"].includes(file.type))return "Escolha uma imagem PNG, JPG ou WebP.";
+  if(file.size>10*1024*1024)return "A imagem original precisa ter até 10 MB.";
+  return null;
+}
+
+async function storeItemImage(itemId,file,oldPath=null){
+  const blob=await optimizeItemImage(file);
+  const extension=blob.type==="image/webp"?"webp":blob.type==="image/png"?"png":"jpg";
+  const unique=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+  const imagePath=itemId+"/"+unique+"."+extension;
+  const storage=sb.storage.from("mercado-imagens");
+  const {error:uploadError}=await storage.upload(imagePath,blob,{
+    contentType:blob.type||"image/jpeg",
+    cacheControl:"3600",
+    upsert:false
+  });
+  if(uploadError)throw uploadError;
+  try{
+    await rpc("mercado_admin_salvar_imagem",{
+      p_item_id:itemId,
+      p_imagem_path:imagePath
+    });
+  }catch(error){
+    try{await storage.remove([imagePath])}catch(_){}
+    throw error;
+  }
+  if(oldPath)try{await storage.remove([oldPath])}catch(_){}
+  ITEM_IMAGE_PATHS[itemId]=imagePath;
+  return imagePath;
+}
+
 $("#imageForm").onsubmit=async e=>{
   e.preventDefault();
   const f=e.target;
   const file=f.elements.imagem.files[0];
   if(!file)return;
-  if(!["image/png","image/jpeg","image/webp"].includes(file.type)){
-    alert("Escolha uma imagem PNG, JPG ou WebP.");
-    return;
-  }
-  if(file.size>10*1024*1024){
-    alert("A imagem original precisa ter até 10 MB.");
-    return;
-  }
+  const validationError=validateItemImage(file);
+  if(validationError){alert(validationError);return;}
   const itemId=f.elements.item_id.value;
   const oldPath=ITEM_IMAGE_PATHS[itemId]||null;
   const submit=f.querySelector('button[type="submit"],button:not([type])');
   if(submit)submit.disabled=true;
-  let uploadedPath=null;
   try{
-    const blob=await optimizeItemImage(file);
-    const extension=blob.type==="image/webp"?"webp":blob.type==="image/png"?"png":"jpg";
-    const unique=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
-    uploadedPath=itemId+"/"+unique+"."+extension;
-    const storage=sb.storage.from("mercado-imagens");
-    const {error:uploadError}=await storage.upload(uploadedPath,blob,{
-      contentType:blob.type||"image/jpeg",
-      cacheControl:"3600",
-      upsert:false
-    });
-    if(uploadError)throw uploadError;
-    await rpc("mercado_admin_salvar_imagem",{
-      p_item_id:itemId,
-      p_imagem_path:uploadedPath
-    });
-    if(oldPath)await storage.remove([oldPath]);
+    await storeItemImage(itemId,file,oldPath);
     closeModal("imageModal");
     toast("Imagem salva.");
-    await loadMarket();
+    try{await loadMarket()}catch(error){alert("Imagem salva, mas a tela não atualizou: "+error.message)}
   }catch(error){
-    if(uploadedPath)try{await sb.storage.from("mercado-imagens").remove([uploadedPath])}catch(_){}
     alert(error.message||"Não foi possível salvar a imagem.");
   }finally{
     if(submit)submit.disabled=false;
