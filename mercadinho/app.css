@@ -46,3 +46,6 @@ table{width:100%;border-collapse:collapse;min-width:680px}th,td{padding:11px 12p
 @media(max-width:520px){.marketGrid{grid-template-columns:1fr}.sectionHead{align-items:flex-start;flex-direction:column}.sidebar nav{grid-template-columns:1fr 1fr}.topbar{padding:14px 16px}.hero h1{font-size:26px}}
 
 .productCard .state.productStockLine{justify-content:flex-start;flex-wrap:wrap;gap:8px}.productActions{display:flex;flex-wrap:wrap;gap:7px;margin-left:auto}.productActions .btn{padding:8px 10px}.productActions .memberAdd{background:#103427;border-color:#286448;color:#a7f0c3}
+
+
+.installGuide{margin:16px auto 0;padding:12px 14px;max-width:430px;border:1px solid #1a3b57;border-radius:12px;background:rgba(10,27,44,.72);display:grid;gap:5px;text-align:center}.installGuide b{font-size:12px;color:#dceeff}.installGuide span{font-size:11px;line-height:1.55;color:#8aa1b7}

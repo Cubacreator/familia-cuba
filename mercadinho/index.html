@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#071525">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>CUBA — Mercadinho</title>
   <link rel="stylesheet" href="app.css">
   <link rel="stylesheet" href="inventory.css">
@@ -30,6 +34,7 @@
       <div id="loginErr" class="error"></div>
     </form>
     <small class="loginHint">Gerentes, 01 e 02 usam o mesmo acesso do site gerencial. Demais membros usam o acesso criado pela gerência.</small>
+    <div class="installGuide"><b>Instalar no celular</b><span>Android: menu ⋮ do navegador → Instalar app.<br>iPhone: abra no Safari → Compartilhar → Adicionar à Tela de Início.</span></div>
   </div>
 </section>
 
@@ -259,5 +264,10 @@
 <script src="config.js"></script>
 <script src="app.js?v=20260926-0354"></script>
 <script src="inventory.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(error => console.warn("Mercadinho: não foi possível registrar o app instalável.", error)));
+}
+</script>
 </body>
 </html>
