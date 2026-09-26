@@ -1,11 +1,11 @@
-const CACHE_NAME = "cuba-mercadinho-shell-20260926-1";
+const CACHE_NAME = "cuba-mercadinho-shell-20260926-2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./app.css",
   "./inventory.css",
   "./config.js",
-  "./app.js?v=20260926-0354",
+  "./app.js?v=20260926-1942",
   "./inventory.js",
   "./cuba-wordmark.png",
   "./manifest.webmanifest",

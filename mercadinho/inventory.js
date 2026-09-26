@@ -25,7 +25,7 @@
   function drawShoppingList() {
     const host = document.querySelector("#shoppingGrid");
     if (!host) return;
-    const rows = (ADMIN_ITEMS || []).filter(item => Number(item.estoque || 0) <= 0)
+    const rows = (ADMIN_ITEMS || []).filter(item => Number(item.estoque_qg ?? item.estoque ?? 0) <= 0)
       .sort((a, b) => String(a.nome).localeCompare(String(b.nome), "pt-BR"));
     const count = document.querySelector("#shoppingCount");
     if (count) count.textContent = rows.length + (rows.length === 1 ? " item" : " itens");
@@ -110,7 +110,7 @@
         const state = info.querySelector(".state");
         if (state) state.insertBefore(quantity, state.querySelector("button"));
       }
-      if (item && item.estoque != null) quantity.textContent = Number(item.estoque).toLocaleString("pt-BR") + " un. disponíveis";
+      if (item && (item.estoque_qg != null || item.estoque != null)) quantity.textContent = Number(item.estoque_qg ?? item.estoque).toLocaleString("pt-BR") + " un. no QG";
       else if (!quantity.textContent) quantity.textContent = item && item.disponivel ? "Disponível" : "0 un.";
       const state = info.querySelector(".state");
       if (state) {
@@ -155,10 +155,10 @@
   let previousStock = null;
   function checkForEmptyChanges() {
     const rows = ADMIN_ITEMS || [];
-    const current = Object.fromEntries(rows.map(item => [item.id, Number(item.estoque || 0)]));
+    const current = Object.fromEntries(rows.map(item => [item.id, Number(item.estoque_qg ?? item.estoque ?? 0)]));
     try { previousStock = JSON.parse(localStorage.getItem(snapshotKey)); } catch (_) { previousStock = null; }
     if (previousStock) {
-      const emptied = rows.filter(item => Number(item.estoque || 0) <= 0 && Number(previousStock[item.id]) > 0);
+      const emptied = rows.filter(item => Number(item.estoque_qg ?? item.estoque ?? 0) <= 0 && Number(previousStock[item.id]) > 0);
       if (emptied.length) {
         const names = emptied.map(item => item.nome).join(", ");
         toast(emptied.length === 1 ? names + " acabou e entrou na lista de compras." : emptied.length + " produtos acabaram e entraram na lista de compras.");

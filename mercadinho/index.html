@@ -89,20 +89,22 @@
       <div class="sectionHead">
         <div>
           <h2>Controle de Baú</h2>
-          <p>Visível somente para gerência, 01 e 02. Este é o estoque usado pelo Mercadinho.</p>
+          <p>Visível somente para gerência, 01 e 02. Os saldos dos dois baús são independentes.</p>
         </div>
         <button class="btn primary" id="newItemBtn">+ Novo item</button>
       </div>
 
+      <div id="dualStockNotice" class="migrationNotice hidden">Para ativar os dois saldos, execute uma vez o arquivo <b>02-separa-baus.sql</b> no SQL Editor do Supabase. Enquanto isso, o estoque antigo é tratado como Baú do QG.</div>
       <div class="summary">
         <div><span>Itens ativos</span><b id="stockItemCount">0</b></div>
-        <div><span>Unidades no baú</span><b id="stockTotal">0</b></div>
-        <div><span>Sem estoque</span><b id="stockEmpty">0</b></div>
+        <div><span>Total no Baú da Gerência</span><b id="stockTotalGerencia">0</b></div>
+        <div><span>Total no Baú do QG</span><b id="stockTotalQG">0</b></div>
+        <div><span>Sem estoque no QG</span><b id="stockEmpty">0</b></div>
       </div>
 
       <div class="tableWrap">
         <table>
-          <thead><tr><th>Item</th><th>Quantidade</th><th>Descrição</th><th></th></tr></thead>
+          <thead><tr><th>Item</th><th>Baú da Gerência</th><th>Baú do QG</th><th>Descrição</th><th></th></tr></thead>
           <tbody id="stockTable"></tbody>
         </table>
       </div>
@@ -143,7 +145,7 @@
 
       <div class="tableWrap">
         <table>
-          <thead><tr><th>Data</th><th>Item</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Antes</th><th>Depois</th><th>Obs.</th></tr></thead>
+          <thead><tr><th>Data</th><th>Item</th><th>Baú</th><th>Tipo</th><th>Quantidade</th><th>Responsável</th><th>Antes</th><th>Depois</th><th>Obs.</th></tr></thead>
           <tbody id="movesTable"></tbody>
         </table>
       </div>
@@ -185,7 +187,8 @@
       <label>Descrição<input name="descricao" placeholder="Opcional"></label>
       <label>Imagem do item (opcional)<input name="imagem" type="file" accept="image/png,image/jpeg,image/webp"></label>
       <small>JPG, PNG ou WebP. A imagem será ajustada automaticamente.</small>
-      <label>Quantidade inicial<input name="estoque" type="number" min="0" step="1" value="0" required></label>
+      <label>Quantidade inicial no Baú da Gerência<input name="estoque_gerencia" type="number" min="0" step="1" value="0" required></label>
+      <label>Quantidade inicial no Baú do QG<input name="estoque_qg" type="number" min="0" step="1" value="0" required></label>
       <div class="modalActions"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary">Criar item</button></div>
     </form>
   </div>
@@ -210,9 +213,12 @@
     <form id="stockForm" class="form">
       <input type="hidden" name="item_id">
       <label>Item<input name="item_nome" readonly></label>
+      <label>Baú para movimentar
+        <select name="bau"><option value="qg">Baú do QG</option><option value="gerencia">Baú da Gerência</option></select>
+      </label>
       <label>Operação
         <select name="operacao" id="stockOperation">
-          <option value="entrada">Adicionar ao baú</option>
+          <option value="entrada">Adicionar quantidade</option>
           <option value="ajuste">Definir quantidade exata</option>
         </select>
       </label>
@@ -262,7 +268,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="app.js?v=20260926-0354"></script>
+<script src="app.js?v=20260926-1942"></script>
 <script src="inventory.js"></script>
 <script>
 if ("serviceWorker" in navigator) {

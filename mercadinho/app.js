@@ -11,6 +11,7 @@ const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setT
 let SESSION={type:null,token:null,nome:null,cargo:null,admin:false};
 let MARKET_ITEMS=[],ADMIN_ITEMS=[],ACCESSES=[],MOVES=[],MY_MOVES=[];
 let ITEM_IMAGE_PATHS={};
+let DUAL_STOCK_ENABLED=true;
 
 function emailFromPassport(p){return String(p).trim()+"@cuba.local"}
 function memberToken(){return localStorage.getItem("cuba_market_token")||null}
@@ -95,9 +96,9 @@ function applySessionUI(){
 }
 
 const PAGE_TEXT={
-  mercado:["Mercado","Retire itens disponíveis no estoque da família."],
+  mercado:["Mercado","Veja e movimente somente o estoque do Baú do QG."],
   minhas:["Minhas retiradas","Seu histórico pessoal de retiradas."],
-  bau:["Controle de Baú","Quantidade atual de cada item do Mercadinho."],
+  bau:["Controle de Baús","Saldos separados do Baú da Gerência e do Baú do QG."],
   acessos:["Acessos","Crie e exclua logins dos membros."],
   movimentos:["Movimentos","Histórico de entradas, retiradas e ajustes."]
 };
@@ -135,7 +136,15 @@ async function loadItemImages(){
   }
 }
 async function loadAdminItems(){
-  ADMIN_ITEMS=await rpc("mercado_admin_listar_itens");
+  try{
+    ADMIN_ITEMS=await rpc("mercado_admin_listar_itens_baus");
+    DUAL_STOCK_ENABLED=true;
+  }catch(error){
+    const missing=["PGRST202","PGRST203","42883"].includes(error.code)||/mercado_admin_listar_itens_baus.*(not found|schema cache|does not exist)/i.test(error.message||"");
+    if(!missing)throw error;
+    DUAL_STOCK_ENABLED=false;
+    ADMIN_ITEMS=(await rpc("mercado_admin_listar_itens")).map(item=>({...item,estoque_qg:Number(item.estoque||0),estoque_gerencia:0}));
+  }
   renderStock();
 }
 async function loadAccesses(){
@@ -143,7 +152,13 @@ async function loadAccesses(){
   renderAccesses();
 }
 async function loadMoves(){
-  MOVES=await rpc("mercado_admin_listar_movimentos",{p_limite:200});
+  try{
+    MOVES=await rpc("mercado_admin_listar_movimentos_baus",{p_limite:200});
+  }catch(error){
+    const missing=["PGRST202","PGRST203","42883"].includes(error.code)||/mercado_admin_listar_movimentos_baus.*(not found|schema cache|does not exist)/i.test(error.message||"");
+    if(!missing)throw error;
+    MOVES=(await rpc("mercado_admin_listar_movimentos",{p_limite:200})).map(move=>({...move,bau:"qg"}));
+  }
   renderMoves();
 }
 async function loadMemberSuggestions(){
@@ -194,22 +209,29 @@ function renderMyMoves(){
 
 function renderStock(){
   const rows=ADMIN_ITEMS||[];
+  const totalGerencia=rows.reduce((sum,item)=>sum+Number(item.estoque_gerencia||0),0);
+  const totalQG=rows.reduce((sum,item)=>sum+Number(item.estoque_qg??item.estoque??0),0);
   $("#stockItemCount").textContent=rows.length;
-  $("#stockTotal").textContent=br(rows.reduce((s,x)=>s+Number(x.estoque||0),0));
-  $("#stockEmpty").textContent=rows.filter(x=>Number(x.estoque||0)<=0).length;
+  $("#stockTotalGerencia").textContent=br(totalGerencia);
+  $("#stockTotalQG").textContent=br(totalQG);
+  $("#stockEmpty").textContent=rows.filter(item=>Number(item.estoque_qg??item.estoque??0)<=0).length;
+  $("#dualStockNotice").classList.toggle("hidden",DUAL_STOCK_ENABLED);
+  const bauSelect=$("#stockForm").elements.bau;
+  if(bauSelect){bauSelect.disabled=!DUAL_STOCK_ENABLED;bauSelect.value="qg";}
   $("#stockTable").innerHTML=rows.length?rows.map(x=>`
     <tr>
       <td><b>${esc(x.nome)}</b></td>
-      <td><b>${br(x.estoque)}</b></td>
+      <td><b>${br(x.estoque_gerencia)}</b></td>
+      <td><b>${br(x.estoque_qg??x.estoque)}</b></td>
       <td>${esc(x.descricao||"—")}</td>
       <td>
-        <button class="mini" onclick="openStock('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Estoque</button>
+        <button class="mini" onclick="openStock('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Adicionar/ajustar</button>
         <button class="mini" onclick="openItemImage('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">${ITEM_IMAGE_PATHS[x.id]?"Trocar imagem":"Adicionar imagem"}</button>
         <button class="mini red" onclick="disableItem('${x.id}','${esc(x.nome).replace(/'/g,"&#039;")}')">Excluir</button>
       </td>
-    </tr>`).join(""):`<tr><td colspan="4" class="empty">Nenhum item cadastrado.</td></tr>`;
+    </tr>`).join(""):`<tr><td colspan="5" class="empty">Nenhum item cadastrado.</td></tr>`;
 }
-$("#newItemBtn").onclick=()=>{$("#itemForm").reset();$("#itemForm").elements.estoque.value=0;openModal("itemModal")};
+$("#newItemBtn").onclick=()=>{$("#itemForm").reset();$("#itemForm").elements.estoque_gerencia.value=0;$("#itemForm").elements.estoque_qg.value=0;openModal("itemModal")};
 
 $("#itemForm").onsubmit=async e=>{
   e.preventDefault();
@@ -219,11 +241,21 @@ $("#itemForm").onsubmit=async e=>{
   const imageError=validateItemImage(file);
   if(imageError){alert(imageError);return;}
   try{
-    await rpc("mercado_admin_criar_item",{
-      p_nome:itemName,
-      p_descricao:f.elements.descricao.value.trim()||null,
-      p_estoque_inicial:Number(f.elements.estoque.value||0)
-    });
+    if(DUAL_STOCK_ENABLED){
+      await rpc("mercado_admin_criar_item_baus",{
+        p_nome:itemName,
+        p_descricao:f.elements.descricao.value.trim()||null,
+        p_estoque_gerencia:Number(f.elements.estoque_gerencia.value||0),
+        p_estoque_qg:Number(f.elements.estoque_qg.value||0)
+      });
+    }else{
+      if(Number(f.elements.estoque_gerencia.value||0)>0){alert("Rode primeiro a migração 02-separa-baus.sql no Supabase para cadastrar saldo no Baú da Gerência.");return;}
+      await rpc("mercado_admin_criar_item",{
+        p_nome:itemName,
+        p_descricao:f.elements.descricao.value.trim()||null,
+        p_estoque_inicial:Number(f.elements.estoque_qg.value||0)
+      });
+    }
   }catch(error){
     alert(error.message);
     return;
@@ -344,6 +376,7 @@ $("#imageForm").onsubmit=async e=>{
 function openStock(id,nome){
   const f=$("#stockForm");f.reset();
   f.elements.item_id.value=id;f.elements.item_nome.value=nome;f.elements.operacao.value="entrada";
+  if(f.elements.bau){f.elements.bau.value="qg";f.elements.bau.disabled=!DUAL_STOCK_ENABLED;}
   $("#stockQtyLabel").childNodes[0].nodeValue="Quantidade a adicionar";
   openModal("stockModal");
 }
@@ -355,8 +388,13 @@ $("#stockForm").onsubmit=async e=>{
   e.preventDefault();
   const f=e.target,op=f.elements.operacao.value,q=Number(f.elements.quantidade.value),obs=f.elements.observacao.value.trim()||null;
   try{
-    if(op==="entrada")await rpc("mercado_admin_entrada",{p_item_id:f.elements.item_id.value,p_quantidade:q,p_observacao:obs});
-    else await rpc("mercado_admin_ajustar",{p_item_id:f.elements.item_id.value,p_novo_estoque:q,p_observacao:obs});
+    if(DUAL_STOCK_ENABLED){
+      await rpc("mercado_admin_atualizar_bau",{p_item_id:f.elements.item_id.value,p_bau:f.elements.bau.value,p_operacao:op,p_quantidade:q,p_observacao:obs});
+    }else if(op==="entrada"){
+      await rpc("mercado_admin_entrada",{p_item_id:f.elements.item_id.value,p_quantidade:q,p_observacao:obs});
+    }else{
+      await rpc("mercado_admin_ajustar",{p_item_id:f.elements.item_id.value,p_novo_estoque:q,p_observacao:obs});
+    }
     closeModal("stockModal");toast("Estoque atualizado.");await loadMarket();
   }catch(ex){alert(ex.message)}
 };
@@ -430,10 +468,11 @@ function renderMoves(){
   $("#movesTable").innerHTML=(MOVES||[]).length?MOVES.map(x=>`
     <tr>
       <td>${dt(x.created_at)}</td><td>${esc(x.item_nome)}</td>
+      <td>${esc(x.bau==="gerencia"?"Baú da Gerência":"Baú do QG")}</td>
       <td><span class="badge ${esc(x.tipo)}">${esc(x.tipo)}</span></td>
       <td>${br(x.quantidade)}</td><td>${esc(x.responsavel_nome||"—")}</td>
       <td>${br(x.estoque_anterior)}</td><td>${br(x.estoque_posterior)}</td><td>${esc(x.observacao||"—")}</td>
-    </tr>`).join(""):`<tr><td colspan="8" class="empty">Nenhum movimento registrado.</td></tr>`;
+    </tr>`).join(""):`<tr><td colspan="9" class="empty">Nenhum movimento registrado.</td></tr>`;
 }
 
 $("#loginForm").onsubmit=async e=>{
