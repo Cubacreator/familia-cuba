@@ -179,7 +179,7 @@ $("#withdrawForm").onsubmit=async e=>{
   if(!(q>0))return;
   if(!confirm(`Confirmar retirada de ${br(q)} unidade(s) de ${f.elements.item_nome.value}?`))return;
   try{
-    await rpc("mercado_retirar_item",{p_token:SESSION.token,p_item_id:f.elements.item_id,p_quantidade:q});
+    await rpc("mercado_retirar_item",{p_token:SESSION.token,p_item_id:f.elements.item_id.value,p_quantidade:q});
     closeModal("withdrawModal");
     toast("Retirada registrada.");
     await loadMarket();
@@ -355,8 +355,8 @@ $("#stockForm").onsubmit=async e=>{
   e.preventDefault();
   const f=e.target,op=f.elements.operacao.value,q=Number(f.elements.quantidade.value),obs=f.elements.observacao.value.trim()||null;
   try{
-    if(op==="entrada")await rpc("mercado_admin_entrada",{p_item_id:f.elements.item_id,p_quantidade:q,p_observacao:obs});
-    else await rpc("mercado_admin_ajustar",{p_item_id:f.elements.item_id,p_novo_estoque:q,p_observacao:obs});
+    if(op==="entrada")await rpc("mercado_admin_entrada",{p_item_id:f.elements.item_id.value,p_quantidade:q,p_observacao:obs});
+    else await rpc("mercado_admin_ajustar",{p_item_id:f.elements.item_id.value,p_novo_estoque:q,p_observacao:obs});
     closeModal("stockModal");toast("Estoque atualizado.");await loadMarket();
   }catch(ex){alert(ex.message)}
 };
