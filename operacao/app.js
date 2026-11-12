@@ -90,17 +90,28 @@ $('#vendaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);
 $('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
 
 
-function semanaIntervalo(ano,mes,semana){
- const inicio=(semana-1)*7+1;
- const ultimo=new Date(ano,mes,0).getDate();
- if(inicio>ultimo)return null;
- return {start:`${ano}-${String(mes).padStart(2,'0')}-${String(inicio).padStart(2,'0')}`,end:`${ano}-${String(mes).padStart(2,'0')}-${String(Math.min(inicio+6,ultimo)).padStart(2,'0')}`};
+function isoDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function nextDate(iso,days){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+days);return isoDate(d)}
+function mondayDate(iso){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()-(d.getDay()+6)%7);return isoDate(d)}
+function preencherSemanas(){
+ const mes=$('#metaMes').value||dateNow().slice(0,7);
+ const [ano,month]=mes.split('-').map(Number);
+ if(!ano||!month)return;
+ const select=$('#metaSemana'),old=select.value,first=mes+'-01';
+ const ultimo=isoDate(new Date(ano,month,0));
+ let monday=mondayDate(first),opts=[];
+ while(monday<=ultimo){
+  const sunday=nextDate(monday,6);
+  opts.push({value:monday,label:monday.split('-').reverse().join('/')+' a '+sunday.split('-').reverse().join('/')});
+  monday=nextDate(monday,7);
+ }
+ select.innerHTML=opts.map(o=>'<option value="'+o.value+'">'+esc(o.label)+'</option>').join('');
+ const todayMonday=mondayDate(dateNow());
+ select.value=opts.some(o=>o.value===old)?old:(opts.some(o=>o.value===todayMonday)?todayMonday:opts[0]?.value||'');
 }
 function semanaSelecionada(){
- const value=$('#metaMes').value||'2026-11';
- const [ano,mes]=value.split('-').map(Number);
- const semana=Number($('#metaSemana').value);
- return {ano,mes,semana,intervalo:semanaIntervalo(ano,mes,semana)};
+ const semana_inicio=$('#metaSemana').value||mondayDate(dateNow());
+ return {semana_inicio,intervalo:{start:semana_inicio,end:nextDate(semana_inicio,6),vencimento:nextDate(semana_inicio,7)}};
 }
 function membrosNaSemana(){
  const filtro=semanaSelecionada();
@@ -110,7 +121,7 @@ function membrosNaSemana(){
 function statusPadrao(cargo,tipo){
  return (cargo==='membro'||(cargo==='elite'&&tipo==='farm'))?'isento':'nao_conferido';
 }
-function registroSemana(id){const {ano,mes,semana}=semanaSelecionada();return dados.metas_semanais.find(x=>x.integrante_id===id&&x.ano===ano&&x.mes===mes&&x.semana===semana)}
+function registroSemana(id){const {semana_inicio}=semanaSelecionada();return dados.metas_semanais.find(x=>x.integrante_id===id&&x.semana_inicio===semana_inicio)}
 function renderIntegrantes(){
  $('#integrantesRows').innerHTML=dados.integrantes.slice().sort((a,b)=>Number(b.ativo)-Number(a.ativo)||a.nome.localeCompare(b.nome,'pt-BR')).map(m=>
  '<tr><td>'+esc(m.nome)+'</td><td><select aria-label="Cargo de '+esc(m.nome)+'" data-member-role="'+esc(m.id)+'"><option value="membro"'+(m.cargo==='membro'?' selected':'')+'>Membro</option><option value="rush"'+(m.cargo==='rush'?' selected':'')+'>Rush</option><option value="elite"'+(m.cargo==='elite'?' selected':'')+'>Elite</option></select></td><td>'+esc(m.data_entrada)+'</td><td>'+(m.ativo?'Ativo':'Desativado')+'</td><td><button class="secondary" data-member-save="'+esc(m.id)+'">Salvar cargo</button> <button class="secondary" data-member-toggle="'+esc(m.id)+'">'+(m.ativo?'Desativar':'Reativar')+'</button></td></tr>'
@@ -143,7 +154,7 @@ function optionsStatus(valor,tipo,exento){
  return '<select aria-label="Status '+tipo+'" '+(exento?'disabled':'')+'>'+vals.map(([v,l])=>'<option value="'+v+'"'+(valor===v?' selected':'')+'>'+l+'</option>').join('')+'</select>';
 }
 function renderMetas(){
- const {ano,mes,semana,intervalo}=semanaSelecionada(),linhas=metaLinhas();
+ const {intervalo}=semanaSelecionada(),linhas=metaLinhas();
  const columns=['farm','dinheiro'];
  const summary=columns.map(col=>{
   const paid=linhas.filter(x=>x[col]==='pago').length;
@@ -157,9 +168,9 @@ function renderMetas(){
   const tipo=col==='farm'?'Farm':'Dinheiro';
   const lista=st=>linhas.filter(x=>x[col]===st).map(x=>x.m.nome).sort((a,b)=>a.localeCompare(b,'pt-BR')).join(', ')||'Nenhum';
   return '<h4>'+tipo+'</h4><p><b>Pagaram:</b> '+esc(lista('pago'))+'</p><p><b>Devendo:</b> '+esc(lista('pendente'))+'</p><p><b>Não conferidos:</b> '+esc(lista('nao_conferido'))+'</p>';
- }).join('')+'<p class="hint">Período: '+esc(intervalo?.start||'—')+' até '+esc(intervalo?.end||'—')+'. O histórico de membros desativados continua incluído enquanto pertenciam à família.</p>';
+ }).join('')+'<p class="hint">Período: '+esc(intervalo?.start||'—')+' até '+esc(intervalo?.end||'—')+'. Vencimento: '+esc(intervalo?.vencimento||'—')+'. O histórico de membros desativados continua incluído enquanto pertenciam à família.</p>';
 }
-$('#metaMes').onchange=renderMetas;
+$('#metaMes').onchange=()=>{preencherSemanas();renderMetas()};
 $('#metaSemana').onchange=renderMetas;
 $('#metaFiltrar').onclick=renderMetas;
 $('#metasRows').onclick=async e=>{
@@ -168,14 +179,14 @@ $('#metasRows').onclick=async e=>{
  const m=dados.integrantes.find(x=>x.id===id);if(!m)return;
  const selects=row.querySelectorAll('select'),input=row.querySelector('input');
  const [farm_status,dinheiro_status]=[...selects].map(x=>x.value);
- const {ano,mes,semana}=semanaSelecionada();
- if(!semanaIntervalo(ano,mes,semana)){msg('Semana inexistente neste mês.',true);return}
- const payload={integrante_id:id,ano,mes,semana,
+ const {semana_inicio}=semanaSelecionada();
+ if(!semana_inicio){msg('Selecione uma semana válida.',true);return}
+ const payload={integrante_id:id,semana_inicio,
  farm_status:statusPadrao(m.cargo,'farm')==='isento'?'isento':farm_status,
  dinheiro_status:statusPadrao(m.cargo,'dinheiro')==='isento'?'isento':dinheiro_status,
  observacoes:input.value.trim(),atualizado_em:new Date().toISOString()};
  try{
-  const {error}=await sb.from('cuba2_metas_semanais').upsert(payload,{onConflict:'integrante_id,ano,mes,semana'});
+  const {error}=await sb.from('cuba2_metas_semanais').upsert(payload,{onConflict:'integrante_id,semana_inicio'});
   if(error)throw error;
   await refresh();msg('Situação semanal salva para '+m.nome+'.');
  }catch(ex){msg('Não foi possível salvar a meta: '+ex.message,true)}
@@ -190,7 +201,7 @@ function report(){
  const familia=ac.reduce((s,x)=>s+num(x.valor_familia),0),integrantes=ac.reduce((s,x)=>s+num(x.valor_integrantes),0);
  const vendaTotal=ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0);
  const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Semana','Integrante','Cargo','Farm','Dinheiro','Observação']};
- const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[$('#metaMes').value+' • '+$('#metaSemana').value,x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
+ const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
  relHeader=k==='geral'?['Seção','Indicador','Valor']:header[k];
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
@@ -219,7 +230,7 @@ $('#csvRel').onclick=()=>{
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='cuba-relatorio-'+$('#relInicio').value+'-'+$('#relFim').value+'.csv';a.click();URL.revokeObjectURL(a.href)
 };
 for(const input of $('input[type=date]'))input.value=dateNow();
-$('#metaMes').value=dateNow().slice(0,7);$('#metaSemana').value=String(Math.min(5,Math.ceil(Number(dateNow().slice(8,10))/7)));
+$('#metaMes').value=dateNow().slice(0,7);preencherSemanas();
 
 $('#relInicio').value='2026-11-12';
 updateAction();auth();
