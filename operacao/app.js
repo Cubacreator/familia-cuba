@@ -102,7 +102,7 @@ function preencherSemanas(){
  let monday=mondayDate(first),opts=[];
  while(monday<=ultimo){
   const sunday=nextDate(monday,6);
-  opts.push({value:monday,label:monday.split('-').reverse().join('/')+' a '+sunday.split('-').reverse().join('/')});
+  if(monday>='2026-11-09')opts.push({value:monday,label:monday.split('-').reverse().join('/')+' a '+sunday.split('-').reverse().join('/')});
   monday=nextDate(monday,7);
  }
  select.innerHTML=opts.map(o=>'<option value="'+o.value+'">'+esc(o.label)+'</option>').join('');
