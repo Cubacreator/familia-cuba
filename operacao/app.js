@@ -31,7 +31,7 @@ async function refresh(){
  let missingExtras=false;
  try{
   const result=await Promise.all(Object.entries(tables).map(async([key,table])=>{
-   const {data,error}=await sb.from(table).select('*').order(['produtos','integrantes'].includes(key)?'nome':key==='metas_semanais'?'ano':'data',{ascending:key==='produtos'}).limit(10000);
+   const {data,error}=await sb.from(table).select('*').order(['produtos','integrantes'].includes(key)?'nome':key==='metas_semanais'?'semana_inicio':'data',{ascending:key==='produtos'}).limit(10000);
    if(error && ['integrantes','metas_semanais'].includes(key)){missingExtras=true;return [key,[]]}; if(error)throw new Error(table+': '+error.message);
    return [key,data||[]];
   }));
