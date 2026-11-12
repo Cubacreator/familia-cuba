@@ -37,3 +37,13 @@ A pasta `gerencial/` e suas tabelas antigas permanecem intactas. Registros de la
 - Auditoria RLS das tabelas novas.
 - **Limitações da versão inicial:** ainda não há integração com o sistema de farm, custos/consumo de materiais, vínculo entre pagamento e venda, fechamento mensal imutável, exclusão/correção pela interface ou importação de saldo inicial automatizada. Esses itens devem ser feitos em versões posteriores.
 - Segurança: site estático público mas registros protegidos por Supabase Auth e RLS; nunca expor service_role.
+
+## Metas Rush e Elite (migração 02)
+Execute `operacao/02-metas.sql` no SQL Editor do projeto `cuba-gerencial` ANTES de cadastrar metas. Apenas cria `cuba2_metas` e sua auditoria. Não altera registros antigos. A nova aba **Metas** estará no GitHub Pages após o deploy.
+
+- Membro: cargo inicial, sem metas definidas.
+- Rush: escolha semanal entre `4 bunkers + 200.000`, `2 bunkers + 2 lixos + 200.000` ou `4 lixos + 200.000`; o acompanhamento soma progresso por integrante e semana (segunda a domingo).
+- Elite: isento de farm; meta financeira semanal de `300.000`; objetivo diário de 3 ações, das quais pelo menos 2 para a família e a terceira pode ser para integrantes. Os lançamentos de ações da Elite são informados manualmente pela gerência. Um dia sem lançamento não é comprovante de meta cumprida.
+- Todos os seis gerentes podem lançar e visualizar as metas, sem login para membros.
+- Relatórios de metas por data exportáveis como CSV, com auditoria.
+- Atenção: para Rush, use sempre a MESMA opção no decorrer da semana; opções divergentes são identificadas como pendentes. A identificação de integrantes é textual na fase inicial.
