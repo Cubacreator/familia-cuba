@@ -1,6 +1,8 @@
 -- Cuba Management: cadastro de integrantes e controle SIMPLES de pagamento por semana.
 -- Execute no SQL Editor do projeto cuba-gerencial. Não altera tabelas antigas.
--- Semana 1=1 a 7; semana 2=8 a 14; semana 3=15 a 21; semana 4=22 a 28; semana 5=29 ao último dia.
+-- Semana operacional: segunda a domingo. Vencimento: segunda-feira seguinte.
+-- Chave da semana: data de segunda-feira (semana_inicio), inclusive ao cruzar meses.
+-- NÃO reexecute esta versão se já executou uma versão anterior deste arquivo; solicite migração.
 create extension if not exists pgcrypto;
 create table if not exists public.cuba2_integrantes (
  id uuid primary key default gen_random_uuid(),
@@ -19,16 +21,14 @@ create unique index if not exists cuba2_integrantes_nome_ativo_uq
 create table if not exists public.cuba2_metas_semanais (
  id uuid primary key default gen_random_uuid(),
  integrante_id uuid not null references public.cuba2_integrantes(id) on delete restrict,
- ano integer not null check(ano between 2026 and 2200),
- mes integer not null check(mes between 1 and 12),
- semana integer not null check(semana between 1 and 5),
+ semana_inicio date not null check (semana_inicio >= date '2026-11-09' and extract(isodow from semana_inicio)=1),
+ vencimento date generated always as (semana_inicio + 7) stored,
  farm_status text not null default 'nao_conferido' check(farm_status in ('nao_conferido','pago','pendente','isento')),
  dinheiro_status text not null default 'nao_conferido' check(dinheiro_status in ('nao_conferido','pago','pendente','isento')),
  observacoes text,
  atualizado_por uuid default auth.uid(),
  atualizado_em timestamptz not null default now(),
- unique(integrante_id,ano,mes,semana),
- check( (semana<5) or extract(day from (make_date(ano,mes,1)+interval '1 month - 1 day'))::integer>=29 )
+ unique(integrante_id,semana_inicio)
 );
 -- Metas devem ser vinculadas ao membro que existia naquela semana.
 alter table public.cuba2_integrantes enable row level security;
@@ -47,4 +47,4 @@ create trigger audit_cuba2 after insert or update or delete on public.cuba2_inte
 drop trigger if exists audit_cuba2 on public.cuba2_metas_semanais;
 create trigger audit_cuba2 after insert or update or delete on public.cuba2_metas_semanais
  for each row execute function public.cuba2_auditar();
-create index if not exists cuba2_metas_semanais_periodo on public.cuba2_metas_semanais(ano,mes,semana);
+create index if not exists cuba2_metas_semanais_periodo on public.cuba2_metas_semanais(semana_inicio);
