@@ -28,13 +28,14 @@ $('#atualizar').onclick=()=>refresh();
 $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.toggle('active',x===b));$$('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('#titulo').textContent=b.textContent.trim()});
 const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',caixa:'cuba2_caixa',integrantes:'cuba2_integrantes',metas_semanais:'cuba2_metas_semanais'};
 async function refresh(){
+ let missingExtras=false;
  try{
   const result=await Promise.all(Object.entries(tables).map(async([key,table])=>{
    const {data,error}=await sb.from(table).select('*').order(['produtos','integrantes'].includes(key)?'nome':key==='metas_semanais'?'ano':'data',{ascending:key==='produtos'}).limit(10000);
-   if(error && ['integrantes','metas_semanais'].includes(key)){throw new Error('Execute operacao/03-membros-fechamento.sql no Supabase antes de usar o novo módulo. '+error.message)}; if(error)throw new Error(table+': '+error.message);
+   if(error && ['integrantes','metas_semanais'].includes(key)){missingExtras=true;return [key,[]]}; if(error)throw new Error(table+': '+error.message);
    return [key,data||[]];
   }));
-  result.forEach(([k,v])=>dados[k]=v);render();msg('Dados atualizados.');
+  result.forEach(([k,v])=>dados[k]=v);render();msg(missingExtras?'Cadastro e metas aguardam o SQL 03 no Supabase. As outras áreas continuam disponíveis.':'Dados atualizados.',missingExtras);
  }catch(e){msg('Não foi possível carregar. Execute o SQL da nova operação no Supabase. '+e.message,true)}
 }
 function render(){
