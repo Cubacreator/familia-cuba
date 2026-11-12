@@ -47,3 +47,14 @@ Execute `operacao/02-metas.sql` no SQL Editor do projeto `cuba-gerencial` ANTES 
 - Todos os seis gerentes podem lançar e visualizar as metas, sem login para membros.
 - Relatórios de metas por data exportáveis como CSV, com auditoria.
 - Atenção: para Rush, use sempre a MESMA opção no decorrer da semana; opções divergentes são identificadas como pendentes. A identificação de integrantes é textual na fase inicial.
+
+## Controle semanal simplificado (migração 03, versão atual)
+**Execute o novo `operacao/03-membros-fechamento.sql` no SQL Editor do Supabase para ativar Integrantes e Metas.** Esta migração cria tabelas novas `cuba2_integrantes` e `cuba2_metas_semanais` com RLS e auditoria, sem afetar lavagem ou mercadinho. O SQL antigo `02-metas.sql` não é necessário para o novo fluxo de marcação.
+
+- A gerência cadastra integrantes com cargo Membro, Rush ou Elite, altera cargo e **desativa/reativa** sem precisar de suporte. Desativação não exclui histórico; para registrar saída, data de saída é preenchida e consultas históricas continuam mostrando o integrante no período em que participava.
+- O Felipe continua administrando farm, detalhes de bunkers/lixos e anexos/screenshots no sistema dele. **Não há upload duplicado aqui.**
+- Metas aqui são **apenas status de pagamento** de farm e dinheiro: Pago, Devendo, Isento ou Não conferido. A ausência de conferência nunca conta automaticamente como dívida.
+- Rush: farm e dinheiro ($200.000), conferência separada. Elite: farm isento, dinheiro ($300.000) e ações monitoradas na aba Ações; Membro: ambos isentos até definição.
+- Semana 1 = dias 1–7; semana 2 = 8–14; semana 3 = 15–21; semana 4 = 22–28; semana 5 = 29 ao fim do mês. Esta é uma **convenção do novo sistema**; confirme com a família se a semana operacional deve ser segunda a domingo. A nova operação começa em 12/11/2026, mas é possível cadastrar a data real de entrada de um membro caso seja necessário documentar semanas anteriores.
+- Na aba Metas, escolha mês/semana para ver nomes e categorias; na aba Relatórios, escolha Metas para CSV/PDF da semana selecionada.
+- Integrantes não têm login. Todos os seis gerentes têm acesso integral. O login de Felipe e Jamal depende de passaportes/contas ainda não configuradas.
