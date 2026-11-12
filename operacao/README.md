@@ -39,7 +39,7 @@ A pasta `gerencial/` e suas tabelas antigas permanecem intactas. Registros de la
 - Segurança: site estático público mas registros protegidos por Supabase Auth e RLS; nunca expor service_role.
 
 ## Metas Rush e Elite (migração 02)
-Execute `operacao/02-metas.sql` no SQL Editor do projeto `cuba-gerencial` ANTES de cadastrar metas. Apenas cria `cuba2_metas` e sua auditoria. Não altera registros antigos. A nova aba **Metas** estará no GitHub Pages após o deploy.
+O SQL `operacao/02-metas.sql` é legado da tentativa de monitoramento detalhado e **não deve ser executado** para o fluxo atual; use somente `03-membros-fechamento.sql`. Apenas cria `cuba2_metas` e sua auditoria. Não altera registros antigos. A nova aba **Metas** estará no GitHub Pages após o deploy.
 
 - Membro: cargo inicial, sem metas definidas.
 - Rush: escolha semanal entre `4 bunkers + 200.000`, `2 bunkers + 2 lixos + 200.000` ou `4 lixos + 200.000`; o acompanhamento soma progresso por integrante e semana (segunda a domingo).
@@ -55,6 +55,8 @@ Execute `operacao/02-metas.sql` no SQL Editor do projeto `cuba-gerencial` ANTES 
 - O Felipe continua administrando farm, detalhes de bunkers/lixos e anexos/screenshots no sistema dele. **Não há upload duplicado aqui.**
 - Metas aqui são **apenas status de pagamento** de farm e dinheiro: Pago, Devendo, Isento ou Não conferido. A ausência de conferência nunca conta automaticamente como dívida.
 - Rush: farm e dinheiro ($200.000), conferência separada. Elite: farm isento, dinheiro ($300.000) e ações monitoradas na aba Ações; Membro: ambos isentos até definição.
-- Semana 1 = dias 1–7; semana 2 = 8–14; semana 3 = 15–21; semana 4 = 22–28; semana 5 = 29 ao fim do mês. Esta é uma **convenção do novo sistema**; confirme com a família se a semana operacional deve ser segunda a domingo. A nova operação começa em 12/11/2026, mas é possível cadastrar a data real de entrada de um membro caso seja necessário documentar semanas anteriores.
+- **Calendário confirmado:** semana de segunda a domingo, pagamento na segunda-feira seguinte. Identificação por `semana_inicio`, a segunda-feira da semana (inclusive nas semanas que cruzam meses). O calendário mostra o intervalo e a data de vencimento. Para novembro/2026, a primeira semana do novo ciclo é 09/11–15/11, com vencimento 16/11; a operação inicia registros em 12/11.
 - Na aba Metas, escolha mês/semana para ver nomes e categorias; na aba Relatórios, escolha Metas para CSV/PDF da semana selecionada.
 - Integrantes não têm login. Todos os seis gerentes têm acesso integral. O login de Felipe e Jamal depende de passaportes/contas ainda não configuradas.
+
+**Atenção:** Se uma versão anterior de `03-membros-fechamento.sql` já foi executada, NÃO reexecute a nova definição `CREATE TABLE IF NOT EXISTS` esperando que ela altere colunas. Será necessária uma migração da estrutura antiga, preservando registros. Confirme antes de rodar.
