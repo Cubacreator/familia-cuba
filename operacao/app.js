@@ -40,18 +40,18 @@ async function refresh(){
 }
 function render(){
  const vendas=dados.vendas.filter(v=>v.status==='concluida');
- const bruto=vendas.reduce((a,v)=>a+num(v.quantidade)*num(v.preco_unitario)-num(v.desconto),0);
+ const totaisVendas=Object.fromEntries(['real','dolar'].map(m=>[m,vendas.filter(v=>(v.moeda||'real')===m).reduce((a,v)=>a+num(v.quantidade)*num(v.preco_unitario)-num(v.desconto),0)]));
  const acoes=dados.acoes;
- $('#kVendas').textContent=fmt(bruto);
- const familiaReal=acoes.filter(a=>a.moeda==='real'&&a.tipo_dinheiro==='limpo').reduce((a,x)=>a+num(x.valor_familia),0);
- $('#kAcoes').textContent=fmt(familiaReal)+' (limpo R$)';
+ $('#kVendas').textContent=fmt(totaisVendas.real)+' / '+fmt(totaisVendas.dolar,'dolar');
+ const familiaReal=acoes.filter(a=>a.moeda==='real').reduce((a,x)=>a+num(x.valor_familia),0);
+ const familiaDolar=acoes.filter(a=>a.moeda==='dolar').reduce((a,x)=>a+num(x.valor_familia),0);$('#kAcoes').textContent=fmt(familiaReal)+' / '+fmt(familiaDolar,'dolar');
  const saldo=dados.caixa.filter(x=>x.moeda==='real').reduce((a,x)=>a+(x.categoria==='saida'?-1:1)*num(x.valor),0);
  $('#kCaixa').textContent=fmt(saldo);
  $('#kStatus').textContent=[acoes.length,acoes.filter(x=>x.resultado==='sucesso').length,acoes.filter(x=>x.resultado==='red').length].join(' / ');
  $('#acaoRows').innerHTML=acoes.map(a=>'<tr><td>'+esc(a.data)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.modalidade)+'</td><td>'+esc(a.resultado)+'</td><td>'+a.exitosos+'/'+a.participantes+'</td><td>'+fmt(a.valor_familia,a.moeda)+'</td><td>'+fmt(a.valor_integrantes,a.moeda)+'</td></tr>').join('');
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
  $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
- $('#vendaRows').innerHTML=dados.vendas.map(v=>'<tr><td>'+esc(v.data)+'</td><td>'+esc(dados.produtos.find(p=>p.id===v.produto_id)?.nome||'—')+'</td><td>'+v.quantidade+'</td><td>'+fmt(num(v.preco_unitario)*v.quantidade-num(v.desconto))+'</td><td>'+fmt(v.recebido)+'</td><td>'+esc(v.status)+'</td></tr>').join('');
+ $('#vendaRows').innerHTML=dados.vendas.map(v=>'<tr><td>'+esc(v.data)+'</td><td>'+esc(dados.produtos.find(p=>p.id===v.produto_id)?.nome||'—')+'</td><td>'+v.quantidade+'</td><td>'+esc(v.moeda||'real')+'</td><td>'+fmt(num(v.preco_unitario)*v.quantidade-num(v.desconto),v.moeda||'real')+'</td><td>'+fmt(v.recebido,v.moeda||'real')+'</td><td>'+esc(v.status)+'</td></tr>').join('');
  renderIntegrantes();renderMetas(); $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
 }
 function setField(f,name,value){f.elements[name].value=value}
@@ -81,12 +81,12 @@ $('#acaoForm').onsubmit=e=>{
  const q=num(o.participantes),ok=red?0:num(o.exitosos),t=red?0:num(o.valor_total);
  const dest=red?'nenhum':o.destino, fam=red?0:dest==='familia'?t:dest==='integrantes'?0:num(o.valor_familia);
  if(q<1||ok<0||ok>q||((o.resultado==='sucesso')!==(ok===q))||(o.resultado==='sucesso_parcial'&&!(ok>0&&ok<q))||(!red&&!(t>=fam&&fam>=0))){msg('Confira participantes, resultado e divisão dos valores.',true);return}
- const payload={data:o.data,nome:o.nome.trim(),modalidade:o.modalidade,resultado:o.resultado,participantes:q,exitosos:ok,destino:dest,moeda:o.moeda,tipo_dinheiro:o.tipo_dinheiro,valor_total:t,valor_familia:fam,valor_integrantes:Math.round((t-fam)*100)/100,observacoes:o.observacoes};
+ const payload={data:o.data,nome:o.nome.trim(),modalidade:o.modalidade,resultado:o.resultado,participantes:q,exitosos:ok,destino:dest,moeda:o.moeda,tipo_dinheiro:'sujo',valor_total:t,valor_familia:fam,valor_integrantes:Math.round((t-fam)*100)/100,observacoes:o.observacoes};
  insert(tables.acoes,payload,f)
 };
 $('#produtoForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.produtos,{nome:o.nome.trim(),categoria:o.categoria.trim(),preco_padrao:num(o.preco_padrao)},f)};
 $('#produtoSelect').onchange=()=>{const p=dados.produtos.find(x=>x.id===$('#produtoSelect').value);if(p)setField($('#vendaForm'),'preco_unitario',p.preco_padrao)};
-$('#vendaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:num(o.quantidade),preco_unitario:num(o.preco_unitario),desconto:num(o.desconto),recebido:num(o.recebido),status:o.status,observacoes:o.observacoes},f)};
+$('#vendaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:num(o.quantidade),moeda:o.moeda,preco_unitario:num(o.preco_unitario),desconto:num(o.desconto),recebido:num(o.recebido),status:o.status,observacoes:o.observacoes},f)};
 $('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
 
 
@@ -199,14 +199,70 @@ function report(){
  const ac=range(dados.acoes),ve=range(dados.vendas),ca=range(dados.caixa);
  const me=metaLinhas();
  const familia=ac.reduce((s,x)=>s+num(x.valor_familia),0),integrantes=ac.reduce((s,x)=>s+num(x.valor_integrantes),0);
- const vendaTotal=ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0);
- const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Semana','Integrante','Cargo','Farm','Dinheiro','Observação']};
- const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
+ const vendaTotal=Object.fromEntries(['real','dolar'].map(m=>[m,ve.filter(x=>x.status==='concluida'&&(x.moeda||'real')===m).reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0)]));
+ const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Moeda','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Semana','Integrante','Cargo','Farm','Dinheiro','Observação']};
+ const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.moeda||'real',x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
  relHeader=k==='geral'?['Seção','Indicador','Valor']:header[k];
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
   ['Ações','Sucesso',ac.filter(x=>x.resultado==='sucesso').length],['Ações','Sucesso parcial',ac.filter(x=>x.resultado==='sucesso_parcial').length],['Ações','Red',ac.filter(x=>x.resultado==='red').length],
-  ['Vendas','Total líquido em R$',vendaTotal],['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
+  ['Vendas','Total líquido em R['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
+  ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
+  ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
+  ['Ações','Receita destinada à família (dinheiro sujo)', 'Ver detalhamento por moeda'],
+  ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.farm!=='nao_conferido'&&x.dinheiro!=='nao_conferido').length],['Metas','Devendo farm (semana selecionada)',me.filter(x=>x.farm==='pendente').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
+ ]:rows[k];
+ if(k==='geral'){
+  for(const moeda of ['real','dolar']){const tipo='sujo';
+   relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
+   relLinhas.push(['Ações','Destinado aos integrantes • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_integrantes),0)]);
+  }
+ }
+ $('#relConteudo').innerHTML='<p>Período: '+esc(start)+' a '+esc(end)+' | Gerado por: '+esc(profile.nome)+'</p><div class="scroll"><table><thead><tr>'+relHeader.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+relLinhas.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ msg('Relatório gerado para '+esc(profile.nome)+'.');
+}
+$('#gerarRel').onclick=report;
+$('#imprimirRel').onclick=()=>{if(!relLinhas.length)report();window.print()};
+$('#csvRel').onclick=()=>{
+ if(!relLinhas.length)report();
+ const line=r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';');
+ const csv='\ufeff'+[relHeader,...relLinhas].map(line).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='cuba-relatorio-'+$('#relInicio').value+'-'+$('#relFim').value+'.csv';a.click();URL.revokeObjectURL(a.href)
+};
+for(const input of $('input[type=date]'))input.value=dateNow();
+$('#metaMes').value=dateNow().slice(0,7);preencherSemanas();
+
+$('#relInicio').value='2026-11-12';
+updateAction();auth();
+,vendaTotal.real],['Vendas','Total líquido em US['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
+  ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
+  ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
+  ['Ações','Receita destinada à família (todas moedas, NÃO somável)', 'Ver detalhamento por moeda e tipo'],
+  ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.farm!=='nao_conferido'&&x.dinheiro!=='nao_conferido').length],['Metas','Devendo farm (semana selecionada)',me.filter(x=>x.farm==='pendente').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
+ ]:rows[k];
+ if(k==='geral'){
+  for(const moeda of ['real','dolar'])for(const tipo of ['limpo','sujo']){
+   relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
+   relLinhas.push(['Ações','Destinado aos integrantes • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_integrantes),0)]);
+  }
+ }
+ $('#relConteudo').innerHTML='<p>Período: '+esc(start)+' a '+esc(end)+' | Gerado por: '+esc(profile.nome)+'</p><div class="scroll"><table><thead><tr>'+relHeader.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+relLinhas.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ msg('Relatório gerado para '+esc(profile.nome)+'.');
+}
+$('#gerarRel').onclick=report;
+$('#imprimirRel').onclick=()=>{if(!relLinhas.length)report();window.print()};
+$('#csvRel').onclick=()=>{
+ if(!relLinhas.length)report();
+ const line=r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';');
+ const csv='\ufeff'+[relHeader,...relLinhas].map(line).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='cuba-relatorio-'+$('#relInicio').value+'-'+$('#relFim').value+'.csv';a.click();URL.revokeObjectURL(a.href)
+};
+for(const input of $('input[type=date]'))input.value=dateNow();
+$('#metaMes').value=dateNow().slice(0,7);preencherSemanas();
+
+$('#relInicio').value='2026-11-12';
+updateAction();auth();
+,vendaTotal.dolar],['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
   ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Ações','Receita destinada à família (todas moedas, NÃO somável)', 'Ver detalhamento por moeda e tipo'],
