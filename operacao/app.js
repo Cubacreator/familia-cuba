@@ -5,7 +5,7 @@ const fmt=(v,c='real')=>new Intl.NumberFormat('pt-BR',{style:'currency',currency
 const dateNow=()=>new Date().toLocaleDateString('en-CA');
 const num=v=>Number(v)||0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
-let dados={acoes:[],produtos:[],vendas:[],caixa:[]},profile=null,relLinhas=[],relHeader=[];
+let dados={acoes:[],produtos:[],vendas:[],caixa:[],metas:[]},profile=null,relLinhas=[],relHeader=[];
 function msg(t,error=false){$('#aviso').textContent=t;$('#aviso').style.color=error?'#ff9999':'#92e4b3'}
 async function auth(){
  const {data:{session}}=await sb.auth.getSession();
@@ -26,12 +26,12 @@ $('#loginForm').addEventListener('submit',async e=>{
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 $('#atualizar').onclick=()=>refresh();
 $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.toggle('active',x===b));$$('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('#titulo').textContent=b.textContent.trim()});
-const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',caixa:'cuba2_caixa'};
+const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',caixa:'cuba2_caixa',metas:'cuba2_metas'};
 async function refresh(){
  try{
   const result=await Promise.all(Object.entries(tables).map(async([key,table])=>{
    const {data,error}=await sb.from(table).select('*').order(key==='produtos'?'nome':'data',{ascending:key==='produtos'}).limit(10000);
-   if(error)throw new Error(table+': '+error.message);
+   if(error && key==='metas'){msg('Metas pendentes: execute operacao/02-metas.sql no Supabase.',true);return [key,[]]}; if(error)throw new Error(table+': '+error.message);
    return [key,data||[]];
   }));
   result.forEach(([k,v])=>dados[k]=v);render();msg('Dados atualizados.');
@@ -51,7 +51,7 @@ function render(){
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
  $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
  $('#vendaRows').innerHTML=dados.vendas.map(v=>'<tr><td>'+esc(v.data)+'</td><td>'+esc(dados.produtos.find(p=>p.id===v.produto_id)?.nome||'—')+'</td><td>'+v.quantidade+'</td><td>'+fmt(num(v.preco_unitario)*v.quantidade-num(v.desconto))+'</td><td>'+fmt(v.recebido)+'</td><td>'+esc(v.status)+'</td></tr>').join('');
- $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
+ renderMetas(); $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
 }
 function setField(f,name,value){f.elements[name].value=value}
 function updateAction(){
@@ -87,15 +87,72 @@ $('#produtoForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f
 $('#produtoSelect').onchange=()=>{const p=dados.produtos.find(x=>x.id===$('#produtoSelect').value);if(p)setField($('#vendaForm'),'preco_unitario',p.preco_padrao)};
 $('#vendaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:num(o.quantidade),preco_unitario:num(o.preco_unitario),desconto:num(o.desconto),recebido:num(o.recebido),status:o.status,observacoes:o.observacoes},f)};
 $('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
+
+function weekStart(str){
+ const d=new Date(str+'T12:00:00');
+ const offset=(d.getDay()+6)%7;
+ d.setDate(d.getDate()-offset);
+ return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+}
+function metaAgg(){
+ const grouped=new Map();
+ for(const r of dados.metas){
+  const semana=weekStart(r.data),key=[semana,r.grupo,r.membro.trim().toLocaleLowerCase('pt-BR')].join('||');
+  if(!grouped.has(key))grouped.set(key,{semana,membro:r.membro,grupo:r.grupo,bunkers:0,lixos:0,valor:0,acoes:0,days:{},opcao:r.opcao_rush,opcoes:new Set()});
+  const a=grouped.get(key);
+  a.bunkers+=num(r.bunkers);a.lixos+=num(r.lixos);a.valor+=num(r.valor_entregue);
+  a.acoes+=num(r.acoes_familia)+num(r.acoes_integrantes);
+  a.days[r.data]??={familia:0,integrantes:0};
+  a.days[r.data].familia+=num(r.acoes_familia);
+  a.days[r.data].integrantes+=num(r.acoes_integrantes);
+  if(r.opcao_rush)a.opcoes.add(r.opcao_rush);
+ }
+ return [...grouped.values()].sort((a,b)=>b.semana.localeCompare(a.semana)||a.membro.localeCompare(b.membro));
+}
+function rushFarmOK(x){
+ const op=x.opcoes.size===1?[...x.opcoes][0]:null;
+ return op==='4_bunkers'?x.bunkers>=4:op==='2_bunkers_2_lixos'?x.bunkers>=2&&x.lixos>=2:op==='4_lixos'?x.lixos>=4:false;
+}
+function renderMetas(){
+ $('#metasRows').innerHTML=metaAgg().map(x=>{
+  const financial=x.valor>=(x.grupo==='elite'?300000:200000);
+  const farm=x.grupo==='rush'?(rushFarmOK(x)?'Meta alcançada':(x.opcoes.size>1?'Opções divergentes':'Pendente')):'Isento';
+  // Elite: avaliar dias lançados, não inferir que um dia sem registro teve 0 atividades.
+  const dayStates=Object.values(x.days);
+  const daysOK=dayStates.filter(v=>v.familia>=2&&(v.familia+v.integrantes)>=3).length;
+  const daily=x.grupo==='elite'?daysOK+'/'+dayStates.length+' dias registrados':'—';
+  const status=x.grupo==='rush'?(financial&&rushFarmOK(x)?'Atingida':'Em andamento'):(financial&&dayStates.length>0&&daysOK===dayStates.length?'Em dia nos registros':'Em andamento');
+  return '<tr><td>'+esc(x.semana)+'</td><td>'+esc(x.membro)+'</td><td>'+esc(x.grupo.toUpperCase())+'</td><td>'+esc(farm)+'</td><td>'+fmt(x.valor)+'</td><td>'+fmt(x.grupo==='elite'?300000:200000)+'</td><td>'+esc(daily)+'</td><td>'+esc(status)+'</td></tr>'
+ }).join('')||'<tr><td colspan="8">Nenhum progresso cadastrado.</td></tr>';
+}
+function updateMetaForm(){
+ const elite=$('#metaGrupo').value==='elite';
+ for(const id of ['#metaOpcaoWrap','#metaBunkersWrap','#metaLixosWrap'])$(id).hidden=elite;
+ for(const id of ['#metaAcaoFamiliaWrap','#metaAcaoIntWrap'])$(id).hidden=!elite;
+}
+$('#metaGrupo').onchange=updateMetaForm;
+updateMetaForm();
+$('#metaForm').onsubmit=e=>{
+ e.preventDefault();const f=e.target,o=contentOf(f),elite=o.grupo==='elite';
+ insert('cuba2_metas',{
+  data:o.data,membro:o.membro.trim(),grupo:o.grupo,opcao_rush:elite?null:o.opcao_rush,
+  bunkers:elite?0:num(o.bunkers),lixos:elite?0:num(o.lixos),
+  valor_entregue:num(o.valor_entregue),
+  acoes_familia:elite?num(o.acoes_familia):0,
+  acoes_integrantes:elite?num(o.acoes_integrantes):0,
+  observacoes:o.observacoes||null
+ },f);
+};
+
 function report(){
  const start=$('#relInicio').value,end=$('#relFim').value,k=$('#relCategoria').value;
  if(!start||!end||start>end){msg('Informe um intervalo válido.',true);return}
  const range=items=>items.filter(x=>x.data>=start&&x.data<=end);
- const ac=range(dados.acoes),ve=range(dados.vendas),ca=range(dados.caixa);
+ const ac=range(dados.acoes),ve=range(dados.vendas),ca=range(dados.caixa),me=range(dados.metas);
  const familia=ac.reduce((s,x)=>s+num(x.valor_familia),0),integrantes=ac.reduce((s,x)=>s+num(x.valor_integrantes),0);
  const vendaTotal=ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0);
- const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor']};
- const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor])};
+ const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Data','Integrante','Grupo','Opção Rush','Bunkers','Lixos','Valor entregue','Ações família','Ações integrantes']};
+ const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[x.data,x.membro,x.grupo,x.opcao_rush||'Isento',x.bunkers,x.lixos,x.valor_entregue,x.acoes_familia,x.acoes_integrantes])};
  relHeader=k==='geral'?['Seção','Indicador','Valor']:header[k];
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
@@ -104,6 +161,7 @@ function report(){
   ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Ações','Receita destinada à família (todas moedas, NÃO somável)', 'Ver detalhamento por moeda e tipo'],
+  ['Metas','Lançamentos de progresso',me.length],['Metas','Valor entregue registrado',me.reduce((t,x)=>t+num(x.valor_entregue),0)],
  ]:rows[k];
  if(k==='geral'){
   for(const moeda of ['real','dolar'])for(const tipo of ['limpo','sujo']){
