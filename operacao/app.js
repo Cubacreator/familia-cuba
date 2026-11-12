@@ -5,7 +5,7 @@ const fmt=(v,c='real')=>new Intl.NumberFormat('pt-BR',{style:'currency',currency
 const dateNow=()=>new Date().toLocaleDateString('en-CA');
 const num=v=>Number(v)||0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
-let dados={acoes:[],produtos:[],vendas:[],caixa:[],metas:[]},profile=null,relLinhas=[],relHeader=[];
+let dados={acoes:[],produtos:[],vendas:[],caixa:[],metas:[],integrantes:[],metas_semanais:[]},profile=null,relLinhas=[],relHeader=[];
 function msg(t,error=false){$('#aviso').textContent=t;$('#aviso').style.color=error?'#ff9999':'#92e4b3'}
 async function auth(){
  const {data:{session}}=await sb.auth.getSession();
@@ -26,12 +26,12 @@ $('#loginForm').addEventListener('submit',async e=>{
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 $('#atualizar').onclick=()=>refresh();
 $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.toggle('active',x===b));$$('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('#titulo').textContent=b.textContent.trim()});
-const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',caixa:'cuba2_caixa',metas:'cuba2_metas'};
+const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',caixa:'cuba2_caixa',integrantes:'cuba2_integrantes',metas_semanais:'cuba2_metas_semanais'};
 async function refresh(){
  try{
   const result=await Promise.all(Object.entries(tables).map(async([key,table])=>{
-   const {data,error}=await sb.from(table).select('*').order(key==='produtos'?'nome':'data',{ascending:key==='produtos'}).limit(10000);
-   if(error && key==='metas'){msg('Metas pendentes: execute operacao/02-metas.sql no Supabase.',true);return [key,[]]}; if(error)throw new Error(table+': '+error.message);
+   const {data,error}=await sb.from(table).select('*').order(['produtos','integrantes'].includes(key)?'nome':key==='metas_semanais'?'ano':'data',{ascending:key==='produtos'}).limit(10000);
+   if(error && ['integrantes','metas_semanais'].includes(key)){throw new Error('Execute operacao/03-membros-fechamento.sql no Supabase antes de usar o novo módulo. '+error.message)}; if(error)throw new Error(table+': '+error.message);
    return [key,data||[]];
   }));
   result.forEach(([k,v])=>dados[k]=v);render();msg('Dados atualizados.');
@@ -51,7 +51,7 @@ function render(){
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
  $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
  $('#vendaRows').innerHTML=dados.vendas.map(v=>'<tr><td>'+esc(v.data)+'</td><td>'+esc(dados.produtos.find(p=>p.id===v.produto_id)?.nome||'—')+'</td><td>'+v.quantidade+'</td><td>'+fmt(num(v.preco_unitario)*v.quantidade-num(v.desconto))+'</td><td>'+fmt(v.recebido)+'</td><td>'+esc(v.status)+'</td></tr>').join('');
- renderMetas(); $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
+ renderIntegrantes();renderMetas(); $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
 }
 function setField(f,name,value){f.elements[name].value=value}
 function updateAction(){
@@ -88,71 +88,108 @@ $('#produtoSelect').onchange=()=>{const p=dados.produtos.find(x=>x.id===$('#prod
 $('#vendaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:num(o.quantidade),preco_unitario:num(o.preco_unitario),desconto:num(o.desconto),recebido:num(o.recebido),status:o.status,observacoes:o.observacoes},f)};
 $('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
 
-function weekStart(str){
- const d=new Date(str+'T12:00:00');
- const offset=(d.getDay()+6)%7;
- d.setDate(d.getDate()-offset);
- return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+
+function semanaIntervalo(ano,mes,semana){
+ const inicio=(semana-1)*7+1;
+ const ultimo=new Date(ano,mes,0).getDate();
+ if(inicio>ultimo)return null;
+ return {start:`${ano}-${String(mes).padStart(2,'0')}-${String(inicio).padStart(2,'0')}`,end:`${ano}-${String(mes).padStart(2,'0')}-${String(Math.min(inicio+6,ultimo)).padStart(2,'0')}`};
 }
-function metaAgg(){
- const grouped=new Map();
- for(const r of dados.metas){
-  const semana=weekStart(r.data),key=[semana,r.grupo,r.membro.trim().toLocaleLowerCase('pt-BR')].join('||');
-  if(!grouped.has(key))grouped.set(key,{semana,membro:r.membro,grupo:r.grupo,bunkers:0,lixos:0,valor:0,acoes:0,days:{},opcao:r.opcao_rush,opcoes:new Set()});
-  const a=grouped.get(key);
-  a.bunkers+=num(r.bunkers);a.lixos+=num(r.lixos);a.valor+=num(r.valor_entregue);
-  a.acoes+=num(r.acoes_familia)+num(r.acoes_integrantes);
-  a.days[r.data]??={familia:0,integrantes:0};
-  a.days[r.data].familia+=num(r.acoes_familia);
-  a.days[r.data].integrantes+=num(r.acoes_integrantes);
-  if(r.opcao_rush)a.opcoes.add(r.opcao_rush);
+function semanaSelecionada(){
+ const value=$('#metaMes').value||'2026-11';
+ const [ano,mes]=value.split('-').map(Number);
+ const semana=Number($('#metaSemana').value);
+ return {ano,mes,semana,intervalo:semanaIntervalo(ano,mes,semana)};
+}
+function membrosNaSemana(){
+ const filtro=semanaSelecionada();
+ if(!filtro.intervalo)return [];
+ return dados.integrantes.filter(x=>x.data_entrada<=filtro.intervalo.end && (!x.data_saida||x.data_saida>=filtro.intervalo.start)).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+}
+function statusPadrao(cargo,tipo){
+ return (cargo==='membro'||(cargo==='elite'&&tipo==='farm'))?'isento':'nao_conferido';
+}
+function registroSemana(id){const {ano,mes,semana}=semanaSelecionada();return dados.metas_semanais.find(x=>x.integrante_id===id&&x.ano===ano&&x.mes===mes&&x.semana===semana)}
+function renderIntegrantes(){
+ $('#integrantesRows').innerHTML=dados.integrantes.slice().sort((a,b)=>Number(b.ativo)-Number(a.ativo)||a.nome.localeCompare(b.nome,'pt-BR')).map(m=>
+ '<tr><td>'+esc(m.nome)+'</td><td><select aria-label="Cargo de '+esc(m.nome)+'" data-member-role="'+esc(m.id)+'"><option value="membro"'+(m.cargo==='membro'?' selected':'')+'>Membro</option><option value="rush"'+(m.cargo==='rush'?' selected':'')+'>Rush</option><option value="elite"'+(m.cargo==='elite'?' selected':'')+'>Elite</option></select></td><td>'+esc(m.data_entrada)+'</td><td>'+(m.ativo?'Ativo':'Desativado')+'</td><td><button class="secondary" data-member-save="'+esc(m.id)+'">Salvar cargo</button> <button class="secondary" data-member-toggle="'+esc(m.id)+'">'+(m.ativo?'Desativar':'Reativar')+'</button></td></tr>'
+ ).join('')||'<tr><td colspan="5">Nenhum integrante cadastrado.</td></tr>';
+}
+async function atualizarIntegrante(id,changes){
+ try{const {error}=await sb.from('cuba2_integrantes').update(changes).eq('id',id);if(error)throw error;await refresh();msg('Cadastro atualizado. Histórico preservado.')}catch(e){msg('Não foi possível atualizar: '+e.message,true)}
+}
+$('#integranteForm').onsubmit=e=>{
+ e.preventDefault();const f=e.target,o=contentOf(f);
+ insert('cuba2_integrantes',{nome:o.nome.trim(),cargo:o.cargo,data_entrada:o.data_entrada},f)
+};
+$('#integrantesRows').onclick=e=>{
+ const save=e.target.closest('[data-member-save]'),toggle=e.target.closest('[data-member-toggle]');
+ if(save){const id=save.dataset.memberSave,select=[...$$('[data-member-role]')].find(x=>x.dataset.memberRole===id);if(select)atualizarIntegrante(id,{cargo:select.value});return}
+ if(toggle){
+  const m=dados.integrantes.find(x=>x.id===toggle.dataset.memberToggle);if(!m)return;
+  if(!confirm((m.ativo?'Desativar':'Reativar')+' '+m.nome+'? Os registros antigos serão preservados.'))return;
+  atualizarIntegrante(m.id,{ativo:!m.ativo,data_saida:m.ativo?dateNow():null})
  }
- return [...grouped.values()].sort((a,b)=>b.semana.localeCompare(a.semana)||a.membro.localeCompare(b.membro));
+};
+function metaLinhas(){
+ return membrosNaSemana().map(m=>{
+  const reg=registroSemana(m.id);
+  return {m,reg,farm:reg?.farm_status||statusPadrao(m.cargo,'farm'),dinheiro:reg?.dinheiro_status||statusPadrao(m.cargo,'dinheiro')}
+ });
 }
-function rushFarmOK(x){
- const op=x.opcoes.size===1?[...x.opcoes][0]:null;
- return op==='4_bunkers'?x.bunkers>=4:op==='2_bunkers_2_lixos'?x.bunkers>=2&&x.lixos>=2:op==='4_lixos'?x.lixos>=4:false;
+function optionsStatus(valor,tipo,exento){
+ const vals=[['nao_conferido','Não conferido'],['pago','Pago'],['pendente','Devendo'],['isento','Isento']];
+ return '<select aria-label="Status '+tipo+'" '+(exento?'disabled':'')+'>'+vals.map(([v,l])=>'<option value="'+v+'"'+(valor===v?' selected':'')+'>'+l+'</option>').join('')+'</select>';
 }
 function renderMetas(){
- $('#metasRows').innerHTML=metaAgg().map(x=>{
-  const financial=x.valor>=(x.grupo==='elite'?300000:200000);
-  const farm=x.grupo==='rush'?(rushFarmOK(x)?'Meta alcançada':(x.opcoes.size>1?'Opções divergentes':'Pendente')):'Isento';
-  // Elite: avaliar dias lançados, não inferir que um dia sem registro teve 0 atividades.
-  const dayStates=Object.values(x.days);
-  const daysOK=dayStates.filter(v=>v.familia>=2&&(v.familia+v.integrantes)>=3).length;
-  const daily=x.grupo==='elite'?daysOK+'/'+dayStates.length+' dias registrados':'—';
-  const status=x.grupo==='rush'?(financial&&rushFarmOK(x)?'Atingida':'Em andamento'):(financial&&dayStates.length>0&&daysOK===dayStates.length?'Em dia nos registros':'Em andamento');
-  return '<tr><td>'+esc(x.semana)+'</td><td>'+esc(x.membro)+'</td><td>'+esc(x.grupo.toUpperCase())+'</td><td>'+esc(farm)+'</td><td>'+fmt(x.valor)+'</td><td>'+fmt(x.grupo==='elite'?300000:200000)+'</td><td>'+esc(daily)+'</td><td>'+esc(status)+'</td></tr>'
- }).join('')||'<tr><td colspan="8">Nenhum progresso cadastrado.</td></tr>';
+ const {ano,mes,semana,intervalo}=semanaSelecionada(),linhas=metaLinhas();
+ const columns=['farm','dinheiro'];
+ const summary=columns.map(col=>{
+  const paid=linhas.filter(x=>x[col]==='pago').length;
+  const debt=linhas.filter(x=>x[col]==='pendente').length;
+  const unknown=linhas.filter(x=>x[col]==='nao_conferido').length;
+  return '<span><b>'+esc(col==='farm'?'Farm':'Dinheiro')+'</b> • '+paid+' pagos • '+debt+' devendo • '+unknown+' não conferidos</span>'
+ });
+ $('#metaResumo').innerHTML=summary.join('');
+ $('#metasRows').innerHTML=linhas.map(({m,reg,farm,dinheiro})=>'<tr data-meta-id="'+esc(m.id)+'"><td>'+esc(m.nome)+'</td><td>'+esc(m.cargo)+'</td><td>'+optionsStatus(farm,'farm',m.cargo==='elite'||m.cargo==='membro')+'</td><td>'+optionsStatus(dinheiro,'dinheiro',m.cargo==='membro')+'</td><td><input aria-label="Observação" value="'+esc(reg?.observacoes||'')+'" maxlength="500"></td><td><button data-save-meta="'+esc(m.id)+'" class="secondary">Salvar</button></td></tr>').join('')||'<tr><td colspan="6">Nenhum integrante cadastrado nesse período.</td></tr>';
+ $('#metaNomes').innerHTML=columns.map(col=>{
+  const tipo=col==='farm'?'Farm':'Dinheiro';
+  const lista=st=>linhas.filter(x=>x[col]===st).map(x=>x.m.nome).sort((a,b)=>a.localeCompare(b,'pt-BR')).join(', ')||'Nenhum';
+  return '<h4>'+tipo+'</h4><p><b>Pagaram:</b> '+esc(lista('pago'))+'</p><p><b>Devendo:</b> '+esc(lista('pendente'))+'</p><p><b>Não conferidos:</b> '+esc(lista('nao_conferido'))+'</p>';
+ }).join('')+'<p class="hint">Período: '+esc(intervalo?.start||'—')+' até '+esc(intervalo?.end||'—')+'. O histórico de membros desativados continua incluído enquanto pertenciam à família.</p>';
 }
-function updateMetaForm(){
- const elite=$('#metaGrupo').value==='elite';
- for(const id of ['#metaOpcaoWrap','#metaBunkersWrap','#metaLixosWrap'])$(id).hidden=elite;
- for(const id of ['#metaAcaoFamiliaWrap','#metaAcaoIntWrap'])$(id).hidden=!elite;
-}
-$('#metaGrupo').onchange=updateMetaForm;
-updateMetaForm();
-$('#metaForm').onsubmit=e=>{
- e.preventDefault();const f=e.target,o=contentOf(f),elite=o.grupo==='elite';
- insert('cuba2_metas',{
-  data:o.data,membro:o.membro.trim(),grupo:o.grupo,opcao_rush:elite?null:o.opcao_rush,
-  bunkers:elite?0:num(o.bunkers),lixos:elite?0:num(o.lixos),
-  valor_entregue:num(o.valor_entregue),
-  acoes_familia:elite?num(o.acoes_familia):0,
-  acoes_integrantes:elite?num(o.acoes_integrantes):0,
-  observacoes:o.observacoes||null
- },f);
+$('#metaMes').onchange=renderMetas;
+$('#metaSemana').onchange=renderMetas;
+$('#metaFiltrar').onclick=renderMetas;
+$('#metasRows').onclick=async e=>{
+ const btn=e.target.closest('[data-save-meta]');if(!btn)return;
+ const row=btn.closest('tr'),id=btn.dataset.saveMeta;
+ const m=dados.integrantes.find(x=>x.id===id);if(!m)return;
+ const selects=row.querySelectorAll('select'),input=row.querySelector('input');
+ const [farm_status,dinheiro_status]=[...selects].map(x=>x.value);
+ const {ano,mes,semana}=semanaSelecionada();
+ if(!semanaIntervalo(ano,mes,semana)){msg('Semana inexistente neste mês.',true);return}
+ const payload={integrante_id:id,ano,mes,semana,
+ farm_status:statusPadrao(m.cargo,'farm')==='isento'?'isento':farm_status,
+ dinheiro_status:statusPadrao(m.cargo,'dinheiro')==='isento'?'isento':dinheiro_status,
+ observacoes:input.value.trim(),atualizado_em:new Date().toISOString()};
+ try{
+  const {error}=await sb.from('cuba2_metas_semanais').upsert(payload,{onConflict:'integrante_id,ano,mes,semana'});
+  if(error)throw error;
+  await refresh();msg('Situação semanal salva para '+m.nome+'.');
+ }catch(ex){msg('Não foi possível salvar a meta: '+ex.message,true)}
 };
 
 function report(){
  const start=$('#relInicio').value,end=$('#relFim').value,k=$('#relCategoria').value;
  if(!start||!end||start>end){msg('Informe um intervalo válido.',true);return}
  const range=items=>items.filter(x=>x.data>=start&&x.data<=end);
- const ac=range(dados.acoes),ve=range(dados.vendas),ca=range(dados.caixa),me=range(dados.metas);
+ const ac=range(dados.acoes),ve=range(dados.vendas),ca=range(dados.caixa);
+ const me=metaLinhas();
  const familia=ac.reduce((s,x)=>s+num(x.valor_familia),0),integrantes=ac.reduce((s,x)=>s+num(x.valor_integrantes),0);
  const vendaTotal=ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0);
- const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Data','Integrante','Grupo','Opção Rush','Bunkers','Lixos','Valor entregue','Ações família','Ações integrantes']};
- const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[x.data,x.membro,x.grupo,x.opcao_rush||'Isento',x.bunkers,x.lixos,x.valor_entregue,x.acoes_familia,x.acoes_integrantes])};
+ const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Produto','Quantidade','Preço','Desconto','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Semana','Integrante','Cargo','Farm','Dinheiro','Observação']};
+ const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>[x.data,dados.produtos.find(p=>p.id===x.produto_id)?.nome||'',x.quantidade,x.preco_unitario,x.desconto,x.recebido,x.status]),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[$('#metaMes').value+' • '+$('#metaSemana').value,x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
  relHeader=k==='geral'?['Seção','Indicador','Valor']:header[k];
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
@@ -161,7 +198,7 @@ function report(){
   ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Ações','Receita destinada à família (todas moedas, NÃO somável)', 'Ver detalhamento por moeda e tipo'],
-  ['Metas','Lançamentos de progresso',me.length],['Metas','Valor entregue registrado',me.reduce((t,x)=>t+num(x.valor_entregue),0)],
+  ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.farm!=='nao_conferido'&&x.dinheiro!=='nao_conferido').length],['Metas','Devendo farm (semana selecionada)',me.filter(x=>x.farm==='pendente').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
  ]:rows[k];
  if(k==='geral'){
   for(const moeda of ['real','dolar'])for(const tipo of ['limpo','sujo']){
@@ -180,6 +217,8 @@ $('#csvRel').onclick=()=>{
  const csv='\ufeff'+[relHeader,...relLinhas].map(line).join('\r\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='cuba-relatorio-'+$('#relInicio').value+'-'+$('#relFim').value+'.csv';a.click();URL.revokeObjectURL(a.href)
 };
-for(const input of $$('input[type=date]'))input.value=dateNow();
+for(const input of $('input[type=date]'))input.value=dateNow();
+$('#metaMes').value=dateNow().slice(0,7);$('#metaSemana').value=String(Math.min(5,Math.ceil(Number(dateNow().slice(8,10))/7)));
+
 $('#relInicio').value='2026-11-12';
 updateAction();auth();
