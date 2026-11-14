@@ -206,7 +206,7 @@ function report(){
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
   ['Ações','Sucesso',ac.filter(x=>x.resultado==='sucesso').length],['Ações','Sucesso parcial',ac.filter(x=>x.resultado==='sucesso_parcial').length],['Ações','Red',ac.filter(x=>x.resultado==='red').length],
-  ['Vendas','Total líquido em R['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
+  ['Vendas','Total líquido em R$',vendaTotal.real],['Vendas','Total líquido em US$',vendaTotal.dolar],['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
   ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Ações','Receita destinada à família (dinheiro sujo)', 'Ver detalhamento por moeda'],
@@ -214,62 +214,6 @@ function report(){
  ]:rows[k];
  if(k==='geral'){
   for(const moeda of ['real','dolar']){const tipo='sujo';
-   relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
-   relLinhas.push(['Ações','Destinado aos integrantes • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_integrantes),0)]);
-  }
- }
- $('#relConteudo').innerHTML='<p>Período: '+esc(start)+' a '+esc(end)+' | Gerado por: '+esc(profile.nome)+'</p><div class="scroll"><table><thead><tr>'+relHeader.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+relLinhas.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
- msg('Relatório gerado para '+esc(profile.nome)+'.');
-}
-$('#gerarRel').onclick=report;
-$('#imprimirRel').onclick=()=>{if(!relLinhas.length)report();window.print()};
-$('#csvRel').onclick=()=>{
- if(!relLinhas.length)report();
- const line=r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';');
- const csv='\ufeff'+[relHeader,...relLinhas].map(line).join('\r\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='cuba-relatorio-'+$('#relInicio').value+'-'+$('#relFim').value+'.csv';a.click();URL.revokeObjectURL(a.href)
-};
-for(const input of $('input[type=date]'))input.value=dateNow();
-$('#metaMes').value=dateNow().slice(0,7);preencherSemanas();
-
-$('#relInicio').value='2026-11-12';
-updateAction();auth();
-,vendaTotal.real],['Vendas','Total líquido em US['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
-  ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
-  ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
-  ['Ações','Receita destinada à família (todas moedas, NÃO somável)', 'Ver detalhamento por moeda e tipo'],
-  ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.farm!=='nao_conferido'&&x.dinheiro!=='nao_conferido').length],['Metas','Devendo farm (semana selecionada)',me.filter(x=>x.farm==='pendente').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
- ]:rows[k];
- if(k==='geral'){
-  for(const moeda of ['real','dolar'])for(const tipo of ['limpo','sujo']){
-   relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
-   relLinhas.push(['Ações','Destinado aos integrantes • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_integrantes),0)]);
-  }
- }
- $('#relConteudo').innerHTML='<p>Período: '+esc(start)+' a '+esc(end)+' | Gerado por: '+esc(profile.nome)+'</p><div class="scroll"><table><thead><tr>'+relHeader.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+relLinhas.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
- msg('Relatório gerado para '+esc(profile.nome)+'.');
-}
-$('#gerarRel').onclick=report;
-$('#imprimirRel').onclick=()=>{if(!relLinhas.length)report();window.print()};
-$('#csvRel').onclick=()=>{
- if(!relLinhas.length)report();
- const line=r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';');
- const csv='\ufeff'+[relHeader,...relLinhas].map(line).join('\r\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='cuba-relatorio-'+$('#relInicio').value+'-'+$('#relFim').value+'.csv';a.click();URL.revokeObjectURL(a.href)
-};
-for(const input of $('input[type=date]'))input.value=dateNow();
-$('#metaMes').value=dateNow().slice(0,7);preencherSemanas();
-
-$('#relInicio').value='2026-11-12';
-updateAction();auth();
-,vendaTotal.dolar],['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
-  ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
-  ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
-  ['Ações','Receita destinada à família (todas moedas, NÃO somável)', 'Ver detalhamento por moeda e tipo'],
-  ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.farm!=='nao_conferido'&&x.dinheiro!=='nao_conferido').length],['Metas','Devendo farm (semana selecionada)',me.filter(x=>x.farm==='pendente').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
- ]:rows[k];
- if(k==='geral'){
-  for(const moeda of ['real','dolar'])for(const tipo of ['limpo','sujo']){
    relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
    relLinhas.push(['Ações','Destinado aos integrantes • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_integrantes),0)]);
   }
