@@ -25,7 +25,7 @@ function atualizarPrecoVenda(){
 const dateNow=()=>new Date().toLocaleDateString('en-CA');
 const num=v=>Number(v)||0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
-let dados={acoes:[],produtos:[],vendas:[],caixa:[],metas:[],integrantes:[],metas_semanais:[]},profile=null,relLinhas=[],relHeader=[];
+let dados={acoes:[],produtos:[],vendas:[],metas:[],integrantes:[],metas_semanais:[]},profile=null,relLinhas=[],relHeader=[];
 function msg(t,error=false){$('#aviso').textContent=t;$('#aviso').style.color=error?'#ff9999':'#92e4b3'}
 async function auth(){
  const {data:{session}}=await sb.auth.getSession();
@@ -46,7 +46,7 @@ $('#loginForm').addEventListener('submit',async e=>{
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 $('#atualizar').onclick=()=>refresh();
 $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.toggle('active',x===b));$$('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('#titulo').textContent=b.textContent.trim()});
-const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',caixa:'cuba2_caixa',integrantes:'cuba2_integrantes',metas_semanais:'cuba2_metas_semanais'};
+const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',integrantes:'cuba2_integrantes',metas_semanais:'cuba2_metas_semanais'};
 async function refresh(){
  let missingExtras=false;
  try{
@@ -65,14 +65,12 @@ function render(){
  $('#kVendas').textContent=fmt(totaisVendas.real)+' / '+fmt(totaisVendas.dolar,'dolar');
  const familiaReal=acoes.filter(a=>a.moeda==='real').reduce((a,x)=>a+num(x.valor_familia),0);
  const familiaDolar=acoes.filter(a=>a.moeda==='dolar').reduce((a,x)=>a+num(x.valor_familia),0);$('#kAcoes').textContent=fmt(familiaReal)+' / '+fmt(familiaDolar,'dolar');
- const saldo=dados.caixa.filter(x=>x.moeda==='real').reduce((a,x)=>a+(x.categoria==='saida'?-1:1)*num(x.valor),0);
- $('#kCaixa').textContent=fmt(saldo);
  $('#kStatus').textContent=[acoes.length,acoes.filter(x=>x.resultado==='sucesso').length,acoes.filter(x=>x.resultado==='red').length].join(' / ');
  $('#acaoRows').innerHTML=acoes.map(a=>'<tr><td>'+esc(a.data)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.modalidade)+'</td><td>'+esc(a.resultado)+'</td><td>'+a.exitosos+'/'+a.participantes+'</td><td>'+fmt(a.valor_familia,a.moeda)+'</td><td>'+fmt(a.valor_integrantes,a.moeda)+'</td></tr>').join('');
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
  $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo&&precoProduto(p.nome,'real')!==undefined).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
 $('#vendaRows').innerHTML=dados.vendas.map(v=>{const p=dados.produtos.find(x=>x.id===v.produto_id),nome=p?.nome||'—',q=num(v.quantidade),pr=precoProduto(nome,'real'),pd=precoProduto(nome,'dolar');return '<tr><td>'+esc(v.data)+'</td><td>'+esc(v.familia_compradora||'—')+'</td><td>'+esc(nome)+'</td><td>'+q+'</td><td>'+(pr===undefined?'—':fmt(pr*q,'real'))+'</td><td>'+(pd===undefined?'—':fmt(pd*q,'dolar'))+'</td><td>'+esc(v.moeda||'real')+'</td><td>'+fmt(q*num(v.preco_unitario)-num(v.desconto),v.moeda||'real')+'</td><td>'+fmt(v.recebido,v.moeda||'real')+'</td><td>'+esc(v.status)+'</td></tr>'}).join('');
- renderIntegrantes();renderMetas(); $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
+  renderIntegrantes();renderMetas();
 }
 function setField(f,name,value){f.elements[name].value=value}
 function updateAction(){
@@ -117,7 +115,6 @@ $('#vendaForm').onsubmit=e=>{
  if(!Number.isInteger(q)||q<1||recebido<0||recebido>q*preco){msg('Confira a quantidade e o valor recebido.',true);return}
  insert(tables.vendas,{data:o.data,produto_id:o.produto_id,familia_compradora:String(o.familia_compradora||'').trim(),quantidade:q,moeda:o.moeda,preco_unitario:preco,desconto:0,recebido,status:o.status,observacoes:o.observacoes},f)
 };
-$('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
 
 
 function isoDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
