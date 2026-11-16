@@ -55,7 +55,9 @@ async function refresh(){
    if(error && ['integrantes','metas_semanais'].includes(key)){missingExtras=true;return [key,[]]}; if(error)throw new Error(table+': '+error.message);
    return [key,data||[]];
   }));
-  result.forEach(([k,v])=>dados[k]=v);render();msg(missingExtras?'Cadastro e metas aguardam o SQL 03 no Supabase. As outras áreas continuam disponíveis.':'Dados atualizados.',missingExtras);
+  result.forEach(([k,v])=>dados[k]=v);render();
+  const semProdutos=!dados.produtos.some(p=>p.ativo&&precoProduto(p.nome,'real')!==undefined);
+  msg(semProdutos?'Nenhum armamento oficial cadastrado no Supabase. Execute operacao/05-precos-oficiais.sql para liberar as vendas.':missingExtras?'Cadastro e metas aguardam o SQL 03 no Supabase. As outras áreas continuam disponíveis.':'Dados atualizados.',semProdutos||missingExtras);
  }catch(e){msg('Não foi possível carregar. Execute o SQL da nova operação no Supabase. '+e.message,true)}
 }
 function render(){
@@ -68,7 +70,9 @@ function render(){
  $('#kStatus').textContent=[acoes.length,acoes.filter(x=>x.resultado==='sucesso').length,acoes.filter(x=>x.resultado==='red').length].join(' / ');
  $('#acaoRows').innerHTML=acoes.map(a=>'<tr><td>'+esc(a.data)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.modalidade)+'</td><td>'+esc(a.resultado)+'</td><td>'+a.exitosos+'/'+a.participantes+'</td><td>'+fmt(a.valor_familia,a.moeda)+'</td><td>'+fmt(a.valor_integrantes,a.moeda)+'</td></tr>').join('');
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
- $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo&&precoProduto(p.nome,'real')!==undefined).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
+ const disponiveis=dados.produtos.filter(p=>p.ativo&&precoProduto(p.nome,'real')!==undefined);
+ $('#produtoSelect').innerHTML=disponiveis.length?disponiveis.map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join(''):'<option value="">Nenhum armamento cadastrado — execute SQL 05</option>';
+ atualizarPrecoVenda();
 $('#vendaRows').innerHTML=dados.vendas.map(v=>{const p=dados.produtos.find(x=>x.id===v.produto_id),nome=p?.nome||'—',q=num(v.quantidade),pr=precoProduto(nome,'real'),pd=precoProduto(nome,'dolar');return '<tr><td>'+esc(v.data)+'</td><td>'+esc(v.familia_compradora||'—')+'</td><td>'+esc(nome)+'</td><td>'+q+'</td><td>'+(pr===undefined?'—':fmt(pr*q,'real'))+'</td><td>'+(pd===undefined?'—':fmt(pd*q,'dolar'))+'</td><td>'+esc(v.moeda||'real')+'</td><td>'+fmt(q*num(v.preco_unitario)-num(v.desconto),v.moeda||'real')+'</td><td>'+fmt(v.recebido,v.moeda||'real')+'</td><td>'+esc(v.status)+'</td></tr>'}).join('');
   renderIntegrantes();renderMetas();
 }
