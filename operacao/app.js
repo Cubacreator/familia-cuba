@@ -19,6 +19,8 @@ function atualizarPrecoVenda(){
  const qtd=Math.max(1,num(f.elements.quantidade.value));
  f.elements.preco_unitario.value=preco??'';
  f.elements.desconto.value='0';
+ $('#vendaTotalReal').value=real==null?'':fmt(real*qtd,'real');
+ $('#vendaTotalDolar').value=dolar==null?'':fmt(dolar*qtd,'dolar');
  const info=$('#precoVendaInfo');
  if(info)info.textContent=preco===undefined?'Produto sem preço oficial.':'Total em reais: '+fmt(real*qtd,'real')+' | Total em dólares: '+fmt(dolar*qtd,'dolar')+' | Pagamento escolhido: '+fmt(preco*qtd,f.elements.moeda.value);
 }
