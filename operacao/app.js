@@ -24,7 +24,7 @@ function atualizarPrecoVenda(){
  const info=$('#precoVendaInfo');
  if(info)info.textContent=preco===undefined?'Produto sem preço oficial.':'Total em reais: '+fmt(real*qtd,'real')+' | Total em dólares: '+fmt(dolar*qtd,'dolar')+' | Pagamento escolhido: '+fmt(preco*qtd,f.elements.moeda.value);
 }
-const dateNow=()=>new Date().toLocaleDateString('en-CA');
+const dateNow=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const num=v=>Number(v)||0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 let dados={acoes:[],produtos:[],vendas:[],metas:[],integrantes:[],metas_semanais:[]},profile=null,relLinhas=[],relHeader=[];
