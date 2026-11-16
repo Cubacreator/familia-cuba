@@ -13,10 +13,14 @@ const normalizarNome=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/
 const precoProduto=(nome,moeda)=>Object.entries(precosOficiais).find(([n])=>normalizarNome(n)===normalizarNome(nome))?.[1]?.[moeda];
 function atualizarPrecoVenda(){
  const f=$('#vendaForm'),p=dados.produtos.find(x=>x.id===f.elements.produto_id.value);
+ const real=p?precoProduto(p.nome,'real'):undefined;
+ const dolar=p?precoProduto(p.nome,'dolar'):undefined;
  const preco=p?precoProduto(p.nome,f.elements.moeda.value):undefined;
+ const qtd=Math.max(1,num(f.elements.quantidade.value));
  f.elements.preco_unitario.value=preco??'';
  f.elements.desconto.value='0';
- const info=$('#precoVendaInfo');if(info)info.textContent=preco===undefined?'Produto ainda não disponível na tabela oficial.':'Preço unitário fixo: '+fmt(preco,f.elements.moeda.value)+' | Total: '+fmt(preco*Math.max(1,num(f.elements.quantidade.value)),f.elements.moeda.value);
+ const info=$('#precoVendaInfo');
+ if(info)info.textContent=preco===undefined?'Produto sem preço oficial.':'Total em reais: '+fmt(real*qtd,'real')+' | Total em dólares: '+fmt(dolar*qtd,'dolar')+' | Pagamento escolhido: '+fmt(preco*qtd,f.elements.moeda.value);
 }
 const dateNow=()=>new Date().toLocaleDateString('en-CA');
 const num=v=>Number(v)||0;
