@@ -54,7 +54,7 @@ function setSidebarCollapsed(collapsed){
  sidebarToggle.setAttribute('aria-expanded',String(!collapsed));
  sidebarToggle.setAttribute('aria-label',collapsed?'Expandir menu lateral':'Minimizar menu lateral');
  sidebarToggle.title=collapsed?'Expandir menu':'Minimizar menu';
- $('nav button,nav a.fablink').forEach(el=>{el.title=el.textContent.trim()});
+ $('nav button,nav a.fablink').forEach(el=>{el.title=el.querySelector('.nav-label')?.textContent.trim()||el.textContent.trim()});
 }
 sidebarToggle.onclick=()=>setSidebarCollapsed(!$('#app').classList.contains('sidebar-collapsed'));
 
