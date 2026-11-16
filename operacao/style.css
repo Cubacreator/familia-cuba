@@ -2,3 +2,28 @@
 [hidden]{display:none!important}
 
 nav a.fablink{display:block;text-decoration:none;color:#fff;background:#19395e;border-radius:9px;padding:10px 17px;font-weight:650;white-space:nowrap}nav a.fablink:hover{background:#286bd0}
+
+/* Menu lateral recolhível */
+.sidebar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.sidebar-head h2{min-width:0}
+.sidebar-toggle{flex:0 0 auto;padding:7px 10px;min-width:36px}
+nav button,nav a.fablink{display:flex;align-items:center;gap:10px;min-height:40px}
+.nav-icon{flex:0 0 20px;text-align:center;font-size:15px}
+.nav-label{white-space:nowrap}
+#sair{display:flex;align-items:center;justify-content:center;gap:9px}
+#app.sidebar-collapsed{grid-template-columns:72px minmax(0,1fr)}
+#app.sidebar-collapsed aside{padding:16px 9px;gap:18px}
+#app.sidebar-collapsed .sidebar-head h2,#app.sidebar-collapsed .nav-label,#app.sidebar-collapsed #identidade{display:none}
+#app.sidebar-collapsed .sidebar-head{justify-content:center}
+#app.sidebar-collapsed .sidebar-toggle{transform:none}
+#app.sidebar-collapsed nav button,#app.sidebar-collapsed nav a.fablink{justify-content:center;padding:10px 8px}
+#app.sidebar-collapsed #sair{padding:10px 8px}
+@media(max-width:900px){
+ #app.sidebar-collapsed{display:block}
+ #app.sidebar-collapsed aside{padding:10px}
+ #app.sidebar-collapsed nav{display:flex;overflow:auto}
+ #app.sidebar-collapsed .sidebar-head{justify-content:flex-end}
+ #app.sidebar-collapsed nav button,#app.sidebar-collapsed nav a.fablink{min-width:44px}
+ #app.sidebar-collapsed #sair{align-self:flex-start}
+}
+@media print{.sidebar-toggle{display:none!important}}
