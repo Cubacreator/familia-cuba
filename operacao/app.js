@@ -47,6 +47,17 @@ $('#loginForm').addEventListener('submit',async e=>{
 });
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 $('#atualizar').onclick=()=>refresh();
+const sidebarToggle=$('#toggleSidebar');
+function setSidebarCollapsed(collapsed){
+ $('#app').classList.toggle('sidebar-collapsed',collapsed);
+ sidebarToggle.textContent=collapsed?'❯':'❮';
+ sidebarToggle.setAttribute('aria-expanded',String(!collapsed));
+ sidebarToggle.setAttribute('aria-label',collapsed?'Expandir menu lateral':'Minimizar menu lateral');
+ sidebarToggle.title=collapsed?'Expandir menu':'Minimizar menu';
+ $('nav button,nav a.fablink').forEach(el=>{el.title=el.textContent.trim()});
+}
+sidebarToggle.onclick=()=>setSidebarCollapsed(!$('#app').classList.contains('sidebar-collapsed'));
+
 $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.toggle('active',x===b));$$('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('#titulo').textContent=b.textContent.trim()});
 const tables={acoes:'cuba2_acoes',produtos:'cuba2_produtos',vendas:'cuba2_vendas',integrantes:'cuba2_integrantes',metas_semanais:'cuba2_metas_semanais'};
 async function refresh(){
