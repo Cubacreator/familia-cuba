@@ -223,19 +223,17 @@ function report(){
  const start=$('#relInicio').value,end=$('#relFim').value,k=$('#relCategoria').value;
  if(!start||!end||start>end){msg('Informe um intervalo válido.',true);return}
  const range=items=>items.filter(x=>x.data>=start&&x.data<=end);
- const ac=range(dados.acoes),ve=range(dados.vendas),ca=range(dados.caixa);
+ const ac=range(dados.acoes),ve=range(dados.vendas);
  const me=metaLinhas();
  const familia=ac.reduce((s,x)=>s+num(x.valor_familia),0),integrantes=ac.reduce((s,x)=>s+num(x.valor_integrantes),0);
  const vendaTotal=Object.fromEntries(['real','dolar'].map(m=>[m,ve.filter(x=>x.status==='concluida'&&(x.moeda||'real')===m).reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0)]));
- const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Família compradora','Produto','Quantidade','Total R$ (preços atuais)','Total US$ (preços atuais)','Moeda paga','Valor da venda','Recebido','Status'],caixa:['Data','Categoria','Descrição','Moeda','Valor'],metas:['Semana','Integrante','Cargo','Farm','Dinheiro','Observação']};
- const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>{const n=dados.produtos.find(p=>p.id===x.produto_id)?.nome||'';const r=precoProduto(n,'real'),d=precoProduto(n,'dolar');return [x.data,x.familia_compradora||'',n,x.quantidade,r===undefined?'':r*x.quantidade,d===undefined?'':d*x.quantidade,x.moeda||'real',x.quantidade*x.preco_unitario-x.desconto,x.recebido,x.status]}),caixa:ca.map(x=>[x.data,x.categoria,x.descricao,x.moeda,x.valor]),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
+ const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Família compradora','Produto','Quantidade','Total R$ (preços atuais)','Total US$ (preços atuais)','Moeda paga','Valor da venda','Recebido','Status'],metas:['Semana','Integrante','Cargo','Farm','Dinheiro','Observação']};
+ const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>{const n=dados.produtos.find(p=>p.id===x.produto_id)?.nome||'';const r=precoProduto(n,'real'),d=precoProduto(n,'dolar');return [x.data,x.familia_compradora||'',n,x.quantidade,r===undefined?'':r*x.quantidade,d===undefined?'':d*x.quantidade,x.moeda||'real',x.quantidade*x.preco_unitario-x.desconto,x.recebido,x.status]}),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.farm,x.dinheiro,x.reg?.observacoes||''])};
  relHeader=k==='geral'?['Seção','Indicador','Valor']:header[k];
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
   ['Ações','Sucesso',ac.filter(x=>x.resultado==='sucesso').length],['Ações','Sucesso parcial',ac.filter(x=>x.resultado==='sucesso_parcial').length],['Ações','Red',ac.filter(x=>x.resultado==='red').length],
   ['Vendas','Total líquido em R$',vendaTotal.real],['Vendas','Total líquido em US$',vendaTotal.dolar],['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
-  ['Caixa','Saldo movimentado R$',ca.filter(x=>x.moeda==='real').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
-  ['Caixa','Saldo movimentado US$',ca.filter(x=>x.moeda==='dolar').reduce((s,x)=>s+num(x.valor)*(x.categoria==='saida'?-1:1),0)],
   ['Ações','Receita destinada à família (dinheiro sujo)', 'Ver detalhamento por moeda'],
   ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.farm!=='nao_conferido'&&x.dinheiro!=='nao_conferido').length],['Metas','Devendo farm (semana selecionada)',me.filter(x=>x.farm==='pendente').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
  ]:rows[k];
