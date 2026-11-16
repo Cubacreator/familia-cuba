@@ -163,7 +163,7 @@ function membrosNaSemana(){
  return dados.integrantes.filter(x=>x.data_entrada<=filtro.intervalo.end && (!x.data_saida||x.data_saida>=filtro.intervalo.start)).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
 }
 function statusPadrao(cargo,tipo){
- return (cargo==='membro'||(cargo==='elite'&&tipo==='farm'))?'isento':'nao_conferido';
+ return 'nao_conferido';
 }
 function registroSemana(id){const {semana_inicio}=semanaSelecionada();return dados.metas_semanais.find(x=>x.integrante_id===id&&x.semana_inicio===semana_inicio)}
 function renderIntegrantes(){
@@ -190,29 +190,24 @@ $('#integrantesRows').onclick=e=>{
 function metaLinhas(){
  return membrosNaSemana().map(m=>{
   const reg=registroSemana(m.id);
-  return {m,reg,farm:reg?.farm_status||statusPadrao(m.cargo,'farm'),dinheiro:reg?.dinheiro_status||statusPadrao(m.cargo,'dinheiro')}
+  const salvo=reg?.dinheiro_status||'nao_conferido';
+  return {m,reg,dinheiro:m.cargo==='membro'&&salvo==='isento'?'nao_conferido':salvo};
  });
 }
-function optionsStatus(valor,tipo,exento){
- const vals=[['nao_conferido','Não conferido'],['pago','Pago'],['pendente','Devendo'],['isento','Isento']];
- return '<select aria-label="Status '+tipo+'" '+(exento?'disabled':'')+'>'+vals.map(([v,l])=>'<option value="'+v+'"'+(valor===v?' selected':'')+'>'+l+'</option>').join('')+'</select>';
+function optionsStatus(valor,cargo){
+ const vals=[['nao_conferido','Não conferido'],['pago','Pago'],['pendente','Devendo']];
+ if(cargo!=='membro')vals.push(['isento','Isento']);
+ return '<select aria-label="Status da meta de dinheiro">'+vals.map(([v,l])=>'<option value="'+v+'"'+(valor===v?' selected':'')+'>'+l+'</option>').join('')+'</select>';
 }
 function renderMetas(){
  const {intervalo}=semanaSelecionada(),linhas=metaLinhas();
- const columns=['farm','dinheiro'];
- const summary=columns.map(col=>{
-  const paid=linhas.filter(x=>x[col]==='pago').length;
-  const debt=linhas.filter(x=>x[col]==='pendente').length;
-  const unknown=linhas.filter(x=>x[col]==='nao_conferido').length;
-  return '<span><b>'+esc(col==='farm'?'Farm':'Dinheiro')+'</b> • '+paid+' pagos • '+debt+' devendo • '+unknown+' não conferidos</span>'
- });
- $('#metaResumo').innerHTML=summary.join('');
- $('#metasRows').innerHTML=linhas.map(({m,reg,farm,dinheiro})=>'<tr data-meta-id="'+esc(m.id)+'"><td>'+esc(m.nome)+'</td><td>'+esc(m.cargo)+'</td><td>'+optionsStatus(farm,'farm',m.cargo==='elite'||m.cargo==='membro')+'</td><td>'+optionsStatus(dinheiro,'dinheiro',m.cargo==='membro')+'</td><td><input aria-label="Observação" value="'+esc(reg?.observacoes||'')+'" maxlength="500"></td><td><button data-save-meta="'+esc(m.id)+'" class="secondary">Salvar</button></td></tr>').join('')||'<tr><td colspan="6">Nenhum integrante cadastrado nesse período.</td></tr>';
- $('#metaNomes').innerHTML=columns.map(col=>{
-  const tipo=col==='farm'?'Farm':'Dinheiro';
-  const lista=st=>linhas.filter(x=>x[col]===st).map(x=>x.m.nome).sort((a,b)=>a.localeCompare(b,'pt-BR')).join(', ')||'Nenhum';
-  return '<h4>'+tipo+'</h4><p><b>Pagaram:</b> '+esc(lista('pago'))+'</p><p><b>Devendo:</b> '+esc(lista('pendente'))+'</p><p><b>Não conferidos:</b> '+esc(lista('nao_conferido'))+'</p>';
- }).join('')+'<p class="hint">Período: '+esc(intervalo?.start||'—')+' até '+esc(intervalo?.end||'—')+'. Vencimento: '+esc(intervalo?.vencimento||'—')+'. O histórico de membros desativados continua incluído enquanto pertenciam à família.</p>';
+ const paid=linhas.filter(x=>x.dinheiro==='pago').length;
+ const debt=linhas.filter(x=>x.dinheiro==='pendente').length;
+ const unknown=linhas.filter(x=>x.dinheiro==='nao_conferido').length;
+ $('#metaResumo').innerHTML='<span><b>Dinheiro</b> • '+paid+' pagos • '+debt+' devendo • '+unknown+' não conferidos</span>';
+ $('#metasRows').innerHTML=linhas.map(({m,reg,dinheiro})=>'<tr data-meta-id="'+esc(m.id)+'"><td>'+esc(m.nome)+'</td><td>'+esc(m.cargo)+'</td><td>'+optionsStatus(dinheiro,m.cargo)+'</td><td><input aria-label="Observação" value="'+esc(reg?.observacoes||'')+'" maxlength="500"></td><td><button data-save-meta="'+esc(m.id)+'" class="secondary">Salvar</button></td></tr>').join('')||'<tr><td colspan="5">Nenhum integrante cadastrado nesse período.</td></tr>';
+ const lista=st=>linhas.filter(x=>x.dinheiro===st).map(x=>x.m.nome).sort((a,b)=>a.localeCompare(b,'pt-BR')).join(', ')||'Nenhum';
+ $('#metaNomes').innerHTML='<h4>Meta em dinheiro</h4><p><b>Pagaram:</b> '+esc(lista('pago'))+'</p><p><b>Devendo:</b> '+esc(lista('pendente'))+'</p><p><b>Não conferidos:</b> '+esc(lista('nao_conferido'))+'</p><p class="hint">Período: '+esc(intervalo?.start||'—')+' até '+esc(intervalo?.end||'—')+'. Vencimento: '+esc(intervalo?.vencimento||'—')+'. Registros de integrantes antigos continuam preservados.</p>';
 }
 $('#metaMes').onchange=()=>{preencherSemanas();renderMetas()};
 $('#metaSemana').onchange=renderMetas;
