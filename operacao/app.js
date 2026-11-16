@@ -116,10 +116,10 @@ $('#vendaForm').onsubmit=e=>{
  e.preventDefault();const f=e.target,o=contentOf(f),p=dados.produtos.find(x=>x.id===o.produto_id);
  const preco=p?precoProduto(p.nome,o.moeda):undefined;
  if(preco===undefined){msg('Produto sem preço oficial cadastrado.',true);return}
- const q=num(o.quantidade),recebido=num(o.recebido);
+ const q=num(o.quantidade);
  if(!String(o.familia_compradora||'').trim()){msg('Informe a família compradora.',true);return}
- if(!Number.isInteger(q)||q<1||recebido<0||recebido>q*preco){msg('Confira a quantidade e o valor recebido.',true);return}
- insert(tables.vendas,{data:o.data,produto_id:o.produto_id,familia_compradora:String(o.familia_compradora||'').trim(),quantidade:q,moeda:o.moeda,preco_unitario:preco,desconto:0,recebido,status:o.status,observacoes:o.observacoes},f)
+ if(!Number.isInteger(q)||q<1){msg('Confira a quantidade.',true);return}
+ insert(tables.vendas,{data:o.data,produto_id:o.produto_id,familia_compradora:String(o.familia_compradora||'').trim(),quantidade:q,moeda:o.moeda,preco_unitario:preco,desconto:0,recebido:o.status==='cancelada'?0:q*preco,status:o.status,observacoes:o.observacoes},f)
 };
 
 
