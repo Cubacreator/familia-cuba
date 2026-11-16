@@ -113,8 +113,9 @@ $('#vendaForm').onsubmit=e=>{
  const preco=p?precoProduto(p.nome,o.moeda):undefined;
  if(preco===undefined){msg('Produto sem preço oficial cadastrado.',true);return}
  const q=num(o.quantidade),recebido=num(o.recebido);
+ if(!String(o.familia_compradora||'').trim()){msg('Informe a família compradora.',true);return}
  if(!Number.isInteger(q)||q<1||recebido<0||recebido>q*preco){msg('Confira a quantidade e o valor recebido.',true);return}
- insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:q,moeda:o.moeda,preco_unitario:preco,desconto:0,recebido,status:o.status,observacoes:o.observacoes},f)
+ insert(tables.vendas,{data:o.data,produto_id:o.produto_id,familia_compradora:String(o.familia_compradora||'').trim(),quantidade:q,moeda:o.moeda,preco_unitario:preco,desconto:0,recebido,status:o.status,observacoes:o.observacoes},f)
 };
 $('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
 
