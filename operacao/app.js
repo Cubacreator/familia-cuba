@@ -2,6 +2,22 @@ const cfg=window.CUBA_CONFIG;
 const sb=supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true}});
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const fmt=(v,c='real')=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:c==='dolar'?'USD':'BRL'}).format(Number(v)||0);
+// Tabela oficial aprovada pela liderança. Preço fixo por unidade, sem desconto por quantidade.
+const precosOficiais={
+ 'micro smg':{real:35000,dolar:31000},
+ 'mtar':{real:60000,dolar:54500},
+ 'mp7':{real:55000,dolar:50000},
+ 'lançador de granadas':{real:30000,dolar:27000}
+};
+const normalizarNome=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+const precoProduto=(nome,moeda)=>Object.entries(precosOficiais).find(([n])=>normalizarNome(n)===normalizarNome(nome))?.[1]?.[moeda];
+function atualizarPrecoVenda(){
+ const f=$('#vendaForm'),p=dados.produtos.find(x=>x.id===f.elements.produto_id.value);
+ const preco=p?precoProduto(p.nome,f.elements.moeda.value):undefined;
+ f.elements.preco_unitario.value=preco??'';
+ f.elements.desconto.value='0';
+ const info=$('#precoVendaInfo');if(info)info.textContent=preco===undefined?'Produto ainda não disponível na tabela oficial.':'Preço unitário fixo: '+fmt(preco,f.elements.moeda.value)+' | Total: '+fmt(preco*Math.max(1,num(f.elements.quantidade.value)),f.elements.moeda.value);
+}
 const dateNow=()=>new Date().toLocaleDateString('en-CA');
 const num=v=>Number(v)||0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
@@ -50,7 +66,7 @@ function render(){
  $('#kStatus').textContent=[acoes.length,acoes.filter(x=>x.resultado==='sucesso').length,acoes.filter(x=>x.resultado==='red').length].join(' / ');
  $('#acaoRows').innerHTML=acoes.map(a=>'<tr><td>'+esc(a.data)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.modalidade)+'</td><td>'+esc(a.resultado)+'</td><td>'+a.exitosos+'/'+a.participantes+'</td><td>'+fmt(a.valor_familia,a.moeda)+'</td><td>'+fmt(a.valor_integrantes,a.moeda)+'</td></tr>').join('');
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
- $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
+ $('#produtoSelect').innerHTML=dados.produtos.filter(p=>p.ativo&&precoProduto(p.nome,'real')!==undefined).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
  $('#vendaRows').innerHTML=dados.vendas.map(v=>'<tr><td>'+esc(v.data)+'</td><td>'+esc(dados.produtos.find(p=>p.id===v.produto_id)?.nome||'—')+'</td><td>'+v.quantidade+'</td><td>'+esc(v.moeda||'real')+'</td><td>'+fmt(num(v.preco_unitario)*v.quantidade-num(v.desconto),v.moeda||'real')+'</td><td>'+fmt(v.recebido,v.moeda||'real')+'</td><td>'+esc(v.status)+'</td></tr>').join('');
  renderIntegrantes();renderMetas(); $('#caixaRows').innerHTML=dados.caixa.map(c=>'<tr><td>'+esc(c.data)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.descricao)+'</td><td>'+esc(c.moeda)+'</td><td>'+fmt(c.valor,c.moeda)+'</td></tr>').join('');
 }
@@ -85,8 +101,17 @@ $('#acaoForm').onsubmit=e=>{
  insert(tables.acoes,payload,f)
 };
 $('#produtoForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.produtos,{nome:o.nome.trim(),categoria:o.categoria.trim(),preco_padrao:num(o.preco_padrao)},f)};
-$('#produtoSelect').onchange=()=>{const p=dados.produtos.find(x=>x.id===$('#produtoSelect').value);if(p)setField($('#vendaForm'),'preco_unitario',p.preco_padrao)};
-$('#vendaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:num(o.quantidade),moeda:o.moeda,preco_unitario:num(o.preco_unitario),desconto:num(o.desconto),recebido:num(o.recebido),status:o.status,observacoes:o.observacoes},f)};
+$('#vendaForm').elements.produto_id.addEventListener('change',atualizarPrecoVenda);
+$('#vendaForm').elements.moeda.addEventListener('change',atualizarPrecoVenda);
+$('#vendaForm').elements.quantidade.addEventListener('input',atualizarPrecoVenda);
+$('#vendaForm').onsubmit=e=>{
+ e.preventDefault();const f=e.target,o=contentOf(f),p=dados.produtos.find(x=>x.id===o.produto_id);
+ const preco=p?precoProduto(p.nome,o.moeda):undefined;
+ if(preco===undefined){msg('Produto sem preço oficial cadastrado.',true);return}
+ const q=num(o.quantidade),recebido=num(o.recebido);
+ if(!Number.isInteger(q)||q<1||recebido<0||recebido>q*preco){msg('Confira a quantidade e o valor recebido.',true);return}
+ insert(tables.vendas,{data:o.data,produto_id:o.produto_id,quantidade:q,moeda:o.moeda,preco_unitario:preco,desconto:0,recebido,status:o.status,observacoes:o.observacoes},f)
+};
 $('#caixaForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.caixa,{data:o.data,categoria:o.categoria,moeda:o.moeda,valor:num(o.valor),descricao:o.descricao.trim()},f)};
 
 
