@@ -81,7 +81,7 @@ function render(){
  const familiaReal=acoes.filter(a=>a.moeda==='real').reduce((a,x)=>a+num(x.valor_familia),0);
  const familiaDolar=acoes.filter(a=>a.moeda==='dolar').reduce((a,x)=>a+num(x.valor_familia),0);$('#kAcoes').textContent=fmt(familiaReal)+' / '+fmt(familiaDolar,'dolar');
  $('#kStatus').textContent=[acoes.length,acoes.filter(x=>x.resultado==='sucesso').length,acoes.filter(x=>x.resultado==='red').length].join(' / ');
- $('#acaoRows').innerHTML=acoes.map(a=>'<tr><td>'+esc(a.data)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.modalidade)+'</td><td>'+esc(a.resultado)+'</td><td>'+a.exitosos+'/'+a.participantes+'</td><td>'+fmt(a.valor_familia,a.moeda)+'</td><td>'+fmt(a.valor_integrantes,a.moeda)+'</td></tr>').join('');
+ $('#acaoRows').innerHTML=acoes.map(a=>'<tr><td>'+esc(a.data)+'</td><td>'+esc(a.nome)+'</td><td>'+esc(a.modalidade)+'</td><td>'+esc(a.resultado)+'</td><td>'+a.exitosos+'/'+a.participantes+'</td><td>'+fmt(a.valor_familia,a.moeda)+'</td><td>'+fmt(a.valor_integrantes,a.moeda)+'</td><td>'+(a.valor_perdido==null?'—':fmt(a.valor_perdido,a.moeda))+'</td></tr>').join('');
  $('#produtoRows').innerHTML=dados.produtos.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+esc(p.categoria)+'</td><td>'+fmt(p.preco_padrao)+'</td></tr>').join('');
  const disponiveis=dados.produtos.filter(p=>p.ativo&&precoProduto(p.nome,'real')!==undefined);
  $('#produtoSelect').innerHTML=disponiveis.length?disponiveis.map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join(''):'<option value="">Nenhum armamento cadastrado — execute SQL 05</option>';
@@ -249,19 +249,21 @@ function report(){
  const me=metaLinhas();
  const familia=ac.reduce((s,x)=>s+num(x.valor_familia),0),integrantes=ac.reduce((s,x)=>s+num(x.valor_integrantes),0);
  const vendaTotal=Object.fromEntries(['real','dolar'].map(m=>[m,ve.filter(x=>x.status==='concluida'&&(x.moeda||'real')===m).reduce((s,x)=>s+num(x.quantidade)*num(x.preco_unitario)-num(x.desconto),0)]));
- const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes'],vendas:['Data','Família compradora','Produto','Quantidade','Total R$ (preços atuais)','Total US$ (preços atuais)','Moeda paga','Valor da venda','Status'],metas:['Semana','Integrante','Cargo','Dinheiro','Observação']};
- const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes]),vendas:ve.map(x=>{const n=dados.produtos.find(p=>p.id===x.produto_id)?.nome||'';const r=precoProduto(n,'real'),d=precoProduto(n,'dolar');return [x.data,x.familia_compradora||'',n,x.quantidade,r===undefined?'':r*x.quantidade,d===undefined?'':d*x.quantidade,x.moeda||'real',x.quantidade*x.preco_unitario-x.desconto,x.status]}),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.dinheiro,x.reg?.observacoes||''])};
+ const header={acoes:['Data','Ação','Modalidade','Resultado','Participantes','Sucessos','Moeda','Dinheiro','Família','Integrantes','Valor perdido'],vendas:['Data','Família compradora','Produto','Quantidade','Total R$ (preços atuais)','Total US$ (preços atuais)','Moeda paga','Valor da venda','Status'],metas:['Semana','Integrante','Cargo','Dinheiro','Observação']};
+ const rows={acoes:ac.map(x=>[x.data,x.nome,x.modalidade,x.resultado,x.participantes,x.exitosos,x.moeda,x.tipo_dinheiro,x.valor_familia,x.valor_integrantes,x.valor_perdido??'']),vendas:ve.map(x=>{const n=dados.produtos.find(p=>p.id===x.produto_id)?.nome||'';const r=precoProduto(n,'real'),d=precoProduto(n,'dolar');return [x.data,x.familia_compradora||'',n,x.quantidade,r===undefined?'':r*x.quantidade,d===undefined?'':d*x.quantidade,x.moeda||'real',x.quantidade*x.preco_unitario-x.desconto,x.status]}),metas:me.map(x=>[semanaSelecionada().intervalo.start+' a '+semanaSelecionada().intervalo.end+' (vence '+semanaSelecionada().intervalo.vencimento+')',x.m.nome,x.m.cargo,x.dinheiro,x.reg?.observacoes||''])};
  relHeader=k==='geral'?['Seção','Indicador','Valor']:header[k];
  relLinhas=k==='geral'?[
   ['Ações','Quantidade',ac.length],['Ações','Fuga',ac.filter(x=>x.modalidade==='fuga').length],['Ações','Tiro',ac.filter(x=>x.modalidade==='tiro').length],
   ['Ações','Sucesso',ac.filter(x=>x.resultado==='sucesso').length],['Ações','Sucesso parcial',ac.filter(x=>x.resultado==='sucesso_parcial').length],['Ações','Red',ac.filter(x=>x.resultado==='red').length],
   ['Vendas','Total líquido em R$',vendaTotal.real],['Vendas','Total líquido em US$',vendaTotal.dolar],['Vendas','Quantidade concluída',ve.filter(x=>x.status==='concluida').reduce((s,x)=>s+num(x.quantidade),0)],
   ['Ações','Receita destinada à família (dinheiro sujo)', 'Ver detalhamento por moeda'],
+   ['Ações','Reds com valor perdido informado',ac.filter(x=>x.resultado==='red'&&x.valor_perdido!=null).length],
   ['Metas','Integrantes conferidos na semana selecionada',me.filter(x=>x.dinheiro!=='nao_conferido').length],['Metas','Devendo dinheiro (semana selecionada)',me.filter(x=>x.dinheiro==='pendente').length],
  ]:rows[k];
  if(k==='geral'){
   for(const moeda of ['real','dolar']){const tipo='sujo';
-   relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
+   relLinhas.push(['Ações','Valor perdido em reds • '+moeda,ac.filter(x=>x.resultado==='red'&&x.moeda===moeda).reduce((sum,x)=>sum+num(x.valor_perdido),0)]);
+    relLinhas.push(['Ações','Destinado à família • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_familia),0)]);
    relLinhas.push(['Ações','Destinado aos integrantes • '+moeda+' '+tipo,ac.filter(x=>x.moeda===moeda&&x.tipo_dinheiro===tipo).reduce((s,x)=>s+num(x.valor_integrantes),0)]);
   }
  }
