@@ -92,8 +92,17 @@ $('#vendaRows').innerHTML=dados.vendas.map(v=>{const p=dados.produtos.find(x=>x.
 function setField(f,name,value){f.elements[name].value=value}
 function updateAction(){
  const f=$('#acaoForm'),res=f.elements.resultado.value,tot=num(f.elements.valor_total.value),dest=f.elements.destino.value;
- const red=res==='red';f.elements.destino.disabled=red;f.elements.valor_total.disabled=red;f.elements.valor_familia.disabled=red;
- if(red){setField(f,'exitosos',0);setField(f,'valor_integrantes',0);return}
+ const red=res==='red';
+ $$('.acao-recompensa').forEach(el=>el.hidden=red);
+ $('#acaoPerdaBox').hidden=!red;
+ f.elements.exitosos.disabled=red;
+ if(red){
+  setField(f,'exitosos',0);
+  setField(f,'valor_total',0);
+  setField(f,'valor_familia',0);
+  setField(f,'valor_integrantes',0);
+  return;
+ }
  const qtd=Math.max(1,num(f.elements.participantes.value));
  if(res==='sucesso')setField(f,'exitosos',qtd);
  if(res==='sucesso_parcial'&&num(f.elements.exitosos.value)>=qtd)setField(f,'exitosos',Math.max(0,qtd-1));
