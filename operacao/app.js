@@ -125,7 +125,10 @@ $('#acaoForm').onsubmit=e=>{
  const q=num(o.participantes),ok=red?0:num(o.exitosos),t=red?0:num(o.valor_total);
  const dest=red?'nenhum':o.destino, fam=red?0:dest==='familia'?t:dest==='integrantes'?0:num(o.valor_familia);
  if(q<1||ok<0||ok>q||((o.resultado==='sucesso')!==(ok===q))||(o.resultado==='sucesso_parcial'&&!(ok>0&&ok<q))||(!red&&!(t>=fam&&fam>=0))){msg('Confira participantes, resultado e divisão dos valores.',true);return}
- const payload={data:o.data,nome:o.nome.trim(),modalidade:o.modalidade,resultado:o.resultado,participantes:q,exitosos:ok,destino:dest,moeda:o.moeda,tipo_dinheiro:'sujo',valor_total:t,valor_familia:fam,valor_integrantes:Math.round((t-fam)*100)/100,observacoes:o.observacoes};
+ const perdaTexto=f.elements.valor_perdido.value.trim();
+  const valor_perdido=red&&perdaTexto!==''?Number(perdaTexto):null;
+  if(red&&valor_perdido!==null&&(!Number.isFinite(valor_perdido)||valor_perdido<0)){msg('Informe um valor perdido válido ou deixe o campo vazio.',true);return}
+  const payload={data:o.data,nome:o.nome.trim(),modalidade:o.modalidade,resultado:o.resultado,participantes:q,exitosos:ok,destino:dest,moeda:o.moeda,tipo_dinheiro:'sujo',valor_total:t,valor_familia:fam,valor_integrantes:Math.round((t-fam)*100)/100,valor_perdido,observacoes:o.observacoes};
  insert(tables.acoes,payload,f)
 };
 $('#produtoForm').onsubmit=e=>{e.preventDefault();const f=e.target,o=contentOf(f);insert(tables.produtos,{nome:o.nome.trim(),categoria:o.categoria.trim(),preco_padrao:num(o.preco_padrao)},f)};
